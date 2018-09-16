@@ -12,6 +12,7 @@ void Cpu::fetch() {
     switch(opcode) {
         case 0x00: // nop
             break;
+        // region 8-bit Load (LD)
         case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x47: // ld b,reg
         case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d: case 0x4f: // ld c,reg
         case 0x50: case 0x51: case 0x52: case 0x53: case 0x54: case 0x55: case 0x57: // ld d,reg
@@ -117,6 +118,7 @@ void Cpu::fetch() {
             m_registers.a = m_mmu->readByte(src_addr);
             break;
         }
+        //endregion
         default:
             std::cout << "Instruction " + instructions[opcode].disassembly + " not implemented" << std::endl;
             break;

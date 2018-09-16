@@ -13,5 +13,20 @@ file(GLOB SOURCES
 file(GLOB INCLUDES
         "include/*.h")
 
+#file(GLOB GLFW
+#        "/usr/local/include/GLFW/*.h")
+#file(GLOB GLEW
+#        "/usr/include/GL/*.h")
 
-add_executable(boyboy ${SOURCES} ${INCLUDES})
+find_package (glfw3 REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+
+
+add_executable(boyboy ${SOURCES} ${INCLUDES} ${GLFW} ${GLEW})
+target_include_directories(boyboy PUBLIC ${OPENGL_INCLUDE_DIR})
+target_link_libraries(boyboy
+        glfw
+        ${OPENGL_gl_LIBRARY})
+target_include_directories(boyboy PUBLIC ${GLEW_INCLUDE_DIRS})
+target_link_libraries(boyboy ${GLEW_LIBRARIES})
