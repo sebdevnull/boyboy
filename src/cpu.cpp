@@ -119,8 +119,129 @@ void Cpu::fetch() {
             break;
         }
         //endregion
+        //region 8-bit ALU
+        case 0x80: case 0x81: case 0x82: case 0x83: case 0x84: case 0x85: case 0x86: case 0x87: // add a, reg
+        case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F: // adc a, reg
+        case 0x90: case 0x91: case 0x92: case 0x93: case 0x94: case 0x95: case 0x96: case 0x97: // sub reg
+        case 0x98: case 0x99: case 0x9A: case 0x9B: case 0x9C: case 0x9D: case 0x9E: case 0x9F: // sbc reg
+        case 0xA0: case 0xA1: case 0xA2: case 0xA3: case 0xA4: case 0xA5: case 0xA6: case 0xA7: // and reg
+        case 0xA8: case 0xA9: case 0xAA: case 0xAB: case 0xAC: case 0xAD: case 0xAE: case 0xAF: // xor reg
+        case 0xB0: case 0xB1: case 0xB2: case 0xB3: case 0xB4: case 0xB5: case 0xB6: case 0xB7: // or reg
+        case 0xB8: case 0xB9: case 0xBA: case 0xBB: case 0xBC: case 0xBD: case 0xBE: case 0xBF: // cp reg
+        {
+            uint8_t val;
+            bool carry = false;
+
+            // check if (hl)
+            if ((opcode & 0x0F) == 0x06 || (opcode & 0x0F) == 0x0E)
+                val = m_mmu->readByte(m_registers.hl);
+            else
+                val = *srcReg(opcode);
+
+            if ((opcode & 0x0F) > 0x07) // adc
+                carry = true;
+
+            if (opcode < 0x90)
+                add(val, carry);
+            else if (opcode < 0xA0)
+                sub(val, carry);
+            else if (opcode < 0xA8)
+                aand(val);
+            else if (opcode < 0xB0)
+                xxor(val);
+            else if (opcode < 0xB9)
+                oor(val);
+            else
+                cp(val);
+
+            break;
+        }
+        //endregion
         default:
             std::cout << "Instruction " + instructions[opcode].disassembly + " not implemented" << std::endl;
             break;
     }
+}
+
+void Cpu::add(uint8_t val, bool carry) {
+    uint8_t result = m_registers.a + val;
+
+    if (carry && (m_registers.f & FLAG_CY))
+        result += 1;
+
+    reset_flags();
+
+    // set flags
+    if (result == 0)
+        m_registers.f |= FLAG_Z;
+    if (result < m_registers.a)
+        m_registers.f |= FLAG_CY;
+    if (m_registers.a & 0x0F > result & 0x0F)
+        m_registers.f |= FLAG_H;
+
+    m_registers.a = result;
+}
+
+void Cpu::sub(uint8_t val, bool carry) {
+    uint8_t result = m_registers.a - val;
+
+    if (carry && (m_registers.f & FLAG_CY))
+        result -= 1;
+
+    reset_flags();
+
+    // set flags
+    m_registers.f |= FLAG_N;
+    if (result == 0)
+        m_registers.f |= FLAG_Z;
+    if (result > m_registers.a)
+        m_registers.f |= FLAG_CY;
+    if (m_registers.a & 0x0F < result & 0x0F)
+        m_registers.f |= FLAG_H;
+
+    m_registers.a = result;
+}
+
+void Cpu::aand(uint8_t val) {
+    m_registers.a &= val;
+
+    reset_flags();
+
+    // set flags
+    m_registers.f |= FLAG_H;
+    if (m_registers.a == 0)
+        m_registers.f |= FLAG_Z;
+}
+
+void Cpu::xxor(uint8_t val) {
+    m_registers.a ^= val;
+
+    reset_flags();
+
+    // set flags
+    if (m_registers.a == 0)
+        m_registers.f |= FLAG_Z;
+}
+
+void Cpu::oor(uint8_t val) {
+    m_registers.a |= val;
+
+    reset_flags();
+
+    // set flags
+    if (m_registers.a == 0)
+        m_registers.f |= FLAG_Z;
+}
+
+void Cpu::cp(uint8_t val) {
+    reset_flags();
+
+    // set flags
+    m_registers.f |= FLAG_N;
+    if (m_registers.a == val)
+        m_registers.f |= FLAG_Z;
+    else if (m_registers.a > val)
+        m_registers.f |= FLAG_H;
+    else
+        m_registers.f |= FLAG_CY;
 }

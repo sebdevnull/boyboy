@@ -14,6 +14,11 @@ class Cpu {
 
 public:
 
+    const uint8_t FLAG_Z = 0x80;
+    const uint8_t FLAG_N = 0x40;
+    const uint8_t FLAG_H = 0x20;
+    const uint8_t FLAG_CY = 0x10;
+
     Mmu *m_mmu;
 
     struct registers m_registers;
@@ -458,6 +463,18 @@ public:
     inline uint16_t *srcReg16(uint8_t opcode) {
         return regs16[opcode >> 4 & 7];
     }
+
+    inline void reset_flags() {
+        m_registers.f &= 0;
+    }
+
+
+    void add(uint8_t val, bool carry);
+    void sub(uint8_t val, bool carry);
+    void aand(uint8_t val);
+    void xxor(uint8_t val);
+    void oor(uint8_t val);
+    void cp(uint8_t val);
 
     void fetch();
 };
