@@ -44,7 +44,7 @@
         {
             "name": "default",
             "configurePreset": "default",
-            "jobs": 8
+            "jobs": 12
         },
         {
             "name": "debug",

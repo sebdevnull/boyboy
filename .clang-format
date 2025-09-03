@@ -7,7 +7,8 @@ UseTab: Never
 ColumnLimit: 100
 IndentCaseLabels: true
 BreakBeforeBraces: Allman
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: Inline
 IndentRequiresClause: true
 
 # --- Includes ---
@@ -16,14 +17,14 @@ IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^<.*\.h>'
     Priority: 1
-  - Regex: '^<.*>'
+  - Regex: "^<.*>"
     Priority: 2
   - Regex: '^".*'
     Priority: 3
 
 # --- Pointers & References ---
-PointerAlignment: Left       # int* ptr
-ReferenceAlignment: Left     # int& ref
+PointerAlignment: Left # int* ptr
+ReferenceAlignment: Left # int& ref
 
 # --- Spacing ---
 SpaceAfterCStyleCast: true
