@@ -1,0 +1,29 @@
+{
+  "cmake.useCMakePresets": "always",
+  "cmake.configureOnOpen": false,
+  "cmake.buildDirectory": "${presetName}",
+  "cmake.buildBeforeRun": true,
+  "cmake.parallelJobs": 4,
+  "cmake.generator": "Ninja",
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "C_Cpp.errorSquiggles": "disabled",
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/debug/compile_commands.json",
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "C_Cpp.formatting": "disabled",
+  "clangd.path": "/usr/bin/clangd-19",
+  "clangd.arguments": [
+    "--compile-commands-dir=build/debug",
+    "--background-index",
+    "--all-scopes-completion",
+    "--completion-style=detailed",
+    "--clang-tidy",
+    "--header-insertion=iwyu",
+    "--suggest-missing-includes",
+    "--limit-results=500",
+    "--pch-storage=memory"
+  ],
+  "editor.semanticHighlighting.enabled": true,
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+  }
+}
