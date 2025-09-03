@@ -1,14 +1,60 @@
+# --- Language & Base Style ---
 BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++20
 
-# --- Layout & Indentation ---
+# --- Bracing Style ---
+BreakBeforeBraces: Attach
+
+# --- Indentation ---
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
+
+# --- Spacing ---
+SpaceBeforeParens: ControlStatements
+SpaceAfterTemplateKeyword: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesInAngles: false
+SpacesInParentheses: false
+
+# --- Alignment ---
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+
+# --- Pointers & References ---
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# --- Line Breaking & Wrapping ---
 ColumnLimit: 100
-IndentCaseLabels: true
-BreakBeforeBraces: Allman
+BinPackArguments: false
+BinPackParameters: false
+
+# --- Functions & Lambdas ---
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortLambdasOnASingleLine: Inline
+LambdaBodyIndentation: Signature
+
+# --- Control Statements ---
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+
+# --- Comments ---
+ReflowComments: true
+
+# --- Namespaces & Classes ---
+NamespaceIndentation: None
+EmptyLineBeforeAccessModifier: Always
+AccessModifierOffset: -4
+
+# --- Templates ---
 IndentRequiresClause: true
 
 # --- Includes ---
@@ -22,23 +68,9 @@ IncludeCategories:
   - Regex: '^".*'
     Priority: 3
 
-# --- Pointers & References ---
-PointerAlignment: Left # int* ptr
-ReferenceAlignment: Left # int& ref
+# --- Braced Initialization ---
+Cpp11BracedListStyle: true
 
-# --- Spacing ---
-SpaceAfterCStyleCast: true
-SpaceBeforeCpp11BracedList: true
-SpacesInAngles: false
-SpacesInParentheses: false
-SpaceAroundPointerQualifiers: Both
-
-# --- Lambdas & Functions ---
-LambdaBodyIndentation: Signature
-BinPackArguments: false
-BinPackParameters: false
-AlignAfterOpenBracket: Align
-
-# --- Namespaces ---
-NamespaceIndentation: All
+# --- Modern C++ Features ---
+SortUsingDeclarations: true
 FixNamespaceComments: true
