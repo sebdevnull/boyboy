@@ -1,0 +1,12 @@
+CompileFlags:
+  CompilationDatabase: build
+  Add: [-Wall, -Wextra, -Wpedantic]
+
+Diagnostics:
+  UnusedIncludes: Strict
+  ClangTidy:
+    Add: []
+    Remove: []
+
+Index:
+  Background: Build

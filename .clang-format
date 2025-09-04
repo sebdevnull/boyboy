@@ -1,0 +1,76 @@
+# --- Language & Base Style ---
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++20
+
+# --- Bracing Style ---
+BreakBeforeBraces: Attach
+
+# --- Indentation ---
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# --- Spacing ---
+SpaceBeforeParens: ControlStatements
+SpaceAfterTemplateKeyword: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesInAngles: false
+SpacesInParentheses: false
+
+# --- Alignment ---
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+
+# --- Pointers & References ---
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# --- Line Breaking & Wrapping ---
+ColumnLimit: 100
+BinPackArguments: false
+BinPackParameters: false
+
+# --- Functions & Lambdas ---
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: Inline
+LambdaBodyIndentation: Signature
+
+# --- Control Statements ---
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+
+# --- Comments ---
+ReflowComments: true
+
+# --- Namespaces & Classes ---
+NamespaceIndentation: None
+EmptyLineBeforeAccessModifier: Always
+AccessModifierOffset: -4
+
+# --- Templates ---
+IndentRequiresClause: true
+
+# --- Includes ---
+SortIncludes: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<.*\.h>'
+    Priority: 1
+  - Regex: "^<.*>"
+    Priority: 2
+  - Regex: '^".*'
+    Priority: 3
+
+# --- Braced Initialization ---
+Cpp11BracedListStyle: true
+
+# --- Modern C++ Features ---
+SortUsingDeclarations: true
+FixNamespaceComments: true

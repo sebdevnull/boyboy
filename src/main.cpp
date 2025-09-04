@@ -1,19 +1,36 @@
-#include <iostream>
-#include <cartridge.h>
+/**
+ * @file main.cpp
+ * @brief Main entry point for the BoyBoy emulator.
+ *
+ * @license GPLv3 (see LICENSE file)
+ */
 
-#include "cpu.h"
+#include <iostream>
+#include <span>
+
+#include "cartridge.h"
 #include "display.h"
 
-int main() {
+using namespace boyboy;
 
-//    Cartridge cart = Cartridge();
-//
-//    cart.load("../roms/tetris.gb");
-//    cart.parseHeader();
-//
-//    cart.m_header.print();
+int main(int argc, const char** argv) {
+    std::span<const char*> args(argv, static_cast<std::size_t>(argc));
 
-    Display display;
+    cartridge::Cartridge cart{};
+
+    if (args.size() == 2) {
+        cart.load(args[1]);
+    } else {
+        std::cout << "Usage: " << args[0] << " <path_to_rom>\n";
+        return 1;
+    }
+
+    cart.parse_header();
+
+    auto header = cart.get_header();
+    header.print();
+
+    display::Display display;
     display.init();
 
     return 0;
