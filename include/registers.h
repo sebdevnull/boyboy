@@ -1,13 +1,23 @@
-//
-// Created by zepheon on 5/09/18.
-//
-
+/**
+ * @file registers.h
+ * @brief CPU registers for the BoyBoy emulator.
+ *
+ * @license GPLv3 (see LICENSE file)
+ */
 #pragma once
 
 #include <cstdint>
 
-struct registers {
-//        struct {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-anonymous-struct"
+#pragma clang diagnostic ignored "-Wnested-anon-types"
+#endif
+
+namespace boyboy::cpu {
+
+// TODO: avoid anonymous structs
+struct Registers {
     union {
         struct {
             uint8_t a;
@@ -15,7 +25,6 @@ struct registers {
         };
         uint16_t af;
     };
-//        };
 
     struct {
         union {
@@ -50,3 +59,9 @@ struct registers {
     uint16_t sp;
     uint16_t pc;
 };
+
+} // namespace boyboy::cpu
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

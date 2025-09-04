@@ -1,32 +1,45 @@
-cmake_minimum_required(VERSION 3.9)
-project(boyboy)
+cmake_minimum_required(VERSION 3.27)
 
-set(CMAKE_CXX_STANDARD 14)
+project(boyboy
+        VERSION 0.1.0
+        DESCRIPTION "BoyBoy: A Game Boy emulator written in C++"
+        LANGUAGES CXX)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-include_directories("include")
+# --- Output directory for executables ---
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/bin/debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin/release)
 
-file(GLOB SOURCES
-        "src/*.cpp")
+# --- Sources and headers ---
+file(GLOB SOURCES "src/*.cpp")
+file(GLOB INCLUDES "include/*.h")
 
-file(GLOB INCLUDES
-        "include/*.h")
-
-#file(GLOB GLFW
-#        "/usr/local/include/GLFW/*.h")
-#file(GLOB GLEW
-#        "/usr/include/GL/*.h")
-
-find_package (glfw3 REQUIRED)
+# --- System dependencies ---
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(glfw3 REQUIRED)
 
+# --- Executable ---
+add_executable(boyboy ${SOURCES} ${INCLUDES})
 
-add_executable(boyboy ${SOURCES} ${INCLUDES} ${GLFW} ${GLEW})
-target_include_directories(boyboy PUBLIC ${OPENGL_INCLUDE_DIR})
+# --- Include directories ---
+target_include_directories(boyboy PUBLIC
+        ${OPENGL_INCLUDE_DIR}
+        ${GLEW_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}/include)
+
+# --- Link libraries ---
 target_link_libraries(boyboy
         glfw
-        ${OPENGL_gl_LIBRARY})
-target_include_directories(boyboy PUBLIC ${GLEW_INCLUDE_DIRS})
-target_link_libraries(boyboy ${GLEW_LIBRARIES})
+        ${GLEW_LIBRARIES}
+        ${OPENGL_LIBRARIES})
+
+# --- Sanitizers for Debug build ---
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+        target_compile_options(boyboy PRIVATE -fsanitize=address,undefined)
+        target_link_options(boyboy PRIVATE -fsanitize=address,undefined)
+endif()

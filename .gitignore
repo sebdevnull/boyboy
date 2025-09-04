@@ -1,4 +1,4 @@
+.vscode/.*
 bin
-cmake-build-debug
-.idea
+build
 roms
