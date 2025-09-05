@@ -11,10 +11,11 @@
 
 namespace boyboy::cpu {
 
-void Cpu::fetch() {
-    uint8_t opcode = mmu->read_byte(m_registers.pc++);
+void Cpu::fetch()
+{
+    uint8_t opcode = mmu_->read_byte(registers_.pc++);
 
-    std::cout << "Executing instruction " << kInstructions.at(opcode).disassembly << "\n";
+    std::cout << "Executing instruction " << InstructionTable.at(opcode).disassembly << "\n";
 
     // TODO: rework this long, ugly switch and avoid "magic numbers"
     // clang-format off
@@ -37,7 +38,7 @@ void Cpu::fetch() {
     }
     case 0x06: case 0x0E: case 0x16: case 0x1E: case 0x26: case 0x2E: case 0x3E: // ld reg, d8
     {
-        uint8_t value = mmu->read_byte(m_registers.pc++);
+        uint8_t value = mmu_->read_byte(registers_.pc++);
         uint8_t* dst = dst_reg(opcode);
         *dst = value;
         break;
@@ -45,92 +46,92 @@ void Cpu::fetch() {
     case 0x46: case 0x4E: case 0x56: case 0x5E: case 0x66: case 0x6E: case 0x7E: // ld reg, (hl)
     {
         uint8_t* dst = dst_reg(opcode);
-        uint16_t src_addr = m_registers.hl;
-        *dst = mmu->read_byte(src_addr);
+        uint16_t src_addr = registers_.hl;
+        *dst = mmu_->read_byte(src_addr);
         break;
     }
     case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x77: // ld (hl), reg
     {
-        uint16_t dst_addr = m_registers.hl;
+        uint16_t dst_addr = registers_.hl;
         uint8_t* src = src_reg(opcode);
-        mmu->write_byte(dst_addr, *src);
+        mmu_->write_byte(dst_addr, *src);
         break;
     }
     case 0x02: case 0x12: // ld (reg16), a
     {
         uint16_t dst_addr = *dst_reg16(opcode);
-        mmu->write_byte(dst_addr, m_registers.a);
+        mmu_->write_byte(dst_addr, registers_.a);
         break;
     }
     case 0x22: // ld (hli), a
     {
-        mmu->write_byte(m_registers.hl++, m_registers.a);
+        mmu_->write_byte(registers_.hl++, registers_.a);
         break;
     }
     case 0x32: // ld (hld), a
     {
-        mmu->write_byte(m_registers.hl--, m_registers.a);
+        mmu_->write_byte(registers_.hl--, registers_.a);
         break;
     }
     case 0x0A: case 0x1A: // ld a, (reg16)
     {
         uint16_t src_addr = *src_reg16(opcode);
-        m_registers.a = mmu->read_byte(src_addr);
+        registers_.a = mmu_->read_byte(src_addr);
         break;
     }
     case 0x2A: // ld a, (hli)
     {
-        m_registers.a = mmu->read_byte(m_registers.hl++);
+        registers_.a = mmu_->read_byte(registers_.hl++);
         break;
     }
     case 0x3A: // ld a, (hld)
     {
-        m_registers.a = mmu->read_byte(m_registers.hl--);
+        registers_.a = mmu_->read_byte(registers_.hl--);
         break;
     }
     case 0x36: // ld (hl), d8
     {
-        mmu->write_byte(m_registers.hl, mmu->read_byte(m_registers.pc++));
+        mmu_->write_byte(registers_.hl, mmu_->read_byte(registers_.pc++));
         break;
     }
     case 0xE0: // ld (0xff00 + a8), a
     {
-        uint16_t dst_addr = (uint16_t)0xFF00 + mmu->read_byte(m_registers.pc++);
-        mmu->write_byte(dst_addr, m_registers.a);
+        uint16_t dst_addr = (uint16_t)0xFF00 + mmu_->read_byte(registers_.pc++);
+        mmu_->write_byte(dst_addr, registers_.a);
         break;
     }
     case 0xF0: // ld a, (0xff00 + a8)
     {
-        uint16_t src_addr = (uint16_t)0xFF00 + mmu->read_byte(m_registers.pc++);
-        m_registers.a = mmu->read_byte(src_addr);
+        uint16_t src_addr = (uint16_t)0xFF00 + mmu_->read_byte(registers_.pc++);
+        registers_.a = mmu_->read_byte(src_addr);
         break;
     }
     case 0xE2: // ld (c), a
     {
-        mmu->write_byte(m_registers.c, m_registers.a);
+        mmu_->write_byte(registers_.c, registers_.a);
         break;
     }
     case 0xF2: // ld a, (c)
     {
-        m_registers.a = mmu->read_byte(m_registers.c);
+        registers_.a = mmu_->read_byte(registers_.c);
         break;
     }
     case 0xEA: // ld (a16), a
     {
-        uint16_t dst_addr = (mmu->read_byte(m_registers.pc) << 8);
-        ++m_registers.pc;
-        dst_addr += mmu->read_byte(m_registers.pc);
-        ++m_registers.pc;
-        mmu->write_byte(dst_addr, m_registers.a);
+        uint16_t dst_addr = (mmu_->read_byte(registers_.pc) << 8);
+        ++registers_.pc;
+        dst_addr += mmu_->read_byte(registers_.pc);
+        ++registers_.pc;
+        mmu_->write_byte(dst_addr, registers_.a);
         break;
     }
     case 0xFA: // ld a, (a16)
     {
-        uint16_t src_addr = (mmu->read_byte(m_registers.pc) << 8);
-        ++m_registers.pc;
-        src_addr += mmu->read_byte(m_registers.pc);
-        ++m_registers.pc;
-        m_registers.a = mmu->read_byte(src_addr);
+        uint16_t src_addr = (mmu_->read_byte(registers_.pc) << 8);
+        ++registers_.pc;
+        src_addr += mmu_->read_byte(registers_.pc);
+        ++registers_.pc;
+        registers_.a = mmu_->read_byte(src_addr);
         break;
     }
     // 8-bit ALU
@@ -148,7 +149,7 @@ void Cpu::fetch() {
 
         // check if (hl)
         if ((opcode & 0x0F) == 0x06 || (opcode & 0x0F) == 0x0E) {
-            val = mmu->read_byte(m_registers.hl);
+            val = mmu_->read_byte(registers_.hl);
         } else {
             val = *src_reg(opcode);
         }
@@ -175,17 +176,18 @@ void Cpu::fetch() {
         break;
     }
     default:
-        std::cout << "Instruction " << kInstructions.at(opcode).disassembly << " not implemented"
+        std::cout << "Instruction " << InstructionTable.at(opcode).disassembly << " not implemented"
                   << "\n";
         break;
     }
     // clang-format on
 }
 
-void Cpu::add(uint8_t val, bool carry) {
-    uint8_t result = m_registers.a + val;
+void Cpu::add(uint8_t val, bool carry)
+{
+    uint8_t result = registers_.a + val;
 
-    if (carry && (m_registers.f & Flag::kCarry) != 0) {
+    if (carry && (registers_.f & Flag::Carry) != 0) {
         result += 1;
     }
 
@@ -193,87 +195,94 @@ void Cpu::add(uint8_t val, bool carry) {
 
     // set flags
     if (result == 0) {
-        m_registers.f |= Flag::kZero;
+        registers_.f |= Flag::Zero;
     }
-    if (result < m_registers.a) {
-        m_registers.f |= Flag::kCarry;
+    if (result < registers_.a) {
+        registers_.f |= Flag::Carry;
     }
-    if ((m_registers.a & 0x0F) > (result & 0x0F)) {
-        m_registers.f |= Flag::kHalfCarry;
+    if ((registers_.a & 0x0F) > (result & 0x0F)) {
+        registers_.f |= Flag::HalfCarry;
     }
 
-    m_registers.a = result;
+    registers_.a = result;
 }
 
-void Cpu::sub(uint8_t val, bool carry) {
-    uint8_t result = m_registers.a - val;
+void Cpu::sub(uint8_t val, bool carry)
+{
+    uint8_t result = registers_.a - val;
 
-    if (carry && (m_registers.f & Flag::kCarry) != 0) {
+    if (carry && (registers_.f & Flag::Carry) != 0) {
         result -= 1;
     }
 
     reset_flags();
 
     // set flags
-    m_registers.f |= Flag::kSubstract;
+    registers_.f |= Flag::Substract;
     if (result == 0) {
-        m_registers.f |= Flag::kZero;
+        registers_.f |= Flag::Zero;
     }
-    if (result > m_registers.a) {
-        m_registers.f |= Flag::kCarry;
+    if (result > registers_.a) {
+        registers_.f |= Flag::Carry;
     }
-    if ((m_registers.a & 0x0F) < (result & 0x0F)) {
-        m_registers.f |= Flag::kHalfCarry;
+    if ((registers_.a & 0x0F) < (result & 0x0F)) {
+        registers_.f |= Flag::HalfCarry;
     }
 
-    m_registers.a = result;
+    registers_.a = result;
 }
 
-void Cpu::aand(uint8_t val) {
-    m_registers.a &= val;
+void Cpu::aand(uint8_t val)
+{
+    registers_.a &= val;
 
     reset_flags();
 
     // set flags
-    m_registers.f |= Flag::kHalfCarry;
-    if (m_registers.a == 0) {
-        m_registers.f |= Flag::kZero;
+    registers_.f |= Flag::HalfCarry;
+    if (registers_.a == 0) {
+        registers_.f |= Flag::Zero;
     }
 }
 
-void Cpu::xxor(uint8_t val) {
-    m_registers.a ^= val;
+void Cpu::xxor(uint8_t val)
+{
+    registers_.a ^= val;
 
     reset_flags();
 
     // set flags
-    if (m_registers.a == 0) {
-        m_registers.f |= Flag::kZero;
+    if (registers_.a == 0) {
+        registers_.f |= Flag::Zero;
     }
 }
 
-void Cpu::oor(uint8_t val) {
-    m_registers.a |= val;
+void Cpu::oor(uint8_t val)
+{
+    registers_.a |= val;
 
     reset_flags();
 
     // set flags
-    if (m_registers.a == 0) {
-        m_registers.f |= Flag::kZero;
+    if (registers_.a == 0) {
+        registers_.f |= Flag::Zero;
     }
 }
 
-void Cpu::cp(uint8_t val) {
+void Cpu::cp(uint8_t val)
+{
     reset_flags();
 
     // set flags
-    m_registers.f |= Flag::kSubstract;
-    if (m_registers.a == val) {
-        m_registers.f |= Flag::kZero;
-    } else if (m_registers.a > val) {
-        m_registers.f |= Flag::kHalfCarry;
-    } else {
-        m_registers.f |= Flag::kCarry;
+    registers_.f |= Flag::Substract;
+    if (registers_.a == val) {
+        registers_.f |= Flag::Zero;
+    }
+    else if (registers_.a > val) {
+        registers_.f |= Flag::HalfCarry;
+    }
+    else {
+        registers_.f |= Flag::Carry;
     }
 }
 

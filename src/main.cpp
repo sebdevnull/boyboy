@@ -13,14 +13,16 @@
 
 using namespace boyboy;
 
-int main(int argc, const char** argv) {
+int main(int argc, const char** argv)
+{
     std::span<const char*> args(argv, static_cast<std::size_t>(argc));
 
     cartridge::Cartridge cart{};
 
     if (args.size() == 2) {
         cart.load(args[1]);
-    } else {
+    }
+    else {
         std::cout << "Usage: " << args[0] << " <path_to_rom>\n";
         return 1;
     }
