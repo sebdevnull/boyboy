@@ -7,15 +7,15 @@ Checks: >
   portability-*,
   readability-*,
   misc-*,
-  -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-pro-type-union-access,
   -modernize-use-trailing-return-type,
-  -readability-magic-numbers,
   -readability-identifier-length,
   -misc-const-correctness,
-  -misc-include-cleaner,
-  -readability-convert-member-functions-to-static,
-  -performance-enum-size
+  -misc-include-cleaner
+# -readability-magic-numbers,
+# -readability-convert-member-functions-to-static,
+# -performance-enum-size
+# -cppcoreguidelines-avoid-magic-numbers,
+# -cppcoreguidelines-pro-type-union-access,
 
 CheckOptions:
   # Readability – naming rules
@@ -29,17 +29,13 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
-  # Constants
+  # Readability – Constants
   - key: readability-identifier-naming.ConstantCase
     value: CamelCase
-  - key: readability-identifier-naming.ConstantPrefix
-    value: k
   - key: readability-identifier-naming.ConstantParameterCase
     value: lower_case
-  - key: readability-identifier-naming.EnumConstantCase
-    value: UPPER_CASE
-  - key: readability-identifier-naming.IgnoreConstFunctionParams
-    value: true
-  # private members
+  # Private members
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: _
   - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value: true
