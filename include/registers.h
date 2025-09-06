@@ -6,62 +6,161 @@
  */
 #pragma once
 
+#include <bit>
 #include <cstdint>
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wgnu-anonymous-struct"
-#pragma clang diagnostic ignored "-Wnested-anon-types"
-#endif
+#include <string>
 
 namespace boyboy::cpu {
 
-// TODO: avoid anonymous structs
+struct Flag {
+    static constexpr uint8_t Zero = 0x80;      // Zero flag (Z)
+    static constexpr uint8_t Substract = 0x40; // Subtraction flag (N) (BCD)
+    static constexpr uint8_t HalfCarry = 0x20; // Half Carry flag (H) (BCD)
+    static constexpr uint8_t Carry = 0x10;     // Carry flag (CY)
+
+    // string conversion for test and debugging
+    static std::string to_string(uint8_t flag)
+    {
+        switch (flag) {
+        case cpu::Flag::Carry:
+            return "Carry";
+        case cpu::Flag::HalfCarry:
+            return "Half Carry";
+        case cpu::Flag::Substract:
+            return "Substract";
+        case cpu::Flag::Zero:
+            return "Zero";
+        default:
+            return "Unknown Flag";
+        }
+    }
+};
+
+class Register16 {
+    static_assert(std::endian::native == std::endian::little,
+                  "This implementation assumes little-endian architecture");
+
+public:
+    constexpr Register16(uint16_t val = 0) : value_(val) {}
+
+    // 16 bit access
+    constexpr operator uint16_t() const { return value_; }
+    constexpr Register16& operator=(uint16_t new_val)
+    {
+        value_ = new_val;
+        return *this;
+    }
+
+    // High byte access (le: upper 8 bits)
+    [[nodiscard]] constexpr uint8_t high() const { return value_ >> 8; }
+    constexpr void high(uint8_t h) { value_ = (value_ & 0x00FF) | (static_cast<uint16_t>(h) << 8); }
+
+    // Low byte access (le: lower 8 bits)
+    [[nodiscard]] constexpr uint8_t low() const { return value_ & 0xFF; }
+    constexpr void low(uint8_t l) { value_ = (value_ & 0xFF00) | l; }
+
+    // Postfix operations
+    constexpr Register16 operator++(int)
+    {
+        Register16 old = *this;
+        ++value_;
+        return old;
+    }
+    constexpr Register16 operator--(int)
+    {
+        Register16 old = *this;
+        --value_;
+        return old;
+    }
+
+    // Prefix operations
+    constexpr Register16& operator++()
+    {
+        ++value_;
+        return *this;
+    }
+    constexpr Register16& operator--()
+    {
+        --value_;
+        return *this;
+    }
+
+protected:
+    [[nodiscard]] constexpr uint16_t get_value() const { return value_; }
+    constexpr void set_value(uint16_t val) { value_ = val; }
+
+private:
+    uint16_t value_;
+};
+
+// Special handling for AF (Accumulator & Flags) register (F uses only upper 4 bits)
+class AFRegister : public Register16 {
+public:
+    constexpr AFRegister(uint16_t val = 0) : Register16(val & 0xFFF0) {}
+
+    constexpr AFRegister& operator=(uint16_t new_val)
+    {
+        set_value(new_val & 0xFFF0);
+        return *this;
+    }
+
+    // Add const version of low() to prevent hiding the base class method
+    using Register16::low;
+
+    // Override the non-const version to mask the lower 4 bits
+    constexpr void low(uint8_t l) { set_value((get_value() & 0xFF00) | (l & 0xF0)); }
+
+    // Flag access methods
+    [[nodiscard]] constexpr bool zero_flag() const { return flag(Flag::Zero); }
+    constexpr void zero_flag(bool set) { flag(Flag::Zero, set); }
+
+    [[nodiscard]] constexpr bool carry_flag() const { return flag(Flag::Carry); }
+    constexpr void carry_flag(bool set) { flag(Flag::Carry, set); }
+
+    [[nodiscard]] constexpr bool substract_flag() const { return flag(Flag::Substract); }
+    constexpr void substract_flag(bool set) { flag(Flag::Substract, set); }
+
+    [[nodiscard]] constexpr bool half_carry_flag() const { return flag(Flag::HalfCarry); }
+    constexpr void half_carry_flag(bool set) { flag(Flag::HalfCarry, set); }
+
+private:
+    // Generic flag access
+    [[nodiscard]] constexpr bool flag(uint8_t flag) const { return (get_value() & flag) != 0; }
+    constexpr void flag(uint8_t flag, bool set)
+    {
+        uint8_t f = low();
+        low(set ? (f | flag) : (f & ~flag));
+    }
+};
+
 struct Registers {
-    union {
-        struct {
-            uint8_t a;
-            uint8_t f;
-        };
-        uint16_t af;
-    };
+    AFRegister af;
+    Register16 bc, de, hl, sp, pc;
 
-    struct {
-        union {
-            struct {
-                uint8_t b;
-                uint8_t c;
-            };
-            uint16_t bc;
-        };
-    };
+    // 8-bit register accessors for convenience
+    [[nodiscard]] uint8_t a() const { return af.high(); }
+    void a(uint8_t val) { af.high(val); }
 
-    struct {
-        union {
-            struct {
-                uint8_t d;
-                uint8_t e;
-            };
-            uint16_t de;
-        };
-    };
+    [[nodiscard]] uint8_t f() const { return af.low(); }
+    void f(uint8_t val) { af.low(val); }
 
-    struct {
-        union {
-            struct {
-                uint8_t h;
-                uint8_t l;
-            };
-            uint16_t hl;
-        };
-    };
+    [[nodiscard]] uint8_t b() const { return bc.high(); }
+    void b(uint8_t val) { bc.high(val); }
 
-    uint16_t sp;
-    uint16_t pc;
+    [[nodiscard]] uint8_t c() const { return bc.low(); }
+    void c(uint8_t val) { bc.low(val); }
+
+    [[nodiscard]] uint8_t d() const { return de.high(); }
+    void d(uint8_t val) { de.high(val); }
+
+    [[nodiscard]] uint8_t e() const { return de.low(); }
+    void e(uint8_t val) { de.low(val); }
+
+    [[nodiscard]] uint8_t h() const { return hl.high(); }
+    void h(uint8_t val) { hl.high(val); }
+
+    [[nodiscard]] uint8_t l() const { return hl.low(); }
+    void l(uint8_t val) { hl.low(val); }
 };
 
 } // namespace boyboy::cpu
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif

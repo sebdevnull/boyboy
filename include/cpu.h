@@ -16,15 +16,6 @@
 
 namespace boyboy::cpu {
 
-namespace Flag {
-
-constexpr uint8_t Zero = 0x80;      // Zero flag (Z)
-constexpr uint8_t Substract = 0x40; // Subtraction flag (N) (BCD)
-constexpr uint8_t HalfCarry = 0x20; // Half Carry flag (H) (BCD)
-constexpr uint8_t Carry = 0x10;     // Carry flag (CY)
-
-} // namespace Flag
-
 class Cpu {
 public:
     explicit Cpu(mmu::Mmu* mmu) : mmu_{mmu}
@@ -41,32 +32,17 @@ private:
     mmu::Mmu* mmu_;
     Registers registers_{};
 
-    // TODO: find other way to do register mapping
-    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members)
-    const std::array<uint8_t* const, 8> Regs = {
-        &registers_.b,
-        &registers_.c,
-        &registers_.d,
-        &registers_.e,
-        &registers_.h,
-        &registers_.l,
-        &registers_.f,
-        &registers_.a,
-    };
-    const std::array<uint16_t* const, 4> Regs16 = {
-        &registers_.bc,
-        &registers_.de,
-        &registers_.hl,
-        &registers_.sp,
-    };
-    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
+    // Dummy functions so that we can compile for now
+    // clang-format off
+    // NOLINTBEGIN
+    uint8_t* dst_reg(uint8_t opcode) { (void)opcode; return nullptr; }
+    uint8_t* src_reg(uint8_t opcode) { (void)opcode; return nullptr; }
+    uint16_t* dst_reg16(uint8_t opcode) { (void)opcode; return nullptr; }
+    uint16_t* src_reg16(uint8_t opcode) { (void)opcode; return nullptr; }
+    // NOLINTEND
+    // clang-format on
 
-    uint8_t* dst_reg(const uint8_t opcode) { return Regs.at(opcode >> 3 & 7); }
-    uint8_t* src_reg(uint8_t opcode) { return Regs.at(opcode & 7); }
-    uint16_t* dst_reg16(uint8_t opcode) { return Regs16.at(opcode >> 4 & 7); }
-    uint16_t* src_reg16(uint8_t opcode) { return Regs16.at(opcode >> 4 & 7); }
-
-    void reset_flags() { registers_.f &= 0; }
+    void reset_flags() { registers_.f(0); }
 
     void add(uint8_t val, bool carry);
     void sub(uint8_t val, bool carry);

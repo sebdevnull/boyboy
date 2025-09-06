@@ -60,33 +60,33 @@ void Cpu::fetch()
     case 0x02: case 0x12: // ld (reg16), a
     {
         uint16_t dst_addr = *dst_reg16(opcode);
-        mmu_->write_byte(dst_addr, registers_.a);
+        mmu_->write_byte(dst_addr, registers_.a());
         break;
     }
     case 0x22: // ld (hli), a
     {
-        mmu_->write_byte(registers_.hl++, registers_.a);
+        mmu_->write_byte(registers_.hl++, registers_.a());
         break;
     }
     case 0x32: // ld (hld), a
     {
-        mmu_->write_byte(registers_.hl--, registers_.a);
+        mmu_->write_byte(registers_.hl--, registers_.a());
         break;
     }
     case 0x0A: case 0x1A: // ld a, (reg16)
     {
         uint16_t src_addr = *src_reg16(opcode);
-        registers_.a = mmu_->read_byte(src_addr);
+        registers_.a(mmu_->read_byte(src_addr));
         break;
     }
     case 0x2A: // ld a, (hli)
     {
-        registers_.a = mmu_->read_byte(registers_.hl++);
+        registers_.a ( mmu_->read_byte(registers_.hl++));
         break;
     }
     case 0x3A: // ld a, (hld)
     {
-        registers_.a = mmu_->read_byte(registers_.hl--);
+        registers_.a ( mmu_->read_byte(registers_.hl--));
         break;
     }
     case 0x36: // ld (hl), d8
@@ -97,23 +97,23 @@ void Cpu::fetch()
     case 0xE0: // ld (0xff00 + a8), a
     {
         uint16_t dst_addr = (uint16_t)0xFF00 + mmu_->read_byte(registers_.pc++);
-        mmu_->write_byte(dst_addr, registers_.a);
+        mmu_->write_byte(dst_addr, registers_.a());
         break;
     }
     case 0xF0: // ld a, (0xff00 + a8)
     {
         uint16_t src_addr = (uint16_t)0xFF00 + mmu_->read_byte(registers_.pc++);
-        registers_.a = mmu_->read_byte(src_addr);
+        registers_.a ( mmu_->read_byte(src_addr));
         break;
     }
     case 0xE2: // ld (c), a
     {
-        mmu_->write_byte(registers_.c, registers_.a);
+        mmu_->write_byte(registers_.c(), registers_.a());
         break;
     }
     case 0xF2: // ld a, (c)
     {
-        registers_.a = mmu_->read_byte(registers_.c);
+        registers_.a ( mmu_->read_byte(registers_.c()));
         break;
     }
     case 0xEA: // ld (a16), a
@@ -122,7 +122,7 @@ void Cpu::fetch()
         ++registers_.pc;
         dst_addr += mmu_->read_byte(registers_.pc);
         ++registers_.pc;
-        mmu_->write_byte(dst_addr, registers_.a);
+        mmu_->write_byte(dst_addr, registers_.a());
         break;
     }
     case 0xFA: // ld a, (a16)
@@ -131,7 +131,7 @@ void Cpu::fetch()
         ++registers_.pc;
         src_addr += mmu_->read_byte(registers_.pc);
         ++registers_.pc;
-        registers_.a = mmu_->read_byte(src_addr);
+        registers_.a ( mmu_->read_byte(src_addr));
         break;
     }
     // 8-bit ALU
@@ -185,9 +185,9 @@ void Cpu::fetch()
 
 void Cpu::add(uint8_t val, bool carry)
 {
-    uint8_t result = registers_.a + val;
+    uint8_t result = registers_.a() + val;
 
-    if (carry && (registers_.f & Flag::Carry) != 0) {
+    if (carry && (registers_.f() & Flag::Carry) != 0) {
         result += 1;
     }
 
@@ -195,77 +195,80 @@ void Cpu::add(uint8_t val, bool carry)
 
     // set flags
     if (result == 0) {
-        registers_.f |= Flag::Zero;
+        registers_.af.zero_flag(true);
     }
-    if (result < registers_.a) {
-        registers_.f |= Flag::Carry;
+    if (result < registers_.a()) {
+        registers_.af.carry_flag(true);
     }
-    if ((registers_.a & 0x0F) > (result & 0x0F)) {
-        registers_.f |= Flag::HalfCarry;
+    if ((registers_.a() & 0x0F) > (result & 0x0F)) {
+        registers_.af.half_carry_flag(true);
     }
 
-    registers_.a = result;
+    registers_.a(result);
 }
 
 void Cpu::sub(uint8_t val, bool carry)
 {
-    uint8_t result = registers_.a - val;
+    uint8_t result = registers_.a() - val;
 
-    if (carry && (registers_.f & Flag::Carry) != 0) {
+    if (carry && (registers_.f() & Flag::Carry) != 0) {
         result -= 1;
     }
 
     reset_flags();
 
     // set flags
-    registers_.f |= Flag::Substract;
+    registers_.af.substract_flag(true);
     if (result == 0) {
-        registers_.f |= Flag::Zero;
+        registers_.af.zero_flag(true);
     }
-    if (result > registers_.a) {
-        registers_.f |= Flag::Carry;
+    if (result > registers_.a()) {
+        registers_.af.carry_flag(true);
     }
-    if ((registers_.a & 0x0F) < (result & 0x0F)) {
-        registers_.f |= Flag::HalfCarry;
+    if ((registers_.a() & 0x0F) < (result & 0x0F)) {
+        registers_.af.half_carry_flag(true);
     }
 
-    registers_.a = result;
+    registers_.a(result);
 }
 
 void Cpu::aand(uint8_t val)
 {
-    registers_.a &= val;
+    auto new_val = registers_.a() & val;
+    registers_.a(new_val);
 
     reset_flags();
 
     // set flags
-    registers_.f |= Flag::HalfCarry;
-    if (registers_.a == 0) {
-        registers_.f |= Flag::Zero;
+    registers_.af.half_carry_flag(true);
+    if (registers_.a() == 0) {
+        registers_.af.zero_flag(true);
     }
 }
 
 void Cpu::xxor(uint8_t val)
 {
-    registers_.a ^= val;
+    auto new_val = registers_.a() ^ val;
+    registers_.a(new_val);
 
     reset_flags();
 
     // set flags
-    if (registers_.a == 0) {
-        registers_.f |= Flag::Zero;
+    if (registers_.a() == 0) {
+        registers_.af.zero_flag(true);
     }
 }
 
 void Cpu::oor(uint8_t val)
 {
-    registers_.a |= val;
+    auto new_val = registers_.a() | val;
+    registers_.a(new_val);
 
     reset_flags();
 
     // set flags
-    if (registers_.a == 0) {
-        registers_.f |= Flag::Zero;
+    if (registers_.a() == 0) {
+        registers_.af.zero_flag(true);
     }
 }
 
@@ -274,15 +277,15 @@ void Cpu::cp(uint8_t val)
     reset_flags();
 
     // set flags
-    registers_.f |= Flag::Substract;
-    if (registers_.a == val) {
-        registers_.f |= Flag::Zero;
+    registers_.af.substract_flag(true);
+    if (registers_.a() == val) {
+        registers_.af.zero_flag(true);
     }
-    else if (registers_.a > val) {
-        registers_.f |= Flag::HalfCarry;
+    else if (registers_.a() > val) {
+        registers_.af.half_carry_flag(true);
     }
     else {
-        registers_.f |= Flag::Carry;
+        registers_.af.carry_flag(true);
     }
 }
 
