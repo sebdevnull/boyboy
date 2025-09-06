@@ -14,7 +14,7 @@
 
 namespace boyboy::cartridge {
 
-enum class CartridgeType {
+enum class CartridgeType : uint8_t {
     ROMOnly = 0x00,
     MBC1 = 0x01,
     MBC1RAM = 0x02,

@@ -11,7 +11,7 @@ namespace boyboy::display {
 
 class Display {
 public:
-    void init();
+    static void init();
 
 private:
     static constexpr int Width = 160;

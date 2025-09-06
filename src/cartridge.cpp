@@ -168,14 +168,14 @@ constexpr std::string_view to_string(CartridgeType type)
 
 void Cartridge::Header::print() const
 {
-    std::cout << "Title: " << this->title << "\n"
-              << "CGB Flag: " << std::to_string(this->cgb_flag) << "\n"
-              << "SGB Flag: " << std::to_string(this->sgb_flag) << "\n"
-              << "Cartridge Type: " << to_string(this->cartridge_type) << "\n"
-              << "ROM Size: " << std::to_string(this->rom_size) << "\n"
-              << "RAM Size: " << std::to_string(this->ram_size) << "\n"
-              << "Header Checksum: " << std::to_string(this->header_checksum) << "\n"
-              << "Global Checksum: " << std::to_string(this->checksum) << "\n";
+    std::cout << "Title: " << title << "\n"
+              << "CGB Flag: " << std::to_string(cgb_flag) << "\n"
+              << "SGB Flag: " << std::to_string(sgb_flag) << "\n"
+              << "Cartridge Type: " << to_string(cartridge_type) << "\n"
+              << "ROM Size: " << std::to_string(rom_size) << "\n"
+              << "RAM Size: " << std::to_string(ram_size) << "\n"
+              << "Header Checksum: " << std::to_string(header_checksum) << "\n"
+              << "Global Checksum: " << std::to_string(checksum) << "\n";
 }
 
 } // namespace boyboy::cartridge

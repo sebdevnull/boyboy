@@ -32,8 +32,7 @@ int main(int argc, const char** argv)
     auto header = cart.get_header();
     header.print();
 
-    display::Display display;
-    display.init();
+    display::Display::init();
 
     return 0;
 }
