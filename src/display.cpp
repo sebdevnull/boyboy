@@ -15,19 +15,23 @@
 
 namespace boyboy::display {
 
+// helper functions
 namespace {
 
-void framebuffer_size_callback([[maybe_unused]] GLFWwindow* window, int width, int height) {
+void framebuffer_size_callback([[maybe_unused]] GLFWwindow* window, int width, int height)
+{
     glViewport(0, 0, width, height);
 }
 
-void process_input(GLFWwindow* window) {
+void process_input(GLFWwindow* window)
+{
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, 1);
     }
 }
 
-bool set_window_center(GLFWwindow* window) {
+bool set_window_center(GLFWwindow* window)
+{
     if (window == nullptr) {
         return false;
     }
@@ -96,10 +100,12 @@ bool set_window_center(GLFWwindow* window) {
 
             if (desktop != nullptr) {
                 glfwSetWindowPos(window, (desktop->width - sx) / 2, (desktop->height - sy) / 2);
-            } else {
+            }
+            else {
                 return false;
             }
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -109,7 +115,8 @@ bool set_window_center(GLFWwindow* window) {
 
 } // namespace
 
-void Display::init() {
+void Display::init()
+{
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -122,7 +129,7 @@ void Display::init() {
                    GL_TRUE); // uncomment this statement to fix compilation on OS X
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(kWidth, kHeight, "BoyBoy", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(Width, Height, "BoyBoy", nullptr, nullptr);
     if (window == nullptr) {
         std::cout << "Failed to create GLFW window" << "\n";
         glfwTerminate();
@@ -139,7 +146,7 @@ void Display::init() {
 
     //    auto vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-    glViewport(0, 0, kWidth, kHeight);
+    glViewport(0, 0, Width, Height);
 
     while (glfwWindowShouldClose(window) == 0) {
         glClearColor(0.2F, 0.3F, 0.3F, 1.0F);

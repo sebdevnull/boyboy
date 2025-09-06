@@ -6,15 +6,11 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/debug/${workspaceFolderBasename}",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "GTK_PATH",
-                    "value": ""
-                }
+            "args": [
+                "${input:romPath}"
             ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
@@ -29,6 +25,14 @@
                     "ignoreFailures": true
                 }
             ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "romPath",
+            "type": "promptString",
+            "description": "Enter ROM path",
+            "default": "roms/dummy.gb"
         }
     ]
 }

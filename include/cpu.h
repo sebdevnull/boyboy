@@ -18,49 +18,55 @@ namespace boyboy::cpu {
 
 namespace Flag {
 
-constexpr uint8_t kZero = 0x80;      // Zero flag (Z)
-constexpr uint8_t kSubstract = 0x40; // Subtraction flag (N) (BCD)
-constexpr uint8_t kHalfCarry = 0x20; // Half Carry flag (H) (BCD)
-constexpr uint8_t kCarry = 0x10;     // Carry flag (CY)
+constexpr uint8_t Zero = 0x80;      // Zero flag (Z)
+constexpr uint8_t Substract = 0x40; // Subtraction flag (N) (BCD)
+constexpr uint8_t HalfCarry = 0x20; // Half Carry flag (H) (BCD)
+constexpr uint8_t Carry = 0x10;     // Carry flag (CY)
 
 } // namespace Flag
 
 class Cpu {
 public:
+    explicit Cpu(mmu::Mmu* mmu) : mmu_{mmu}
+    {
+        registers_.af = 0;
+        registers_.bc = 0;
+        registers_.de = 0;
+        registers_.hl = 0;
+        registers_.sp = 0;
+        registers_.pc = 0;
+    }
 
 private:
-    mmu::Mmu* mmu;
-    Registers m_registers{};
+    mmu::Mmu* mmu_;
+    Registers registers_{};
 
     // TODO: find other way to do register mapping
     // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members)
-    const std::array<uint8_t* const, 8> kRegs = {&m_registers.b,
-                                                 &m_registers.c,
-                                                 &m_registers.d,
-                                                 &m_registers.e,
-                                                 &m_registers.h,
-                                                 &m_registers.l,
-                                                 &m_registers.f,
-                                                 &m_registers.a};
-    const std::array<uint16_t* const, 4> kRegs16 = {
-        &m_registers.bc, &m_registers.de, &m_registers.hl, &m_registers.sp};
+    const std::array<uint8_t* const, 8> Regs = {
+        &registers_.b,
+        &registers_.c,
+        &registers_.d,
+        &registers_.e,
+        &registers_.h,
+        &registers_.l,
+        &registers_.f,
+        &registers_.a,
+    };
+    const std::array<uint16_t* const, 4> Regs16 = {
+        &registers_.bc,
+        &registers_.de,
+        &registers_.hl,
+        &registers_.sp,
+    };
     // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
 
-    explicit Cpu(mmu::Mmu* mmu) : mmu{mmu} {
-        m_registers.af = 0;
-        m_registers.bc = 0;
-        m_registers.de = 0;
-        m_registers.hl = 0;
-        m_registers.sp = 0;
-        m_registers.pc = 0;
-    }
+    uint8_t* dst_reg(const uint8_t opcode) { return Regs.at(opcode >> 3 & 7); }
+    uint8_t* src_reg(uint8_t opcode) { return Regs.at(opcode & 7); }
+    uint16_t* dst_reg16(uint8_t opcode) { return Regs16.at(opcode >> 4 & 7); }
+    uint16_t* src_reg16(uint8_t opcode) { return Regs16.at(opcode >> 4 & 7); }
 
-    uint8_t* dst_reg(const uint8_t opcode) { return kRegs.at(opcode >> 3 & 7); }
-    uint8_t* src_reg(uint8_t opcode) { return kRegs.at(opcode & 7); }
-    uint16_t* dst_reg16(uint8_t opcode) { return kRegs16.at(opcode >> 4 & 7); }
-    uint16_t* src_reg16(uint8_t opcode) { return kRegs16.at(opcode >> 4 & 7); }
-
-    void reset_flags() { m_registers.f &= 0; }
+    void reset_flags() { registers_.f &= 0; }
 
     void add(uint8_t val, bool carry);
     void sub(uint8_t val, bool carry);
@@ -78,7 +84,7 @@ struct Instruction {
     uint8_t cycles;
 };
 
-constexpr std::array<Instruction, 256> kInstructions = {{
+constexpr std::array<Instruction, 256> InstructionTable = {{
     {.disassembly = "NOP", .value_len = 0, .cycles = 0},                 // 0x00
     {.disassembly = "LD BC, d16", .value_len = 2, .cycles = 0},          // 0x01
     {.disassembly = "LD (BC), A", .value_len = 0, .cycles = 0},          // 0x02

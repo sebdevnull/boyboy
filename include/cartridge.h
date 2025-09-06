@@ -14,36 +14,36 @@
 
 namespace boyboy::cartridge {
 
-enum class CartridgeType {
-    ROM_ONLY = 0x00,
+enum class CartridgeType : uint8_t {
+    ROMOnly = 0x00,
     MBC1 = 0x01,
-    MBC1_RAM = 0x02,
-    MBC1_RAM_BATTERY = 0x03,
+    MBC1RAM = 0x02,
+    MBC1RAMBattery = 0x03,
     MBC2 = 0x05,
-    MBC2_BATTERY = 0x06,
-    ROM_RAM = 0x08,
-    ROM_RAM_BATTERY = 0x09,
+    MBC2Battery = 0x06,
+    ROMRAM = 0x08,
+    ROMRAMBattery = 0x09,
     MMM01 = 0x0B,
-    MMM01_RAM = 0x0C,
-    MMM01_RAM_BATTERY = 0x0D,
-    MBC3_TIMER_BATTERY = 0x0F,
-    MBC3_TIMER_RAM_BATTERY = 0x10,
+    MMM01RAM = 0x0C,
+    MMM01RAMBattery = 0x0D,
+    MBC3TimerBattery = 0x0F,
+    MBC3TimerRAMBattery = 0x10,
     MBC3 = 0x11,
-    MBC3_RAM = 0x12,
-    MBC3_RAM_BATTERY = 0x13,
+    MBC3RAM = 0x12,
+    MBC3RAMBattery = 0x13,
     MBC4 = 0X15,
-    MBC4_RAM = 0x16,
-    MBC4_RAM_BATTERY = 0x17,
+    MBC4RAM = 0x16,
+    MBC4RAMBattery = 0x17,
     MBC5 = 0X19,
-    MBC5_RAM = 0x1A,
-    MBC5_RAM_BATTERY = 0x1B,
-    MBC5_RUMBLE = 0x1C,
-    MBC5_RUMBLE_RAM = 0x1D,
-    MBC5_RUMBLE_RAM_BATTERY = 0x1E,
-    POCKET_CAMERA = 0xFC,
-    BANDAI_TAMA5 = 0xFD,
+    MBC5RAM = 0x1A,
+    MBC5RAMBattery = 0x1B,
+    MBC5Rumble = 0x1C,
+    MBC5RumbleRAM = 0x1D,
+    MBC5RumbleRAMBattery = 0x1E,
+    PocketCamera = 0xFC,
+    BandaiTama5 = 0xFD,
     HUC3 = 0xFE,
-    HUC1_RAM_BATTERY = 0xFF
+    HUC1RAMBattery = 0xFF
 };
 
 constexpr std::string_view to_string(CartridgeType type);
@@ -63,16 +63,16 @@ public:
         void print() const;
 
         // Header field constants
-        static constexpr uint16_t kTitlePos = 0x134;
-        static constexpr uint16_t kTitleLen = 16;
-        static constexpr uint16_t kTitleEnd = kTitlePos + kTitleLen;
-        static constexpr uint16_t kCGBFlagPos = 0x143;
-        static constexpr uint16_t kSGBFlagPos = 0x146;
-        static constexpr uint16_t kCartridgeTypePos = 0x147;
-        static constexpr uint16_t kROMSizePos = 0x148;
-        static constexpr uint16_t kRAMSizePos = 0x149;
-        static constexpr uint16_t kHeaderChecksumPos = 0x14D;
-        static constexpr uint16_t kChecksumPos = 0x14E;
+        static constexpr uint16_t TitlePos = 0x134;
+        static constexpr uint16_t TitleLen = 16;
+        static constexpr uint16_t TitleEnd = TitlePos + TitleLen;
+        static constexpr uint16_t CGBFlagPos = 0x143;
+        static constexpr uint16_t SGBFlagPos = 0x146;
+        static constexpr uint16_t CartridgeTypePos = 0x147;
+        static constexpr uint16_t ROMSizePos = 0x148;
+        static constexpr uint16_t RAMSizePos = 0x149;
+        static constexpr uint16_t HeaderChecksumPos = 0x14D;
+        static constexpr uint16_t ChecksumPos = 0x14E;
     };
 
     void load(std::string_view path);
@@ -80,14 +80,14 @@ public:
 
     void parse_header();
 
-    [[nodiscard]] const std::vector<std::byte>& get_rom() const { return rom; }
-    [[nodiscard]] const std::byte* data() const { return rom.data(); }
-    [[nodiscard]] size_t size() const { return rom.size(); }
-    [[nodiscard]] const Header& get_header() const { return header; };
+    [[nodiscard]] const std::vector<std::byte>& get_rom() const { return rom_; }
+    [[nodiscard]] const std::byte* data() const { return rom_.data(); }
+    [[nodiscard]] size_t size() const { return rom_.size(); }
+    [[nodiscard]] const Header& get_header() const { return header_; };
 
 private:
-    Header header{};
-    std::vector<std::byte> rom;
+    Header header_{};
+    std::vector<std::byte> rom_;
 };
 
 } // namespace boyboy::cartridge

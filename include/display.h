@@ -11,11 +11,11 @@ namespace boyboy::display {
 
 class Display {
 public:
-    void init();
+    static void init();
 
 private:
-    static constexpr int kWidth = 160;
-    static constexpr int kHeight = 144;
+    static constexpr int Width = 160;
+    static constexpr int Height = 144;
 };
 
 } // namespace boyboy::display
