@@ -35,13 +35,15 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/cpu.cpp
     src/display.cpp
     src/mmu.cpp
+    src/instructions.cpp
 )
 
 # --- Include directories ---
 target_include_directories(${BOYBOY_LIB} PUBLIC
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}/include)
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src)
 
 # Ensure artifact name is clean
 set_target_properties(${BOYBOY_LIB} PROPERTIES
