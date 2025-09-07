@@ -27,6 +27,7 @@
             "description": "Debug Configuration",
             "cacheVariables": {
                 "CPU_STUBS": "ON",
+                "BOYBOY_DEBUG": "ON",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "ENABLE_SANITIZERS": "ON",
                 "CMAKE_CXX_FLAGS_DEBUG": "-g -O0 -Wall -Wextra -Wpedantic -fsanitize=address,undefined -DDEBUG"

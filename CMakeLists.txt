@@ -10,6 +10,19 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# --- Fetch spdlog ---
+include(FetchContent)
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.15.3
+)
+FetchContent_MakeAvailable(spdlog)
+
+# Disable clang-tidy for spdlog targets
+set_target_properties(spdlog PROPERTIES CXX_CLANG_TIDY "")
+set_target_properties(spdlog_header_only PROPERTIES CXX_CLANG_TIDY "")
+
 # --- System dependencies ---
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
@@ -34,6 +47,11 @@ if(CPU_STUBS)
     add_compile_definitions(CPU_STUBS)
 endif()
 
+option(BOYBOY_DEBUG "Enable debug mode logs" OFF)
+if(BOYBOY_DEBUG)
+    add_compile_definitions(BOYBOY_DEBUG)
+endif()
+
 # --- Library target ---
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE
@@ -52,6 +70,9 @@ target_include_directories(${BOYBOY_LIB} PUBLIC
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/src)
 
+# --- Link spdlog to the library ---
+target_link_libraries(${BOYBOY_LIB} PUBLIC spdlog::spdlog_header_only)
+
 # Ensure artifact name is clean
 set_target_properties(${BOYBOY_LIB} PROPERTIES
     OUTPUT_NAME ${PROJECT_NAME}
@@ -65,17 +86,18 @@ target_compile_options(${BOYBOY_APP} PRIVATE
 )
 
 # --- Link libraries ---
-target_link_libraries(${BOYBOY_APP} PRIVATE ${BOYBOY_LIB}
+target_link_libraries(${BOYBOY_APP} PRIVATE
+    ${BOYBOY_LIB}
     glfw
     ${GLEW_LIBRARIES}
-    ${OPENGL_LIBRARIES})
+    ${OPENGL_LIBRARIES}
+)
 
 # ---- Sanitizer option ----
 option(ENABLE_SANITIZERS "Enable address/UB sanitizers" ON)
 
 if(ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE MATCHES Debug)
     message(STATUS "Sanitizers enabled")
-
     target_compile_options(${BOYBOY_LIB} PRIVATE -fsanitize=address,undefined)
     target_link_options(${BOYBOY_LIB} PRIVATE -fsanitize=address,undefined)
 endif()
