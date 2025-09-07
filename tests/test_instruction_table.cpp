@@ -100,3 +100,24 @@ TEST(InstructionTableTest, OperandFormatting)
             << " should have '-' in mnemonic: " << instr.mnemonic;
     }
 }
+
+TEST(InstructionTableTest, GetInstructionTable)
+{
+    const auto& unprefixed = InstructionTable::get_instruction_table(InstructionType::Unprefixed);
+    EXPECT_EQ(unprefixed.size(), 256);
+
+    const auto& cbprefixed = InstructionTable::get_instruction_table(InstructionType::CBPrefixed);
+    EXPECT_EQ(cbprefixed.size(), 256);
+}
+
+TEST(InstructionTableTest, GetInstruction)
+{
+    const auto& instr = InstructionTable::get_instruction(InstructionType::Unprefixed, 0x00);
+    EXPECT_EQ(instr.mnemonic, "NOP");
+    EXPECT_NE(instr.execute, nullptr);
+
+    const auto& cb_instr = InstructionTable::get_instruction(InstructionType::CBPrefixed, 0x11);
+    EXPECT_NE(cb_instr.mnemonic.find('C'), std::string::npos);
+    EXPECT_NE(cb_instr.mnemonic.find("RL"), std::string::npos);
+    EXPECT_NE(cb_instr.execute, nullptr);
+}
