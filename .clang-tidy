@@ -32,6 +32,8 @@ CheckOptions:
   # Readability – Constants
   - key: readability-identifier-naming.ConstantCase
     value: CamelCase
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: CamelCase
   - key: readability-identifier-naming.ConstantParameterCase
     value: lower_case
   # Private members
