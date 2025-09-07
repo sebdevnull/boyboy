@@ -5,11 +5,13 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+#include <gtest/gtest.h>
+
 #include <set>
 #include <string_view>
 
-#include "gtest/gtest.h"
 #include "instructions.h"
+#include "instructions_table.h"
 
 using namespace boyboy::cpu;
 

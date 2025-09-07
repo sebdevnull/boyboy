@@ -28,6 +28,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(BOYBOY_LIB ${PROJECT_NAME}_lib)
 set(BOYBOY_APP ${PROJECT_NAME})
 
+# --- Options ---
+option(CPU_STUBS "Enable CPU stubs" OFF)
+if(CPU_STUBS)
+    add_compile_definitions(CPU_STUBS)
+endif()
+
 # --- Library target ---
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE
@@ -36,6 +42,7 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/display.cpp
     src/mmu.cpp
     src/instructions.cpp
+    src/instructions_table.cpp
 )
 
 # --- Include directories ---
