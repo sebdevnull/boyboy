@@ -143,12 +143,32 @@ def write_cpu_decls(opcodes, path, description="CPU Function Declarations"):
 
 
 def write_cpu_impls(opcodes, path, description="CPU Function Implementations"):
-    """Write CPU function implementations to a file."""
+    """
+    Generate CPU stub implementations with per-function guards and runtime error.
+    Each stub is wrapped in:
+    #ifndef CPU_FUNC_NAME
+    void Cpu::FUNC_NAME() {
+        throw UnimplementedOpcode(opcode, "MNEMONIC");
+    }
+    #endif
+    """
     with open(path, "w") as f:
         write_file_header(f, description, JSON_FILE.name)
+        f.write('#include "errors.h"\n\n')
+
         for code, info in sorted(opcodes.items(), key=lambda x: int(x[0], 16)):
             func_name = get_func_name(info["mnemonic"], info.get("operands", []))
-            f.write(f"void Cpu::{func_name}() {{}} // Stub\n")
+            macro_name = f"CPU_{func_name.upper()}"
+            mnemonic = get_mnemonic(info["mnemonic"], info.get("operands", []))
+            opcode_int = int(code, 16)
+
+            f.write(f"#ifndef {macro_name}\n")
+            f.write(f"void boyboy::cpu::Cpu::{func_name}() {{\n")
+            f.write(
+                f'    throw boyboy::errors::UnimplementedOpcode(0x{opcode_int:02X}, "{mnemonic}");\n'
+            )
+            f.write("}\n")
+            f.write(f"#endif // {macro_name}\n\n")
 
 
 def check_duplicates(opcodes, prefix):
