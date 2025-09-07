@@ -5,7 +5,7 @@ set(BOYBOY_TESTS "${PROJECT_NAME}_tests")
 include(FetchContent)
 FetchContent_Declare(googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG main
+    GIT_TAG v1.17.0
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
 )
@@ -18,15 +18,20 @@ set_target_properties(gtest_main PROPERTIES CXX_CLANG_TIDY "")
 set_target_properties(gmock PROPERTIES CXX_CLANG_TIDY "")
 set_target_properties(gmock_main PROPERTIES CXX_CLANG_TIDY "")
 
-# --- Collect all test source files ---
-file(GLOB TEST_SOURCES "*.cpp")
+# ---- Test sources ----
+set(TEST_SOURCES
+    test_main.cpp
+    test_registers.cpp
+    test_instruction_table.cpp
+    test_instructions.cpp
+)
 
 # --- Create test executable ---
 add_executable(${BOYBOY_TESTS} ${TEST_SOURCES})
 target_link_libraries(${BOYBOY_TESTS}
     PRIVATE
     ${BOYBOY_LIB}
-    gtest_main
+    gtest
 )
 
 # Output directories for tests
@@ -44,6 +49,12 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_options(${BOYBOY_TESTS} PRIVATE -fsanitize=address,undefined)
     target_link_options(${BOYBOY_TESTS} PRIVATE -fsanitize=address,undefined)
 endif()
+
+# --- Register the test with CTest ---
+add_test(NAME BoyBoyTests COMMAND ${BOYBOY_TESTS})
+
+# --- Set working directory for relative paths ---
+set_tests_properties(BoyBoyTests PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # --- Enable testing with CTest ---
 enable_testing()
