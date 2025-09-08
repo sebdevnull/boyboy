@@ -1,6 +1,6 @@
 /**
- * @file test_instructions.cpp
- * @brief Unit tests for CPU instructions.
+ * @file test_instruction_stubs.cpp
+ * @brief Unit tests for CPU instructions stubs.
  *
  * @license GPLv3 (see LICENSE file)
  */
