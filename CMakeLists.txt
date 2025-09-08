@@ -5,6 +5,13 @@ project(boyboy
     DESCRIPTION "BoyBoy: A Game Boy emulator written in C++"
     LANGUAGES CXX)
 
+# --- Enable clang-tidy optionally ---
+option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
+if(ENABLE_CLANG_TIDY)
+    message(NOTICE "[INFO] clang-tidy enabled")
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy-19;-p=${CMAKE_BINARY_DIR}")
+endif()
+
 # --- Set standard ---
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,7 +42,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin/release)
 
 # --- Output directories for libraries ---
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/lib/debug)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib/release)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/lib/debug)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/lib/release)
 
 # ---- Targets ----
 set(BOYBOY_LIB ${PROJECT_NAME}_lib)
@@ -44,31 +55,36 @@ set(BOYBOY_APP ${PROJECT_NAME})
 # --- Options ---
 option(CPU_STUBS "Enable CPU stubs" OFF)
 if(CPU_STUBS)
+    message(NOTICE "[INFO] CPU stubs enabled")
     add_compile_definitions(CPU_STUBS)
 endif()
 
 option(BOYBOY_DEBUG "Enable debug mode logs" OFF)
 if(BOYBOY_DEBUG)
+    message(NOTICE "[INFO] Debugging logs enabled")
     add_compile_definitions(BOYBOY_DEBUG)
 endif()
 
 # --- Library target ---
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE
-    src/cartridge.cpp
-    src/cpu.cpp
-    src/display.cpp
-    src/mmu.cpp
-    src/instructions.cpp
-    src/instructions_table.cpp
+    src/boyboy/cpu/cpu.cpp
+    src/boyboy/cpu/instructions.cpp
+    src/boyboy/cpu/instructions_table.cpp
+    src/boyboy/cartridge.cpp
+    src/boyboy/display.cpp
+    src/boyboy/mmu.cpp
 )
 
 # --- Include directories ---
-target_include_directories(${BOYBOY_LIB} PUBLIC
+target_include_directories(${BOYBOY_LIB}
+    PUBLIC
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src)
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/boyboy
+)
 
 # --- Link spdlog to the library ---
 target_link_libraries(${BOYBOY_LIB} PUBLIC spdlog::spdlog_header_only)
@@ -80,7 +96,7 @@ set_target_properties(${BOYBOY_LIB} PROPERTIES
 )
 
 # --- Executable ---
-add_executable(${BOYBOY_APP} src/main.cpp)
+add_executable(${BOYBOY_APP} src/app/main.cpp)
 target_compile_options(${BOYBOY_APP} PRIVATE
     -Wall -Wextra -Wpedantic
 )
@@ -95,7 +111,6 @@ target_link_libraries(${BOYBOY_APP} PRIVATE
 
 # ---- Sanitizer option ----
 option(ENABLE_SANITIZERS "Enable address/UB sanitizers" ON)
-
 if(ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE MATCHES Debug)
     message(STATUS "Sanitizers enabled")
     target_compile_options(${BOYBOY_LIB} PRIVATE -fsanitize=address,undefined)
@@ -106,6 +121,7 @@ endif()
 enable_testing()
 include(CTest)
 if(BUILD_TESTING)
+    message(NOTICE "[INFO] Tests enabled")
     set(INSTALL_GTEST OFF CACHE BOOL "Disable gtest install" FORCE)
     add_subdirectory(tests)
 endif()

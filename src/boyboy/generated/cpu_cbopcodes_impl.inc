@@ -1,10 +1,10 @@
 // ============================================================
 // CPU stub implementations (CB-prefixed)
 // AUTO-GENERATED FILE — DO NOT EDIT MANUALLY
-// Generated from Opcodes.json on 2025-09-07 10:00:59 UTC
+// Generated from Opcodes.json on 2025-09-08 17:36:58 UTC
 // ============================================================
 
-#include "errors.h"
+#include "boyboy/common/errors.h"
 
 #ifndef CPU_RLC_B
 void boyboy::cpu::Cpu::rlc_b() {

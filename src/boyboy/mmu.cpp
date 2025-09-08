@@ -5,7 +5,7 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "mmu.h"
+#include "boyboy/mmu.h"
 
 #include <cstdint>
 #include <span>

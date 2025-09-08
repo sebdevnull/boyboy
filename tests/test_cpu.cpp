@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "cpu.h"
+#include "boyboy/cpu/cpu.h"
 
 using namespace boyboy::cpu;
 

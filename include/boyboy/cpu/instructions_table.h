@@ -9,8 +9,8 @@
 
 #include <array>
 
-#include "cpu.h"
-#include "instructions.h"
+#include "boyboy/cpu/cpu.h"
+#include "boyboy/cpu/instructions.h"
 
 namespace boyboy::cpu {
 

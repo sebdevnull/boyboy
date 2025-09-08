@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "logging.h"
+#include "boyboy/log/logging.h"
 
 int main(int argc, char** argv)
 {
