@@ -33,8 +33,8 @@ namespace boyboy::mmu {
 
 class Mmu {
 public:
-    uint8_t read_byte(uint16_t address);
-    uint16_t read_word(uint16_t address);
+    [[nodiscard]] uint8_t read_byte(uint16_t address) const;
+    [[nodiscard]] uint16_t read_word(uint16_t address) const;
     void write_byte(uint16_t address, uint8_t value);
     void write_word(uint16_t address, uint16_t value);
     void copy(uint16_t dst_address, std::span<uint8_t> src);
@@ -126,7 +126,7 @@ private:
         // clang-format on
     };
 
-    uint8_t* get_pointer(uint16_t address);
+    [[nodiscard]] uint8_t* get_pointer(uint16_t address) const;
 };
 
 } // namespace boyboy::mmu
