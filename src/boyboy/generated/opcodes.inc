@@ -1,7 +1,7 @@
 // ============================================================
 // Opcode table for InstructionsTable (unprefixed)
 // AUTO-GENERATED FILE — DO NOT EDIT MANUALLY
-// Generated from Opcodes.json on 2025-09-07 00:34:22 UTC
+// Generated from Opcodes.json on 2025-09-08 17:36:58 UTC
 // ============================================================
 
 table[0x00] = {.mnemonic = "NOP",            .length = 1, .cycles = 4,  .execute = &Cpu::nop};
