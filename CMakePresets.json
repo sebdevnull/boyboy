@@ -38,6 +38,7 @@
             "inherits": "default",
             "description": "Release Configuration",
             "cacheVariables": {
+                "CPU_STUBS": "ON",
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG"
             }
@@ -47,7 +48,7 @@
         {
             "name": "default",
             "configurePreset": "default",
-            "jobs": 12
+            "jobs": 8
         },
         {
             "name": "debug",
