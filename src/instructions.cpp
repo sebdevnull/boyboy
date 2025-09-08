@@ -8,14 +8,58 @@
 #include "instructions.h"
 
 #include "cpu.h"
+#include "utils.h"
 
 namespace boyboy::cpu {
 
-#define CPU_NOP
+// Generic CPU instruction implementations (unprefixed)
+void Cpu::ld_r16_n16(Register16Name r16)
+{
+    uint8_t lsb = fetch();
+    uint8_t msb = fetch();
+    uint16_t n16 = utils::to_u16(msb, lsb);
+    set_register(r16, n16);
+}
+
+void Cpu::ld_at_r16_a(Register16Name r16)
+{
+    uint16_t addr = get_register(r16);
+    mmu_.write_byte(addr, registers_.a());
+}
+
+void Cpu::ld_a_at_r16(Register16Name r16)
+{
+    uint16_t addr = get_register(r16);
+    registers_.a(mmu_.read_byte(addr));
+}
+
+// void Cpu::inc_r16(Register16Name r16) {}
+// void Cpu::dec_r16(Register16Name r16) {}
+// void Cpu::add_hl_r16(Register16Name r16) {}
+// void Cpu::inc_r8(Register8Name r8) {}
+// void Cpu::dec_r8(Register8Name r8) {}
+// void Cpu::ld_r8_n8(Register8Name r8) {}
+// void Cpu::ld_r8_r8(Register8Name dest, Register8Name src) {}
+// void Cpu::add_a_r8(Register8Name r8) {}
+// void Cpu::adc_a_r8(Register8Name r8) {}
+// void Cpu::sub_a_r8(Register8Name r8) {}
+// void Cpu::sbc_a_r8(Register8Name r8) {}
+// void Cpu::and_a_r8(Register8Name r8) {}
+// void Cpu::xor_a_r8(Register8Name r8) {}
+// void Cpu::or_a_r8(Register8Name r8) {}
+// void Cpu::cp_a_r8(Register8Name r8) {}
+// void Cpu::pop_r16(Register16Name r16) {}
+// void Cpu::push_r16(Register16Name r16) {}
+
+// Generic CPU instruction implementations (CB-prefixed)
+
+// Individual CPU instruction implementations (unprefixed)
 void Cpu::nop()
 {
     (void)*this;
 }
+
+// Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu
 
