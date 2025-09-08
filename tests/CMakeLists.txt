@@ -24,6 +24,7 @@ set(TEST_SOURCES
     test_registers.cpp
     test_instruction_table.cpp
     test_instructions.cpp
+    test_cpu.cpp
 )
 
 # --- Create test executable ---
