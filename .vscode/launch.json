@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Debug boyboy",
+            "name": "Debug boyboy",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/debug/${workspaceFolderBasename}",
@@ -25,6 +25,16 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "Debug BoyBoy Tests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/tests/debug/boyboy_tests",
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb",
+            "externalConsole": false,
+            "args": []
         }
     ],
     "inputs": [

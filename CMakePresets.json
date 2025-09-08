@@ -26,7 +26,10 @@
             "inherits": "default",
             "description": "Debug Configuration",
             "cacheVariables": {
+                "CPU_STUBS": "ON",
+                "BOYBOY_DEBUG": "ON",
                 "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_SANITIZERS": "ON",
                 "CMAKE_CXX_FLAGS_DEBUG": "-g -O0 -Wall -Wextra -Wpedantic -fsanitize=address,undefined -DDEBUG"
             }
         },
@@ -35,6 +38,7 @@
             "inherits": "default",
             "description": "Release Configuration",
             "cacheVariables": {
+                "CPU_STUBS": "ON",
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG"
             }
@@ -44,7 +48,7 @@
         {
             "name": "default",
             "configurePreset": "default",
-            "jobs": 12
+            "jobs": 8
         },
         {
             "name": "debug",
