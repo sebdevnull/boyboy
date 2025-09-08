@@ -10,8 +10,10 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 JSON_FILE = Path(__file__).parent.parent / "data/Opcodes.json"
-OUTPUT_DIR = Path(__file__).parent.parent / "src/generated"
-OUTPUT_DIR.mkdir(exist_ok=True)
+PRIVATE_OUTPUT_DIR = Path(__file__).parent.parent / "src/boyboy/generated"
+PUBLIC_OUTPUT_DIR = Path(__file__).parent.parent / "include/boyboy/generated"
+PRIVATE_OUTPUT_DIR.mkdir(exist_ok=True)
+PUBLIC_OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 def get_cycles(cycle_list):
@@ -154,7 +156,7 @@ def write_cpu_impls(opcodes, path, description="CPU Function Implementations"):
     """
     with open(path, "w") as f:
         write_file_header(f, description, JSON_FILE.name)
-        f.write('#include "errors.h"\n\n')
+        f.write('#include "boyboy/common/errors.h"\n\n')
 
         for code, info in sorted(opcodes.items(), key=lambda x: int(x[0], 16)):
             func_name = get_func_name(info["mnemonic"], info.get("operands", []))
@@ -204,36 +206,36 @@ def main():
     # Tables
     write_table(
         data["unprefixed"],
-        OUTPUT_DIR / "opcodes.inc",
+        PRIVATE_OUTPUT_DIR / "opcodes.inc",
         "Opcode table for InstructionsTable (unprefixed)",
     )
     write_table(
         data["cbprefixed"],
-        OUTPUT_DIR / "cbopcodes.inc",
+        PRIVATE_OUTPUT_DIR / "cbopcodes.inc",
         "Opcode table for InstructionsTable (CB-prefixed)",
     )
 
     # CPU declarations
     write_cpu_decls(
         data["unprefixed"],
-        OUTPUT_DIR / "cpu_opcodes.inc",
+        PUBLIC_OUTPUT_DIR / "cpu_opcodes.inc",
         "CPU function declarations (unprefixed)",
     )
     write_cpu_decls(
         data["cbprefixed"],
-        OUTPUT_DIR / "cpu_cbopcodes.inc",
+        PUBLIC_OUTPUT_DIR / "cpu_cbopcodes.inc",
         "CPU function declarations (CB-prefixed)",
     )
 
     # CPU stub implementations
     write_cpu_impls(
         data["unprefixed"],
-        OUTPUT_DIR / "cpu_opcodes_impl.inc",
+        PRIVATE_OUTPUT_DIR / "cpu_opcodes_impl.inc",
         "CPU stub implementations (unprefixed)",
     )
     write_cpu_impls(
         data["cbprefixed"],
-        OUTPUT_DIR / "cpu_cbopcodes_impl.inc",
+        PRIVATE_OUTPUT_DIR / "cpu_cbopcodes_impl.inc",
         "CPU stub implementations (CB-prefixed)",
     )
 
