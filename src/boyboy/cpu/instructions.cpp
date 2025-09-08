@@ -5,10 +5,10 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "instructions.h"
+#include "boyboy/cpu/instructions.h"
 
-#include "cpu.h"
-#include "utils.h"
+#include "boyboy/common/utils.h"
+#include "boyboy/cpu/cpu.h"
 
 namespace boyboy::cpu {
 

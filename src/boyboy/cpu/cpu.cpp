@@ -5,12 +5,12 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "cpu.h"
+#include "boyboy/cpu/cpu.h"
 
 #include <cstdint>
 
-#include "instructions.h"
-#include "instructions_table.h"
+#include "boyboy/cpu/instructions.h"
+#include "boyboy/cpu/instructions_table.h"
 
 namespace boyboy::cpu {
 

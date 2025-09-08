@@ -8,8 +8,8 @@
 #include <iostream>
 #include <span>
 
-#include "cartridge.h"
-#include "display.h"
+#include "boyboy/cartridge.h"
+#include "boyboy/display.h"
 
 using namespace boyboy;
 

@@ -9,9 +9,9 @@
 
 #include <format>
 
-#include "./cpu_stubs.h"
-#include "cpu.h"
-#include "errors.h"
+#include "boyboy/common/errors.h"
+#include "boyboy/cpu/cpu.h"
+#include "cpu_stubs.h"
 
 using namespace boyboy::cpu;
 using namespace boyboy::errors;

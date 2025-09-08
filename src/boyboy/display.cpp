@@ -5,7 +5,7 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "display.h"
+#include "boyboy/display.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

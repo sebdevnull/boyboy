@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "registers.h"
+#include "boyboy/cpu/registers.h"
 
 using namespace boyboy::cpu;
 

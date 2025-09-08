@@ -5,7 +5,7 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "instructions_table.h"
+#include "boyboy/cpu/instructions_table.h"
 
 namespace boyboy::cpu {
 

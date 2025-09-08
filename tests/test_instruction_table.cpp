@@ -10,8 +10,8 @@
 #include <set>
 #include <string_view>
 
-#include "instructions.h"
-#include "instructions_table.h"
+#include "boyboy/cpu/instructions.h"
+#include "boyboy/cpu/instructions_table.h"
 
 using namespace boyboy::cpu;
 

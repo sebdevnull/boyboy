@@ -5,7 +5,7 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "cartridge.h"
+#include "boyboy/cartridge.h"
 
 #include <cstdint>
 #include <filesystem>
