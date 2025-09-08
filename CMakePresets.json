@@ -17,8 +17,8 @@
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
                 "BUILD_TESTING": "ON",
-                "CMAKE_COLOR_DIAGNOSTICS": "ON",
-                "CMAKE_CXX_CLANG_TIDY": "clang-tidy-19;-p=${sourceDir}/build/${presetName}"
+                "ENABLE_CLANG_TIDY": "OFF",
+                "CMAKE_COLOR_DIAGNOSTICS": "ON"
             }
         },
         {
@@ -42,13 +42,30 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG"
             }
+        },
+        {
+            "name": "debug-no-tests",
+            "inherits": "debug",
+            "description": "Debug configuration without tests",
+            "cacheVariables": {
+                "BUILD_TESTING": "OFF"
+            }
+        },
+        {
+            "name": "debug-tidy",
+            "inherits": "debug",
+            "description": "Debug build with clang-tidy enabled",
+            "cacheVariables": {
+                "ENABLE_CLANG_TIDY": "ON",
+                "BUILD_TESTING": "OFF"
+            }
         }
     ],
     "buildPresets": [
         {
             "name": "default",
             "configurePreset": "default",
-            "jobs": 8
+            "jobs": 0
         },
         {
             "name": "debug",
@@ -58,6 +75,16 @@
         {
             "name": "release",
             "configurePreset": "release",
+            "inherits": "default"
+        },
+        {
+            "name": "debug-no-tests",
+            "configurePreset": "debug-no-tests",
+            "inherits": "default"
+        },
+        {
+            "name": "debug-tidy",
+            "configurePreset": "debug-tidy",
             "inherits": "default"
         }
     ],
@@ -109,6 +136,33 @@
                 {
                     "type": "test",
                     "name": "release"
+                }
+            ]
+        },
+        {
+            "name": "debug-no-tests",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "debug-no-tests"
+                },
+                {
+                    "type": "build",
+                    "name": "debug-no-tests"
+                }
+            ]
+        },
+        {
+            "name": "tidy",
+            "description": "Configure and build with clang-tidy",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "debug-tidy"
+                },
+                {
+                    "type": "build",
+                    "name": "debug-tidy"
                 }
             ]
         }
