@@ -36,6 +36,9 @@ struct Flag {
     }
 };
 
+enum class Register8Name : uint8_t { A, F, B, C, D, E, H, L };
+enum class Register16Name : uint8_t { AF, BC, DE, HL, SP, PC };
+
 class Register16 {
     static_assert(std::endian::native == std::endian::little,
                   "This implementation assumes little-endian architecture");
@@ -111,22 +114,22 @@ public:
     constexpr void low(uint8_t l) { set_value((get_value() & 0xFF00) | (l & 0xF0)); }
 
     // Flag access methods
-    [[nodiscard]] constexpr bool zero_flag() const { return flag(Flag::Zero); }
-    constexpr void zero_flag(bool set) { flag(Flag::Zero, set); }
+    [[nodiscard]] constexpr bool zero_flag() const { return get_flag(Flag::Zero); }
+    constexpr void zero_flag(bool set) { set_flag(Flag::Zero, set); }
 
-    [[nodiscard]] constexpr bool carry_flag() const { return flag(Flag::Carry); }
-    constexpr void carry_flag(bool set) { flag(Flag::Carry, set); }
+    [[nodiscard]] constexpr bool carry_flag() const { return get_flag(Flag::Carry); }
+    constexpr void carry_flag(bool set) { set_flag(Flag::Carry, set); }
 
-    [[nodiscard]] constexpr bool substract_flag() const { return flag(Flag::Substract); }
-    constexpr void substract_flag(bool set) { flag(Flag::Substract, set); }
+    [[nodiscard]] constexpr bool substract_flag() const { return get_flag(Flag::Substract); }
+    constexpr void substract_flag(bool set) { set_flag(Flag::Substract, set); }
 
-    [[nodiscard]] constexpr bool half_carry_flag() const { return flag(Flag::HalfCarry); }
-    constexpr void half_carry_flag(bool set) { flag(Flag::HalfCarry, set); }
+    [[nodiscard]] constexpr bool half_carry_flag() const { return get_flag(Flag::HalfCarry); }
+    constexpr void half_carry_flag(bool set) { set_flag(Flag::HalfCarry, set); }
 
-private:
+// private:
     // Generic flag access
-    [[nodiscard]] constexpr bool flag(uint8_t flag) const { return (get_value() & flag) != 0; }
-    constexpr void flag(uint8_t flag, bool set)
+    [[nodiscard]] constexpr bool get_flag(uint8_t flag) const { return (get_value() & flag) != 0; }
+    constexpr void set_flag(uint8_t flag, bool set)
     {
         uint8_t f = low();
         low(set ? (f | flag) : (f & ~flag));
