@@ -22,10 +22,22 @@ set_target_properties(gmock_main PROPERTIES CXX_CLANG_TIDY "")
 set(TEST_SOURCES
     test_main.cpp
     test_registers.cpp
-    test_instruction_table.cpp
-    test_instructions.cpp
     test_cpu.cpp
+    test_mmu.cpp
+    instructions/test_instruction_table.cpp
+    instructions/test_instruction_stubs.cpp
+    instructions/test_instructions_8bit.cpp
+    instructions/test_misc.cpp
+    instructions/test_inc_dec.cpp
+    instructions/test_add_sub.cpp
 )
+
+# --- Options ---
+option(TEST_CPU_STUBS "Enable CPU stubs testing" OFF)
+if(TEST_CPU_STUBS)
+    message(NOTICE "[INFO] CPU stubs testing enabled")
+    add_compile_definitions(TEST_CPU_STUBS)
+endif()
 
 # --- Create test executable ---
 add_executable(${BOYBOY_TESTS} ${TEST_SOURCES})
@@ -33,6 +45,11 @@ target_link_libraries(${BOYBOY_TESTS}
     PRIVATE
     ${BOYBOY_LIB}
     gtest
+)
+
+target_include_directories(${BOYBOY_TESTS}
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/tests
 )
 
 # Output directories for tests

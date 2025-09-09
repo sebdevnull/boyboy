@@ -27,6 +27,7 @@
             "description": "Debug Configuration",
             "cacheVariables": {
                 "CPU_STUBS": "ON",
+                "TEST_CPU_STUBS": "ON",
                 "BOYBOY_DEBUG": "ON",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "ENABLE_SANITIZERS": "ON",
