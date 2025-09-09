@@ -33,6 +33,21 @@ namespace boyboy::mmu {
 
 class Mmu {
 public:
+    Mmu() { reset(); }
+
+    // Reset MMU state
+    void reset()
+    {
+        cart_.fill(0);
+        vram_.fill(0);
+        eram_.fill(0);
+        wram_.fill(0);
+        oam_.fill(0);
+        ior_.fill(0);
+        hram_.fill(0);
+        ier_ = 0;
+    }
+
     [[nodiscard]] uint8_t read_byte(uint16_t address) const;
     [[nodiscard]] uint16_t read_word(uint16_t address) const;
     void write_byte(uint16_t address, uint8_t value);
