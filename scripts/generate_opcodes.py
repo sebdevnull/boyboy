@@ -196,6 +196,28 @@ def check_duplicates(opcodes, prefix):
         print(f"[INFO] No duplicates found in {prefix} opcodes")
 
 
+# generate enum class Opcode and enum class CBOpcode
+def write_opcode_enums(opcodes, path, cbprefix=False):
+    """Generate enum class for opcodes."""
+    with open(path, "w") as f:
+        enum_name = "CBOpcode" if cbprefix else "Opcode"
+        write_file_header(f, "Opcode Enums", JSON_FILE.name)
+        f.write("#include <cstdint>\n\n")
+        f.write("namespace boyboy::cpu {\n\n")
+        f.write("// NOLINTBEGIN(readability-identifier-naming)\n\n")
+        f.write(f"enum class {enum_name} : uint8_t {{\n")
+        for code_str, info in sorted(opcodes.items(), key=lambda x: int(x[0], 16)):
+            code = int(code_str, 16)
+            mnemonic = get_mnemonic(info["mnemonic"], info.get("operands", []))
+            func_name = get_func_name(
+                info["mnemonic"], info.get("operands", [])
+            ).upper()
+            f.write(f"    {func_name} = 0x{code:02X}, // {mnemonic}\n")
+        f.write("};\n\n")
+        f.write("// NOLINTEND(readability-identifier-naming)\n\n")
+        f.write("} // namespace boyboy::cpu\n")
+
+
 def main():
     with open(JSON_FILE) as f:
         data = json.load(f)
@@ -238,6 +260,19 @@ def main():
         PRIVATE_OUTPUT_DIR / "cpu_cbopcodes_impl.inc",
         "CPU stub implementations (CB-prefixed)",
     )
+
+    # Opcode enums
+    # write_opcode_enums(
+    #     data["unprefixed"],
+    #     PUBLIC_OUTPUT_DIR / "opcode_enum.h",
+    #     cbprefix=False,
+    # )
+
+    # write_opcode_enums(
+    #     data["cbprefixed"],
+    #     PUBLIC_OUTPUT_DIR / "cbopcode_enum.h",
+    #     cbprefix=True,
+    # )
 
 
 if __name__ == "__main__":
