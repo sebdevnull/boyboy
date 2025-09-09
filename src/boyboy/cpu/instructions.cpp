@@ -7,13 +7,16 @@
 
 #include "boyboy/cpu/instructions.h"
 
+#include <cstdint>
+
 #include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu.h"
+#include "boyboy/cpu/registers.h"
 
 namespace boyboy::cpu {
 
 // Generic CPU instruction implementations (unprefixed)
-void Cpu::ld_r16_n16(Register16Name r16)
+void Cpu::ld_r16_n16(Reg16Name r16)
 {
     uint8_t lsb = fetch();
     uint8_t msb = fetch();
@@ -21,35 +24,62 @@ void Cpu::ld_r16_n16(Register16Name r16)
     set_register(r16, n16);
 }
 
-void Cpu::ld_at_r16_a(Register16Name r16)
+void Cpu::ld_at_r16_a(Reg16Name r16)
 {
     uint16_t addr = get_register(r16);
-    mmu_.write_byte(addr, registers_.a());
+    write_byte(addr, registers_.a());
 }
 
-void Cpu::ld_a_at_r16(Register16Name r16)
+void Cpu::ld_a_at_r16(Reg16Name r16)
 {
     uint16_t addr = get_register(r16);
-    registers_.a(mmu_.read_byte(addr));
+    registers_.a(read_byte(addr));
 }
 
-// void Cpu::inc_r16(Register16Name r16) {}
-// void Cpu::dec_r16(Register16Name r16) {}
-// void Cpu::add_hl_r16(Register16Name r16) {}
-// void Cpu::inc_r8(Register8Name r8) {}
-// void Cpu::dec_r8(Register8Name r8) {}
-// void Cpu::ld_r8_n8(Register8Name r8) {}
-// void Cpu::ld_r8_r8(Register8Name dest, Register8Name src) {}
-// void Cpu::add_a_r8(Register8Name r8) {}
-// void Cpu::adc_a_r8(Register8Name r8) {}
-// void Cpu::sub_a_r8(Register8Name r8) {}
-// void Cpu::sbc_a_r8(Register8Name r8) {}
-// void Cpu::and_a_r8(Register8Name r8) {}
-// void Cpu::xor_a_r8(Register8Name r8) {}
-// void Cpu::or_a_r8(Register8Name r8) {}
-// void Cpu::cp_a_r8(Register8Name r8) {}
-// void Cpu::pop_r16(Register16Name r16) {}
-// void Cpu::push_r16(Register16Name r16) {}
+// void Cpu::inc_r16(Reg16Name r16) {}
+// void Cpu::dec_r16(Reg16Name r16) {}
+// void Cpu::add_hl_r16(Reg16Name r16) {}
+
+void Cpu::inc_r8(Reg8Name r8)
+{
+    uint8_t res = get_register(r8) + 1;
+    set_register(r8, res);
+    set_flag(Flag::Zero, res == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, (res & 0x0F) == 0x00);
+}
+
+void Cpu::dec_r8(Reg8Name r8)
+{
+    uint8_t res = get_register(r8) - 1;
+    set_register(r8, res);
+    set_flag(Flag::Zero, res == 0);
+    set_flag(Flag::Substract, true);
+    set_flag(Flag::HalfCarry, (res & 0x0F) == 0x0F);
+}
+
+// void Cpu::ld_r8_n8(Reg8Name r8) {}
+// void Cpu::ld_r8_r8(Reg8Name dest, Reg8Name src) {}
+
+void Cpu::add_a_r8(Reg8Name r8)
+{
+    add(get_register(r8), false);
+}
+
+// void Cpu::adc_a_r8(Reg8Name r8) {}
+
+void Cpu::sub_a_r8(Reg8Name r8)
+{
+    sub(get_register(r8), false);
+}
+
+// void Cpu::sbc_a_r8(Reg8Name r8) {}
+// void Cpu::and_a_r8(Reg8Name r8) {}
+// void Cpu::xor_a_r8(Reg8Name r8) {}
+// void Cpu::or_a_r8(Reg8Name r8) {}
+// void Cpu::cp_a_r8(Reg8Name r8) {}
+// void Cpu::pop_r16(Reg16Name r16) {}
+// void Cpu::push_r16(Reg16Name r16) {}
 
 // Generic CPU instruction implementations (CB-prefixed)
 
@@ -57,6 +87,126 @@ void Cpu::ld_a_at_r16(Register16Name r16)
 void Cpu::nop()
 {
     (void)*this;
+}
+
+// INC r8
+void Cpu::inc_a()
+{
+    inc_r8(Reg8Name::A);
+}
+void Cpu::inc_b()
+{
+    inc_r8(Reg8Name::B);
+}
+void Cpu::inc_c()
+{
+    inc_r8(Reg8Name::C);
+}
+void Cpu::inc_d()
+{
+    inc_r8(Reg8Name::D);
+}
+void Cpu::inc_e()
+{
+    inc_r8(Reg8Name::E);
+}
+void Cpu::inc_h()
+{
+    inc_r8(Reg8Name::H);
+}
+void Cpu::inc_l()
+{
+    inc_r8(Reg8Name::L);
+}
+
+// DEC r8
+void Cpu::dec_a()
+{
+    dec_r8(Reg8Name::A);
+}
+void Cpu::dec_b()
+{
+    dec_r8(Reg8Name::B);
+}
+void Cpu::dec_c()
+{
+    dec_r8(Reg8Name::C);
+}
+void Cpu::dec_d()
+{
+    dec_r8(Reg8Name::D);
+}
+void Cpu::dec_e()
+{
+    dec_r8(Reg8Name::E);
+}
+void Cpu::dec_h()
+{
+    dec_r8(Reg8Name::H);
+}
+void Cpu::dec_l()
+{
+    dec_r8(Reg8Name::L);
+}
+
+// ADD A, r8
+void Cpu::add_a_a()
+{
+    add_a_r8(Reg8Name::A);
+}
+void Cpu::add_a_b()
+{
+    add_a_r8(Reg8Name::B);
+}
+void Cpu::add_a_c()
+{
+    add_a_r8(Reg8Name::C);
+}
+void Cpu::add_a_d()
+{
+    add_a_r8(Reg8Name::D);
+}
+void Cpu::add_a_e()
+{
+    add_a_r8(Reg8Name::E);
+}
+void Cpu::add_a_h()
+{
+    add_a_r8(Reg8Name::H);
+}
+void Cpu::add_a_l()
+{
+    add_a_r8(Reg8Name::L);
+}
+
+// SUB A, r8
+void Cpu::sub_a_a()
+{
+    sub_a_r8(Reg8Name::A);
+}
+void Cpu::sub_a_b()
+{
+    sub_a_r8(Reg8Name::B);
+}
+void Cpu::sub_a_c()
+{
+    sub_a_r8(Reg8Name::C);
+}
+void Cpu::sub_a_d()
+{
+    sub_a_r8(Reg8Name::D);
+}
+void Cpu::sub_a_e()
+{
+    sub_a_r8(Reg8Name::E);
+}
+void Cpu::sub_a_h()
+{
+    sub_a_r8(Reg8Name::H);
+}
+void Cpu::sub_a_l()
+{
+    sub_a_r8(Reg8Name::L);
 }
 
 // Individual CPU instruction implementations (CB-prefixed)

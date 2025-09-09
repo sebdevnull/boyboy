@@ -12,6 +12,7 @@
 
 #include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/cpu/instructions.h"
+#include "boyboy/cpu/opcodes.h"
 #include "boyboy/cpu/registers.h"
 #include "boyboy/mmu.h"
 
@@ -19,45 +20,67 @@ namespace boyboy::cpu {
 
 class Cpu {
 public:
-    Cpu()
+    Cpu() { reset(); }
+
+    // Reset CPU state
+    void reset()
     {
+        // Registers
         registers_.af = 0;
         registers_.bc = 0;
         registers_.de = 0;
         registers_.hl = 0;
         registers_.sp = SPStartValue;
         registers_.pc = PCStartValue;
+
+        // Memory
+        mmu_.reset();
+
+        // Other states
+        cycles_ = 0;
     }
 
     // Register accessors
-    [[nodiscard]] uint8_t get_register(Register8Name reg) const;
-    [[nodiscard]] uint16_t get_register(Register16Name reg) const;
-    void set_register(Register8Name reg, uint8_t value);
-    void set_register(Register16Name reg, uint16_t value);
+    [[nodiscard]] uint8_t get_register(Reg8Name reg) const;
+    [[nodiscard]] uint16_t get_register(Reg16Name reg) const;
+    void set_register(Reg8Name reg, uint8_t value);
+    void set_register(Reg16Name reg, uint16_t value);
+    [[nodiscard]] uint16_t get_pc() const { return registers_.pc; }
 
     // Flag accessors
-    [[nodiscard]] bool get_flag(uint8_t flag) const;
-    void set_flag(uint8_t flag, bool value);
+    [[nodiscard]] bool get_flag(uint8_t flag) const { return registers_.af.get_flag(flag); }
+    void set_flag(uint8_t flag, bool value) { registers_.af.set_flag(flag, value); }
+    [[nodiscard]] uint8_t get_flags() const { return registers_.f(); }
 
     // Execution functions
     void tick();
     uint8_t fetch();
     void execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
 
+    // Execute aliases
+    void execute(Opcode opcode)
+    {
+        execute(static_cast<uint8_t>(opcode), InstructionType::Unprefixed);
+    }
+    void execute(CBOpcode opcode)
+    {
+        execute(static_cast<uint8_t>(opcode), InstructionType::CBPrefixed);
+    }
+
+    // Memory access wrappers
+    [[nodiscard]] uint8_t read_byte(uint16_t addr) const { return mmu_.read_byte(addr); }
+    [[nodiscard]] uint16_t read_word(uint16_t addr) const { return mmu_.read_word(addr); }
+    void write_byte(uint16_t addr, uint8_t value) { mmu_.write_byte(addr, value); }
+    void write_word(uint16_t addr, uint16_t value) { mmu_.write_word(addr, value); }
+
     // Helpers mainly for debugging and testing
     [[nodiscard]] std::string_view disassemble(uint16_t addr) const;
     [[nodiscard]] uint64_t get_cycles() const { return cycles_; }
 
 private:
-    mmu::Mmu mmu_{};
-    Registers registers_{};
+    mmu::Mmu mmu_;
+    Registers registers_;
     uint64_t cycles_{};
-
-    // Memory access
-    [[nodiscard]] uint8_t read_byte(uint16_t addr) const;
-    [[nodiscard]] uint16_t read_word(uint16_t addr) const;
-    void write_byte(uint16_t addr, uint8_t value);
-    void write_word(uint16_t addr, uint16_t value);
 
     // Helper functions
     void reset_flags() { registers_.f(0); }
@@ -72,44 +95,44 @@ private:
 
     // ========== CPU Instructions definitions ==========
     // Generic unprefixed CPU instructions
-    void ld_r16_n16(Register16Name r16);
-    void ld_at_r16_a(Register16Name r16);
-    void ld_a_at_r16(Register16Name r16);
+    void ld_r16_n16(Reg16Name r16);
+    void ld_at_r16_a(Reg16Name r16);
+    void ld_a_at_r16(Reg16Name r16);
 
-    void inc_r16(Register16Name r16);
-    void dec_r16(Register16Name r16);
-    void add_hl_r16(Register16Name r16);
+    void inc_r16(Reg16Name r16);
+    void dec_r16(Reg16Name r16);
+    void add_hl_r16(Reg16Name r16);
 
-    void inc_r8(Register8Name r8);
-    void dec_r8(Register8Name r8);
+    void inc_r8(Reg8Name r8);
+    void dec_r8(Reg8Name r8);
 
-    void ld_r8_n8(Register8Name r8);
-    void ld_r8_r8(Register8Name dest, Register8Name src);
+    void ld_r8_n8(Reg8Name r8);
+    void ld_r8_r8(Reg8Name dest, Reg8Name src);
 
-    void add_a_r8(Register8Name r8);
-    void adc_a_r8(Register8Name r8);
-    void sub_a_r8(Register8Name r8);
-    void sbc_a_r8(Register8Name r8);
-    void and_a_r8(Register8Name r8);
-    void xor_a_r8(Register8Name r8);
-    void or_a_r8(Register8Name r8);
-    void cp_a_r8(Register8Name r8);
+    void add_a_r8(Reg8Name r8);
+    void adc_a_r8(Reg8Name r8);
+    void sub_a_r8(Reg8Name r8);
+    void sbc_a_r8(Reg8Name r8);
+    void and_a_r8(Reg8Name r8);
+    void xor_a_r8(Reg8Name r8);
+    void or_a_r8(Reg8Name r8);
+    void cp_a_r8(Reg8Name r8);
 
-    void pop_r16(Register16Name r16);
-    void push_r16(Register16Name r16);
+    void pop_r16(Reg16Name r16);
+    void push_r16(Reg16Name r16);
 
     // Generic CB-prefixed CPU instructions
-    void rlc_r8(Register8Name r8);
-    void rrc_r8(Register8Name r8);
-    void rl_r8(Register8Name r8);
-    void rr_r8(Register8Name r8);
-    void sla_r8(Register8Name r8);
-    void sra_r8(Register8Name r8);
-    void swap_r8(Register8Name r8);
-    void srl_r8(Register8Name r8);
-    void bit_b3_r8(uint8_t bit, Register8Name r8);
-    void res_b3_r8(uint8_t bit, Register8Name r8);
-    void set_b3_r8(uint8_t bit, Register8Name r8);
+    void rlc_r8(Reg8Name r8);
+    void rrc_r8(Reg8Name r8);
+    void rl_r8(Reg8Name r8);
+    void rr_r8(Reg8Name r8);
+    void sla_r8(Reg8Name r8);
+    void sra_r8(Reg8Name r8);
+    void swap_r8(Reg8Name r8);
+    void srl_r8(Reg8Name r8);
+    void bit_b3_r8(uint8_t bit, Reg8Name r8);
+    void res_b3_r8(uint8_t bit, Reg8Name r8);
+    void set_b3_r8(uint8_t bit, Reg8Name r8);
 
     // Autogenerated CPU instructions definitions from Opcodes.json
     // clang-format off
@@ -122,5 +145,33 @@ private:
 
 // Stub disabling macros for implemented opcodes
 #define CPU_NOP
+#define CPU_INC_A
+#define CPU_INC_B
+#define CPU_INC_C
+#define CPU_INC_D
+#define CPU_INC_E
+#define CPU_INC_H
+#define CPU_INC_L
+#define CPU_DEC_A
+#define CPU_DEC_B
+#define CPU_DEC_C
+#define CPU_DEC_D
+#define CPU_DEC_E
+#define CPU_DEC_H
+#define CPU_DEC_L
+#define CPU_ADD_A_A
+#define CPU_ADD_A_B
+#define CPU_ADD_A_C
+#define CPU_ADD_A_D
+#define CPU_ADD_A_E
+#define CPU_ADD_A_H
+#define CPU_ADD_A_L
+#define CPU_SUB_A_A
+#define CPU_SUB_A_B
+#define CPU_SUB_A_C
+#define CPU_SUB_A_D
+#define CPU_SUB_A_E
+#define CPU_SUB_A_H
+#define CPU_SUB_A_L
 
 } // namespace boyboy::cpu
