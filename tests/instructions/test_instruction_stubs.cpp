@@ -43,7 +43,7 @@ TEST_P(CBInstructionStubTest, ThrowsOnUnimplementedOpcode)
 namespace {
 std::string opcode_name(const ::testing::TestParamInfo<uint8_t>& info)
 {
-    return std::format("Opcode_0x{:02X}", info.param);
+    return std::format("Opcode0x{:02X}", info.param);
 }
 } // namespace
 
