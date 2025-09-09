@@ -36,8 +36,8 @@ struct Flag {
     }
 };
 
-enum class Register8Name : uint8_t { A, F, B, C, D, E, H, L };
-enum class Register16Name : uint8_t { AF, BC, DE, HL, SP, PC };
+enum class Reg8Name : uint8_t { A, F, B, C, D, E, H, L };
+enum class Reg16Name : uint8_t { AF, BC, DE, HL, SP, PC };
 
 class Register16 {
     static_assert(std::endian::native == std::endian::little,
