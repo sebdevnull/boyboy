@@ -5,6 +5,8 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+#ifdef TEST_CPU_STUBS
+
 #include <gtest/gtest.h>
 
 #include <format>
@@ -16,8 +18,6 @@
 using namespace boyboy::cpu;
 using namespace boyboy::errors;
 
-#define TEST_CPU_STUBS
-#ifdef TEST_CPU_STUBS
 // ----- Stubs tests -----
 class InstructionStubParameterizedTest : public ::testing::TestWithParam<uint8_t> {};
 
@@ -40,8 +40,8 @@ INSTANTIATE_TEST_SUITE_P(UnprefixedStubOpcodes,
                          ::testing::ValuesIn(UnprefixedStubOpcodes),
                          StubOpcodeNameGenerator);
 
-// INSTANTIATE_TEST_SUITE_P(CBPrefixedStubOpcodes,
-//                          InstructionStubParameterizedTest,
-//                          ::testing::ValuesIn(CBPrefixedStubOpcodes),
-//                          StubOpcodeNameGenerator);
+INSTANTIATE_TEST_SUITE_P(CBPrefixedStubOpcodes,
+                         InstructionStubParameterizedTest,
+                         ::testing::ValuesIn(CBPrefixedStubOpcodes),
+                         StubOpcodeNameGenerator);
 #endif

@@ -12,7 +12,7 @@
 using namespace boyboy::cpu;
 
 // Parameterized tests for CPU register access
-class CpuRegister8Test : public ::testing::TestWithParam<std::pair<Register8Name, uint8_t>> {};
+class CpuRegister8Test : public ::testing::TestWithParam<std::pair<Reg8Name, uint8_t>> {};
 
 TEST_P(CpuRegister8Test, SetAndGetRegister8)
 {
@@ -25,16 +25,16 @@ TEST_P(CpuRegister8Test, SetAndGetRegister8)
 
 INSTANTIATE_TEST_SUITE_P(Register8Tests,
                          CpuRegister8Test,
-                         ::testing::Values(std::make_pair(Register8Name::A, 0x12),
-                                           std::make_pair(Register8Name::B, 0x34),
-                                           std::make_pair(Register8Name::C, 0x56),
-                                           std::make_pair(Register8Name::D, 0x78),
-                                           std::make_pair(Register8Name::E, 0x9A),
-                                           std::make_pair(Register8Name::H, 0xBC),
-                                           std::make_pair(Register8Name::L, 0xDE),
-                                           std::make_pair(Register8Name::F, 0xF0)));
+                         ::testing::Values(std::make_pair(Reg8Name::A, 0x12),
+                                           std::make_pair(Reg8Name::B, 0x34),
+                                           std::make_pair(Reg8Name::C, 0x56),
+                                           std::make_pair(Reg8Name::D, 0x78),
+                                           std::make_pair(Reg8Name::E, 0x9A),
+                                           std::make_pair(Reg8Name::H, 0xBC),
+                                           std::make_pair(Reg8Name::L, 0xDE),
+                                           std::make_pair(Reg8Name::F, 0xF0)));
 
-class CpuRegister16Test : public ::testing::TestWithParam<std::pair<Register16Name, uint16_t>> {};
+class CpuRegister16Test : public ::testing::TestWithParam<std::pair<Reg16Name, uint16_t>> {};
 
 TEST_P(CpuRegister16Test, SetAndGetRegister16)
 {
@@ -47,12 +47,12 @@ TEST_P(CpuRegister16Test, SetAndGetRegister16)
 
 INSTANTIATE_TEST_SUITE_P(Register16Tests,
                          CpuRegister16Test,
-                         ::testing::Values(std::make_pair(Register16Name::BC, 0x1234),
-                                           std::make_pair(Register16Name::DE, 0x5678),
-                                           std::make_pair(Register16Name::HL, 0x9ABC),
-                                           std::make_pair(Register16Name::AF, 0xDEF0),
-                                           std::make_pair(Register16Name::SP, 0xFFF0),
-                                           std::make_pair(Register16Name::PC, 0xABCD)));
+                         ::testing::Values(std::make_pair(Reg16Name::BC, 0x1234),
+                                           std::make_pair(Reg16Name::DE, 0x5678),
+                                           std::make_pair(Reg16Name::HL, 0x9ABC),
+                                           std::make_pair(Reg16Name::AF, 0xDEF0),
+                                           std::make_pair(Reg16Name::SP, 0xFFF0),
+                                           std::make_pair(Reg16Name::PC, 0xABCD)));
 
 // Flags tests
 class CpuFlagTest : public ::testing::TestWithParam<std::pair<uint8_t, bool>> {};
