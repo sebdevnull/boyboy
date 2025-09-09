@@ -13,35 +13,49 @@
 
 #include "boyboy/common/errors.h"
 #include "boyboy/cpu/cpu.h"
+#include "boyboy/cpu/opcodes.h"
 #include "cpu_stubs.h"
 
-using namespace boyboy::cpu;
-using namespace boyboy::errors;
+using boyboy::cpu::CBOpcode;
+using boyboy::cpu::Cpu;
+using boyboy::cpu::Opcode;
+using boyboy::errors::UnimplementedOpcode;
 
-// ----- Stubs tests -----
-class InstructionStubParameterizedTest : public ::testing::TestWithParam<uint8_t> {};
+class InstructionStubTest : public ::testing::TestWithParam<uint8_t> {};
+class CBInstructionStubTest : public ::testing::TestWithParam<uint8_t> {};
 
-TEST_P(InstructionStubParameterizedTest, ThrowsOnUnimplementedOpcode)
+TEST_P(InstructionStubTest, ThrowsOnUnimplementedOpcode)
 {
     Cpu cpu;
-    uint8_t opcode = GetParam();
+    auto opcode = static_cast<Opcode>(GetParam());
 
     EXPECT_THROW(cpu.execute(opcode), UnimplementedOpcode);
 }
 
-static std::string StubOpcodeNameGenerator(const ::testing::TestParamInfo<uint8_t>& info) // NOLINT
+TEST_P(CBInstructionStubTest, ThrowsOnUnimplementedOpcode)
+{
+    Cpu cpu;
+    auto opcode = static_cast<CBOpcode>(GetParam());
+
+    EXPECT_THROW(cpu.execute(opcode), UnimplementedOpcode);
+}
+
+namespace {
+std::string opcode_name(const ::testing::TestParamInfo<uint8_t>& info)
 {
     return std::format("Opcode_0x{:02X}", info.param);
 }
+} // namespace
 
 // We are testing not only that it throws but that stubs are correctly disabled
 INSTANTIATE_TEST_SUITE_P(UnprefixedStubOpcodes,
-                         InstructionStubParameterizedTest,
+                         InstructionStubTest,
                          ::testing::ValuesIn(UnprefixedStubOpcodes),
-                         StubOpcodeNameGenerator);
+                         opcode_name);
 
 INSTANTIATE_TEST_SUITE_P(CBPrefixedStubOpcodes,
-                         InstructionStubParameterizedTest,
+                         CBInstructionStubTest,
                          ::testing::ValuesIn(CBPrefixedStubOpcodes),
-                         StubOpcodeNameGenerator);
+                         opcode_name);
+
 #endif
