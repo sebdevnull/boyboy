@@ -13,6 +13,7 @@
 
 using namespace boyboy::cpu;
 
+using boyboy::test::cpu::ALUOperandType;
 using boyboy::test::cpu::R8ALUParam;
 using boyboy::test::cpu::R8Test;
 
@@ -23,6 +24,10 @@ using ANDR8Test = R8Test<R8ALUParam>;
 using ORR8Test  = R8Test<R8ALUParam>;
 using XORR8Test = R8Test<R8ALUParam>;
 using CPR8Test  = R8Test<R8ALUParam>;
+using ANDHLTest = R8Test<R8ALUParam>;
+using ORHLTest  = R8Test<R8ALUParam>;
+using XORHLTest = R8Test<R8ALUParam>;
+using CPHLTest  = R8Test<R8ALUParam>;
 
 // -----------------------------
 // Test definitions
@@ -31,10 +36,16 @@ TEST_P(ANDR8Test, Works) { run_test(); }
 TEST_P(ORR8Test, Works) { run_test(); }
 TEST_P(XORR8Test, Works) { run_test(); }
 TEST_P(CPR8Test, Works) { run_test(); }
+TEST_P(ANDHLTest, Works) { run_test(); }
+TEST_P(ORHLTest, Works) { run_test(); }
+TEST_P(XORHLTest, Works) { run_test(); }
+TEST_P(CPHLTest, Works) { run_test(); }
 
 // -----------------------------
 // Parameter instantiations
 // -----------------------------
+
+// AND A, r8
 INSTANTIATE_TEST_SUITE_P(AndInstructions,
                          ANDR8Test,
                          ::testing::Values(
@@ -113,6 +124,7 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                              ),
                          boyboy::test::cpu::param_name<R8ALUParam>);
 
+// OR A, r8
 INSTANTIATE_TEST_SUITE_P(OrInstructions,
                          ORR8Test,
                          ::testing::Values(
@@ -180,6 +192,7 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                              }),
                          boyboy::test::cpu::param_name<R8ALUParam>);
 
+// XOR A, r8
 INSTANTIATE_TEST_SUITE_P(XorInstructions,
                          XORR8Test,
                          ::testing::Values(
@@ -250,6 +263,7 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                              }),
                          boyboy::test::cpu::param_name<R8ALUParam>);
 
+// CP A, r8
 INSTANTIATE_TEST_SUITE_P(CpInstructions,
                          CPR8Test,
                          ::testing::Values(
@@ -327,5 +341,217 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_z       = true,
                                  .expect_n       = true,
                                  .name           = "A_L_Zero",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+// AND A, [HL]
+INSTANTIATE_TEST_SUITE_P(AndInstructions,
+                         ANDHLTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::AND_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x0000,
+                                 .initial_a      = 0xF0,
+                                 .src_value      = 0xAA,
+                                 .expected_value = 0xA0,
+                                 .expect_h       = true,
+                                 .name           = "Normal",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::AND_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x1234,
+                                 .initial_a      = 0x0F,
+                                 .src_value      = 0xF0,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_h       = true,
+                                 .name           = "Zero",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::AND_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x5678,
+                                 .initial_a      = 0x55,
+                                 .src_value      = 0x55,
+                                 .expected_value = 0x55,
+                                 .expect_h       = true,
+                                 .name           = "SameValue",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::AND_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x9ABC,
+                                 .initial_a      = 0xAA,
+                                 .src_value      = 0xFF,
+                                 .expected_value = 0xAA,
+                                 .expect_h       = true,
+                                 .name           = "AllBits",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+// OR A, [HL]
+INSTANTIATE_TEST_SUITE_P(OrInstructions,
+                         ORHLTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::OR_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x0000,
+                                 .initial_a      = 0xF0,
+                                 .src_value      = 0x0A,
+                                 .expected_value = 0xFA,
+                                 .name           = "Normal",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::OR_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x1234,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x00,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .name           = "Zero",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::OR_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x5678,
+                                 .initial_a      = 0x55,
+                                 .src_value      = 0x55,
+                                 .expected_value = 0x55,
+                                 .name           = "SameValue",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::OR_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x9ABC,
+                                 .initial_a      = 0x5A,
+                                 .src_value      = 0xFF,
+                                 .expected_value = 0xFF,
+                                 .name           = "AllBits",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+// XOR A, [HL]
+INSTANTIATE_TEST_SUITE_P(XorInstructions,
+                         XORHLTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::XOR_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x0000,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x00,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .name           = "Zero",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::XOR_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x1234,
+                                 .initial_a      = 0x55,
+                                 .src_value      = 0x55,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .name           = "ZeroSameBits",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::XOR_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x5678,
+                                 .initial_a      = 0xAA,
+                                 .src_value      = 0x55,
+                                 .expected_value = 0xFF,
+                                 .name           = "DifferentBits",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::XOR_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x9ABC,
+                                 .initial_a      = 0x5A,
+                                 .src_value      = 0xFF,
+                                 .expected_value = 0xA5,
+                                 .name           = "AllBits",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+// CP A, [HL]
+INSTANTIATE_TEST_SUITE_P(CpInstructions,
+                         CPHLTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::CP_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x0000,
+                                 .initial_a      = 0x80,
+                                 .src_value      = 0x70,
+                                 .expected_value = 0x80, // A is unchanged
+                                 .expect_n       = true,
+                                 .name           = "Normal",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::CP_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x0000,
+                                 .initial_a      = 0x55,
+                                 .src_value      = 0x55,
+                                 .expected_value = 0x55, // A is unchanged
+                                 .expect_z       = true,
+                                 .expect_n       = true,
+                                 .name           = "Zero",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::CP_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x0000,
+                                 .initial_a      = 0x10,
+                                 .src_value      = 0x20,
+                                 .expected_value = 0x10, // A is unchanged
+                                 .expect_n       = true,
+                                 .expect_c       = true,
+                                 .name           = "Underflow",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::CP_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x0000,
+                                 .initial_a      = 0x10,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x10, // A is unchanged
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarry",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::CP_A_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0x0000,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x00, // A is unchanged
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "UnderflowHalfCarry",
                              }),
                          boyboy::test::cpu::param_name<R8ALUParam>);
