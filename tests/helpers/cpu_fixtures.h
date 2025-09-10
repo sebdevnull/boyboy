@@ -111,7 +111,12 @@ public:
             throw std::runtime_error("Immediate operand type not implemented yet");
             break;
         case ALUOperandType::IndirectHL:
-            expect_at_addr(cpu, param);
+            if (param.dst.has_value()) {
+                expect_r8(cpu, param);
+            }
+            else {
+                expect_at_addr(cpu, param);
+            }
             break;
         }
         expect_flags(cpu, param);
