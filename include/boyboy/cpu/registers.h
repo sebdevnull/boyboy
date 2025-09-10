@@ -7,7 +7,9 @@
 #pragma once
 
 #include <bit>
+#include <concepts>
 #include <cstdint>
+#include <ostream>
 #include <string>
 
 namespace boyboy::cpu {
@@ -38,6 +40,59 @@ struct Flag {
 
 enum class Reg8Name : uint8_t { A, F, B, C, D, E, H, L };
 enum class Reg16Name : uint8_t { AF, BC, DE, HL, SP, PC };
+
+inline const char* to_string(Reg8Name r)
+{
+    switch (r) {
+    case Reg8Name::A:
+        return "A";
+    case Reg8Name::F:
+        return "F";
+    case Reg8Name::B:
+        return "B";
+    case Reg8Name::C:
+        return "C";
+    case Reg8Name::D:
+        return "D";
+    case Reg8Name::E:
+        return "E";
+    case Reg8Name::H:
+        return "H";
+    case Reg8Name::L:
+        return "L";
+    default:
+        return "Unknown";
+    }
+}
+
+inline const char* to_string(Reg16Name r)
+{
+    switch (r) {
+    case Reg16Name::AF:
+        return "AF";
+    case Reg16Name::BC:
+        return "BC";
+    case Reg16Name::DE:
+        return "DE";
+    case Reg16Name::HL:
+        return "HL";
+    case Reg16Name::SP:
+        return "PC";
+    case Reg16Name::PC:
+        return "SP";
+    default:
+        return "Unknown";
+    }
+}
+
+template <typename RegName>
+concept RegNameEnum = std::same_as<RegName, Reg8Name> || std::same_as<RegName, Reg16Name>;
+
+template <RegNameEnum RegName>
+inline std::ostream& operator<<(std::ostream& os, RegName r)
+{
+    return os << to_string(r);
+}
 
 class Register16 {
     static_assert(std::endian::native == std::endian::little,
