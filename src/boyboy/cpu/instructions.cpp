@@ -412,6 +412,7 @@ void Cpu::sbc_a_l()
     sbc_a_r8(Reg8Name::L);
 }
 
+// INC [HL]
 void Cpu::inc_at_hl()
 {
     uint16_t addr = get_register(Reg16Name::HL);
@@ -424,6 +425,7 @@ void Cpu::inc_at_hl()
     set_flag(Flag::HalfCarry, (res & 0x0F) == 0x00);
 }
 
+// DEC [HL]
 void Cpu::dec_at_hl()
 {
     uint16_t addr = get_register(Reg16Name::HL);
@@ -434,6 +436,42 @@ void Cpu::dec_at_hl()
     set_flag(Flag::Zero, res == 0);
     set_flag(Flag::Substract, true);
     set_flag(Flag::HalfCarry, (res & 0x0F) == 0x0F);
+}
+
+// ADD A, [HL]
+void Cpu::add_a_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    add(value, false);
+}
+
+// ADC A, [HL]
+void Cpu::adc_a_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    add(value, true);
+}
+
+// SUB A, [HL]
+void Cpu::sub_a_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    sub(value, false);
+}
+
+// SBC A, [HL]
+void Cpu::sbc_a_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    sub(value, true);
 }
 
 // Individual CPU instruction implementations (CB-prefixed)
