@@ -13,7 +13,8 @@ Checks: >
   -misc-include-cleaner,
   -cppcoreguidelines-pro-type-union-access,
   -readability-magic-numbers,
-  -cppcoreguidelines-avoid-magic-numbers
+  -cppcoreguidelines-avoid-magic-numbers,
+  -bugprone-easily-swappable-parameters
 # -readability-convert-member-functions-to-static,
 # -performance-enum-size
 
