@@ -215,5 +215,7 @@ private:
 #define CPU_SBC_A_E
 #define CPU_SBC_A_H
 #define CPU_SBC_A_L
+#define CPU_INC_AT_HL
+#define CPU_DEC_AT_HL
 
 } // namespace boyboy::cpu

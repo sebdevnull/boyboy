@@ -412,6 +412,30 @@ void Cpu::sbc_a_l()
     sbc_a_r8(Reg8Name::L);
 }
 
+void Cpu::inc_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t res = read_byte(addr) + 1;
+
+    write_byte(addr, res);
+
+    set_flag(Flag::Zero, res == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, (res & 0x0F) == 0x00);
+}
+
+void Cpu::dec_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t res = read_byte(addr) - 1;
+
+    write_byte(addr, res);
+
+    set_flag(Flag::Zero, res == 0);
+    set_flag(Flag::Substract, true);
+    set_flag(Flag::HalfCarry, (res & 0x0F) == 0x0F);
+}
+
 // Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu
