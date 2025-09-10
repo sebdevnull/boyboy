@@ -15,12 +15,12 @@
 
 namespace boyboy::test::cpu {
 
-inline void expect_r8(const boyboy::cpu::Cpu& cpu, R8Param& p)
+inline void expect_r8(const boyboy::cpu::Cpu& cpu, R8ALUParam& p)
 {
     EXPECT_EQ(cpu.get_register(p.target()), p.expected_value) << "Register mismatch: " << p.name;
 }
 
-inline void expect_flags(const boyboy::cpu::Cpu& cpu, R8Param& p)
+inline void expect_flags(const boyboy::cpu::Cpu& cpu, R8ALUParam& p)
 {
     EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Zero), p.expect_z) << "Z flag mismatch: " << p.name;
     EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Substract), p.expect_n) << "N flag mismatch: " << p.name;
