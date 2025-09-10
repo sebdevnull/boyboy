@@ -28,6 +28,7 @@ set(TEST_SOURCES
     cpu/test_instruction_stubs.cpp
     cpu/instructions/alu/test_inc_dec.cpp
     cpu/instructions/alu/test_add_sub.cpp
+    cpu/instructions/alu/test_logic.cpp
     cpu/instructions/test_instructions_8bit.cpp
     cpu/instructions/test_instructions_16bit.cpp
     cpu/instructions/test_misc.cpp
