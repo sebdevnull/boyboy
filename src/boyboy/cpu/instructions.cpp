@@ -510,6 +510,62 @@ void Cpu::cp_a_at_hl()
     cp(value);
 }
 
+// ADD A, n8
+void Cpu::add_a_n8()
+{
+    uint8_t value = fetch();
+    add(value, false);
+}
+
+// ADC A, n8
+void Cpu::adc_a_n8()
+{
+    uint8_t value = fetch();
+    add(value, true);
+}
+
+// SUB A, n8
+void Cpu::sub_a_n8()
+{
+    uint8_t value = fetch();
+    sub(value, false);
+}
+
+// SBC A, n8
+void Cpu::sbc_a_n8()
+{
+    uint8_t value = fetch();
+    sub(value, true);
+}
+
+// AND A, n8
+void Cpu::and_a_n8()
+{
+    uint8_t value = fetch();
+    aand(value);
+}
+
+// XOR A, n8
+void Cpu::xor_a_n8()
+{
+    uint8_t value = fetch();
+    xxor(value);
+}
+
+// OR A, n8
+void Cpu::or_a_n8()
+{
+    uint8_t value = fetch();
+    oor(value);
+}
+
+// CP A, n8
+void Cpu::cp_a_n8()
+{
+    uint8_t value = fetch();
+    cp(value);
+}
+
 // Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu
