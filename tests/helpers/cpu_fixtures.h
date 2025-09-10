@@ -11,10 +11,12 @@
 
 #include <cstdint>
 
+#include "boyboy/cpu/registers.h"
 #include "helpers/cpu_asserts.h"
 
 // boyboy
 #include "boyboy/cpu/cpu.h"
+#include "helpers/cpu_params.h"
 
 namespace boyboy::test::cpu {
 
@@ -55,23 +57,46 @@ public:
     void run_test()
     {
         auto param = this->GetParam();
+        if (!(param.src.has_value() || param.dst.has_value())) {
+            throw std::runtime_error("Either src or dst register must be specified");
+        }
 
-        // Determine and setup initial value of the destination register
-        uint8_t initial_dst = param.initial_a.value_or(cpu.get_register(param.target()));
-        cpu.set_register(param.target(), initial_dst);
+        // Set initial A register if provided
+        if (param.initial_a.has_value()) {
+            cpu.set_register(boyboy::cpu::Reg8Name::A, *param.initial_a);
+        }
 
-        // Determine source value
-        uint8_t src_val =
-            (param.dst.has_value() && param.src == *param.dst) ? initial_dst : param.src_value;
+        // Setup source register or memory depending on operand type
+        switch (param.operand_type) {
+        case ALUOperandType::Reg8:
+            if (param.src.has_value()) {
+                // Only write src_value if src != dst (in practice only A -> A)
+                if (!param.dst.has_value() || param.src.value() != param.dst.value()) {
+                    cpu.set_register(*param.src, param.src_value);
+                }
+            }
+            else {
+                throw std::runtime_error("Source register must be specified for Reg8 operand type");
+            }
+            break;
+        case ALUOperandType::Immediate:
+            // Set next byte so that the CPU can read imm from
+            cpu.write_byte(cpu.get_pc() + 1, param.src_value);
+            break;
+        case ALUOperandType::IndirectHL:
+            cpu.write_byte(cpu.get_register(boyboy::cpu::Reg16Name::HL), param.src_value);
+            break;
+        }
 
-        // Set carry if needed
+        // Set carry if needed for ADC and SBC
         if (param.carry_in.has_value()) {
             cpu.set_flag(boyboy::cpu::Flag::Carry, *param.carry_in);
         }
 
-        cpu.set_register(param.src, src_val);
+        // Execute opcode
         cpu.execute(param.opcode);
 
+        // Run asserts
         expect_r8(cpu, param);
         expect_flags(cpu, param);
     }

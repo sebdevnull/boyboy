@@ -11,15 +11,77 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <iomanip>
 #include <ios>
+#include <optional>
 #include <ostream>
 #include <string>
 
+#include "boyboy/common/utils.h"
 #include "boyboy/cpu/opcodes.h"
 #include "boyboy/cpu/registers.h"
 
 namespace boyboy::test::cpu {
+
+enum class ALUOperandType : uint8_t { Reg8, Immediate, IndirectHL };
+
+struct R8ALUParam {
+    boyboy::cpu::Opcode opcode;
+    ALUOperandType operand_type = ALUOperandType::Reg8;
+
+    std::optional<boyboy::cpu::Reg8Name> src = std::nullopt;
+    std::optional<boyboy::cpu::Reg8Name> dst = std::nullopt;
+
+    std::optional<uint8_t> initial_a = std::nullopt; // initial value of A register
+    uint8_t src_value;
+    std::optional<bool> carry_in = std::nullopt; // for ADC and SBC instructions
+    uint8_t expected_value;
+
+    bool expect_z = false;
+    bool expect_n = false;
+    bool expect_h = false;
+    bool expect_c = false;
+
+    std::string name;
+
+    // Return the target register of the test
+    [[nodiscard]] boyboy::cpu::Reg8Name target() const { return dst.value_or(*src); }
+
+    // For better test case naming in GTest output
+    friend std::ostream& operator<<(std::ostream& os, const R8ALUParam& p)
+    {
+        // clang-format off
+        os << p.name
+           << " [opcode=" << boyboy::utils::PrettyHex{static_cast<uint8_t>(p.opcode)}
+           << ", operand_type=" << static_cast<int>(p.operand_type);
+
+        if (p.src.has_value())
+        {
+            os << ", src=" << *p.src;
+        }
+
+        if (p.dst.has_value())
+        {
+            os << ", dst=" << *p.dst;
+        }
+
+        if (p.initial_a.has_value())
+        {
+            os << ", initial_a=" << boyboy::utils::PrettyHex{*p.initial_a};
+        }
+
+        os << ", src_value=" << boyboy::utils::PrettyHex{p.src_value}
+           << ", expected_value=" << boyboy::utils::PrettyHex{p.expected_value}
+           << std::dec  // switch back to decimal for flags
+           << ", Z=" << (p.expect_z ? 1 : 0)
+           << ", N=" << (p.expect_n ? 1 : 0)
+           << ", H=" << (p.expect_h ? 1 : 0)
+           << ", C=" << (p.expect_c ? 1 : 0)
+           << "]";
+        // clang-format on
+
+        return os;
+    }
+};
 
 // Parameter name generator (removes non-alphanumeric characters from name)
 template <typename ParamType>
@@ -32,58 +94,5 @@ std::string param_name(const ::testing::TestParamInfo<ParamType>& info)
                name.end());
     return name;
 }
-
-struct R8ALUParam {
-    boyboy::cpu::Opcode opcode;
-    boyboy::cpu::Reg8Name src;
-    std::optional<boyboy::cpu::Reg8Name> dst;
-
-    std::optional<uint8_t> initial_a; // initial value of A register
-    uint8_t src_value;
-    std::optional<bool> carry_in; // for ADC and SBC instructions
-    uint8_t expected_value;
-
-
-    bool expect_z;
-    bool expect_n;
-    bool expect_h;
-    bool expect_c;
-
-    std::string name;
-
-    // Return the target register of the test
-    [[nodiscard]] boyboy::cpu::Reg8Name target() const { return dst.value_or(src); }
-
-    // For better test case naming in GTest output
-    friend std::ostream& operator<<(std::ostream& os, const R8ALUParam& p)
-    {
-        // clang-format off
-        os << p.name
-           << " [opcode=0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(p.opcode)
-           << ", src=" << static_cast<int>(p.src);
-
-        if (p.dst.has_value())
-        {
-            os << ", dst=" << static_cast<int>(p.dst.value());
-        }
-
-        if (p.initial_a.has_value())
-        {
-            os << ", initial_a=0x" << std::hex << std::setw(2) << std::setfill('0') << +p.initial_a.value();
-        }
-
-        os << ", src_value=0x" << std::hex << std::setw(2) << std::setfill('0') << +p.src_value
-           << ", expected_value=0x" << std::hex << std::setw(2) << std::setfill('0') << +p.expected_value
-           << std::dec  // switch back to decimal for flags
-           << ", Z=" << (p.expect_z ? 1 : 0)
-           << ", N=" << (p.expect_n ? 1 : 0)
-           << ", H=" << (p.expect_h ? 1 : 0)
-           << ", C=" << (p.expect_c ? 1 : 0)
-           << "]";
-        // clang-format on
-
-        return os;
-    }
-};
 
 } // namespace boyboy::test::cpu
