@@ -24,26 +24,34 @@ using boyboy::test::cpu::R8Test;
 // -----------------------------
 // Test types
 // -----------------------------
-using AddR8Test = R8Test<R8ALUParam>;
-using AddHLTest = R8Test<R8ALUParam>;
-using AdcR8Test = R8Test<R8ALUParam>;
-using AdcHLTest = R8Test<R8ALUParam>;
-using SubR8Test = R8Test<R8ALUParam>;
-using SubHLTest = R8Test<R8ALUParam>;
-using SbcR8Test = R8Test<R8ALUParam>;
-using SbcHLTest = R8Test<R8ALUParam>;
+using AddR8Test  = R8Test<R8ALUParam>;
+using AddHLTest  = R8Test<R8ALUParam>;
+using AddImmTest = R8Test<R8ALUParam>;
+using AdcR8Test  = R8Test<R8ALUParam>;
+using AdcHLTest  = R8Test<R8ALUParam>;
+using AdcImmTest = R8Test<R8ALUParam>;
+using SubR8Test  = R8Test<R8ALUParam>;
+using SubHLTest  = R8Test<R8ALUParam>;
+using SubImmTest = R8Test<R8ALUParam>;
+using SbcR8Test  = R8Test<R8ALUParam>;
+using SbcHLTest  = R8Test<R8ALUParam>;
+using SbcImmTest = R8Test<R8ALUParam>;
 
 // -----------------------------
 // Test definitions
 // -----------------------------
 TEST_P(AddR8Test, Works) { run_test(); }
 TEST_P(AddHLTest, Works) { run_test(); }
+TEST_P(AddImmTest, Works) { run_test(); }
 TEST_P(AdcR8Test, Works) { run_test(); }
 TEST_P(AdcHLTest, Works) { run_test(); }
+TEST_P(AdcImmTest, Works) { run_test(); }
 TEST_P(SubR8Test, Works) { run_test(); }
 TEST_P(SubHLTest, Works) { run_test(); }
+TEST_P(SubImmTest, Works) { run_test(); }
 TEST_P(SbcR8Test, Works) { run_test(); }
 TEST_P(SbcHLTest, Works) { run_test(); }
+TEST_P(SbcImmTest, Works) { run_test(); }
 
 // -----------------------------
 // Parameter instantiations
@@ -193,6 +201,63 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .operand_type   = ALUOperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
+                                 .initial_a      = 0xFF,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "OverflowHalfCarryZero",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+// ADD A, n8
+INSTANTIATE_TEST_SUITE_P(AddInstructions,
+                         AddImmTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADD_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x01,
+                                 .name           = "Normal",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADD_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x0F,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x10,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarry",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADD_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x00,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .name           = "Zero",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADD_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0xFF,
+                                 .src_value      = 0x10,
+                                 .expected_value = 0x0F,
+                                 .expect_c       = true,
+                                 .name           = "OverflowCarry",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADD_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
                                  .src_value      = 0x01,
                                  .expected_value = 0x00,
@@ -484,6 +549,125 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .name           = "OverflowZeroCarryIn",
                              }),
                          boyboy::test::cpu::param_name<R8ALUParam>);
+
+// ADC A, n8
+INSTANTIATE_TEST_SUITE_P(AddInstructions,
+                         AdcImmTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x01,
+                                 .carry_in       = false,
+                                 .expected_value = 0x01,
+                                 .name           = "NormalNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x01,
+                                 .carry_in       = true,
+                                 .expected_value = 0x02,
+                                 .name           = "NormalCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x0F,
+                                 .src_value      = 0x01,
+                                 .carry_in       = false,
+                                 .expected_value = 0x10,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarryNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x0F,
+                                 .src_value      = 0x01,
+                                 .carry_in       = true,
+                                 .expected_value = 0x11,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarryCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x00,
+                                 .carry_in       = false,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .name           = "ZeroNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x00,
+                                 .src_value      = 0x00,
+                                 .carry_in       = true,
+                                 .expected_value = 0x01,
+                                 .expect_z       = false,
+                                 .name           = "NoZeroCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0xFF,
+                                 .src_value      = 0x10,
+                                 .carry_in       = false,
+                                 .expected_value = 0x0F,
+                                 .expect_c       = true,
+                                 .name           = "OverflowNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0xFE,
+                                 .src_value      = 0x10,
+                                 .carry_in       = true,
+                                 .expected_value = 0x0F,
+                                 .expect_c       = true,
+                                 .name           = "OverflowCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0xFF,
+                                 .src_value      = 0x01,
+                                 .carry_in       = false,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "OverflowZeroNoCarry",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::ADC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0xFF,
+                                 .src_value      = 0x00,
+                                 .carry_in       = true,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "OverflowZeroCarryIn",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
 // SUB A, r8
 INSTANTIATE_TEST_SUITE_P(SubInstructions,
                          SubR8Test,
@@ -623,6 +807,67 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .operand_type   = ALUOperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
+                                 .initial_a      = 0x10,
+                                 .src_value      = 0x11,
+                                 .expected_value = 0xFF,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "UnderflowCarryHalfCarry",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+// SUB A, n8
+INSTANTIATE_TEST_SUITE_P(SubInstructions,
+                         SubImmTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::SUB_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x02,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x01,
+                                 .expect_n       = true,
+                                 .name           = "Normal",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SUB_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x01,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_n       = true,
+                                 .name           = "Zero",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SUB_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x10,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x0F,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarry",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SUB_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x0F,
+                                 .src_value      = 0x10,
+                                 .expected_value = 0xFF,
+                                 .expect_n       = true,
+                                 .expect_c       = true,
+                                 .name           = "UnderflowCarry",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SUB_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x11,
                                  .expected_value = 0xFF,
@@ -933,6 +1178,133 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .operand_type   = ALUOperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
+                                 .initial_a      = 0x10,
+                                 .src_value      = 0x10,
+                                 .carry_in       = true,
+                                 .expected_value = 0xFF,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "HalfCarryUnderflowCarryIn",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+// SBC A, n8
+INSTANTIATE_TEST_SUITE_P(SubInstructions,
+                         SbcImmTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x02,
+                                 .src_value      = 0x01,
+                                 .carry_in       = false,
+                                 .expected_value = 0x01,
+                                 .expect_n       = true,
+                                 .name           = "NormalNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x03,
+                                 .src_value      = 0x01,
+                                 .carry_in       = true,
+                                 .expected_value = 0x01,
+                                 .expect_n       = true,
+                                 .name           = "NormalCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x01,
+                                 .src_value      = 0x01,
+                                 .carry_in       = false,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_n       = true,
+                                 .name           = "ZeroNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x02,
+                                 .src_value      = 0x01,
+                                 .carry_in       = true,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_n       = true,
+                                 .name           = "ZeroCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x10,
+                                 .src_value      = 0x01,
+                                 .carry_in       = false,
+                                 .expected_value = 0x0F,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarryNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x10,
+                                 .src_value      = 0x01,
+                                 .carry_in       = true,
+                                 .expected_value = 0x0E,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarryCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x0F,
+                                 .src_value      = 0x10,
+                                 .carry_in       = false,
+                                 .expected_value = 0xFF,
+                                 .expect_n       = true,
+                                 .expect_c       = true,
+                                 .name           = "UnderflowNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x0F,
+                                 .src_value      = 0x0F,
+                                 .carry_in       = true,
+                                 .expected_value = 0xFF,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "UnderflowCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
+                                 .initial_a      = 0x10,
+                                 .src_value      = 0x11,
+                                 .carry_in       = false,
+                                 .expected_value = 0xFF,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "HalfCarryUnderflowNoCarryIn",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::SBC_A_N8,
+                                 .operand_type   = ALUOperandType::Immediate,
+                                 .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x10,
                                  .carry_in       = true,

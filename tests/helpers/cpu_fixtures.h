@@ -30,7 +30,11 @@ struct CpuTest : public ::testing::Test {
         cpu.reset();
     }
 
-    void run(boyboy::cpu::Opcode opcode) { cpu.execute(opcode); }
+    void run(boyboy::cpu::Opcode opcode)
+    {
+        cpu.fetch(); // simulate opcode fetch
+        cpu.execute(opcode);
+    }
 
     void set_flags(bool z, bool n, bool h, bool c)
     {
@@ -100,15 +104,13 @@ public:
         }
 
         // Execute opcode
-        cpu.execute(param.opcode);
+        run(param.opcode);
 
         // Run asserts
         switch (param.operand_type) {
         case ALUOperandType::Reg8:
-            expect_r8(cpu, param);
-            break;
         case ALUOperandType::Immediate:
-            throw std::runtime_error("Immediate operand type not implemented yet");
+            expect_r8(cpu, param);
             break;
         case ALUOperandType::IndirectHL:
             if (param.dst.has_value()) {
