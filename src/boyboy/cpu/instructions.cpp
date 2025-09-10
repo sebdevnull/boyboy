@@ -474,6 +474,42 @@ void Cpu::sbc_a_at_hl()
     sub(value, true);
 }
 
+// AND A, [HL]
+void Cpu::and_a_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    aand(value);
+}
+
+// XOR A, [HL]
+void Cpu::xor_a_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    xxor(value);
+}
+
+// OR A, [HL]
+void Cpu::or_a_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    oor(value);
+}
+
+// CP A, [HL]
+void Cpu::cp_a_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    cp(value);
+}
+
 // Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu

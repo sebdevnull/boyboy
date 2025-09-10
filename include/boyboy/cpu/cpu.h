@@ -221,5 +221,9 @@ private:
 #define CPU_ADC_A_AT_HL
 #define CPU_SUB_A_AT_HL
 #define CPU_SBC_A_AT_HL
+#define CPU_AND_A_AT_HL
+#define CPU_OR_A_AT_HL
+#define CPU_XOR_A_AT_HL
+#define CPU_CP_A_AT_HL
 
 } // namespace boyboy::cpu
