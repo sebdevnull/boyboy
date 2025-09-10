@@ -66,18 +66,41 @@ void Cpu::add_a_r8(Reg8Name r8)
     add(get_register(r8), false);
 }
 
-// void Cpu::adc_a_r8(Reg8Name r8) {}
+void Cpu::adc_a_r8(Reg8Name r8)
+{
+    add(get_register(r8), true);
+}
 
 void Cpu::sub_a_r8(Reg8Name r8)
 {
     sub(get_register(r8), false);
 }
 
-// void Cpu::sbc_a_r8(Reg8Name r8) {}
-// void Cpu::and_a_r8(Reg8Name r8) {}
-// void Cpu::xor_a_r8(Reg8Name r8) {}
-// void Cpu::or_a_r8(Reg8Name r8) {}
-// void Cpu::cp_a_r8(Reg8Name r8) {}
+void Cpu::sbc_a_r8(Reg8Name r8)
+{
+    sub(get_register(r8), true);
+}
+
+void Cpu::and_a_r8(Reg8Name r8)
+{
+    aand(get_register(r8));
+}
+
+void Cpu::xor_a_r8(Reg8Name r8)
+{
+    xxor(get_register(r8));
+}
+
+void Cpu::or_a_r8(Reg8Name r8)
+{
+    oor(get_register(r8));
+}
+
+void Cpu::cp_a_r8(Reg8Name r8)
+{
+    cp(get_register(r8));
+}
+
 // void Cpu::pop_r16(Reg16Name r16) {}
 // void Cpu::push_r16(Reg16Name r16) {}
 
@@ -207,6 +230,186 @@ void Cpu::sub_a_h()
 void Cpu::sub_a_l()
 {
     sub_a_r8(Reg8Name::L);
+}
+
+// AND A, r8
+void Cpu::and_a_a()
+{
+    and_a_r8(Reg8Name::A);
+}
+void Cpu::and_a_b()
+{
+    and_a_r8(Reg8Name::B);
+}
+void Cpu::and_a_c()
+{
+    and_a_r8(Reg8Name::C);
+}
+void Cpu::and_a_d()
+{
+    and_a_r8(Reg8Name::D);
+}
+void Cpu::and_a_e()
+{
+    and_a_r8(Reg8Name::E);
+}
+void Cpu::and_a_h()
+{
+    and_a_r8(Reg8Name::H);
+}
+void Cpu::and_a_l()
+{
+    and_a_r8(Reg8Name::L);
+}
+
+// OR A, r8
+void Cpu::or_a_a()
+{
+    or_a_r8(Reg8Name::A);
+}
+void Cpu::or_a_b()
+{
+    or_a_r8(Reg8Name::B);
+}
+void Cpu::or_a_c()
+{
+    or_a_r8(Reg8Name::C);
+}
+void Cpu::or_a_d()
+{
+    or_a_r8(Reg8Name::D);
+}
+void Cpu::or_a_e()
+{
+    or_a_r8(Reg8Name::E);
+}
+void Cpu::or_a_h()
+{
+    or_a_r8(Reg8Name::H);
+}
+void Cpu::or_a_l()
+{
+    or_a_r8(Reg8Name::L);
+}
+
+// XOR A, r8
+void Cpu::xor_a_a()
+{
+    xor_a_r8(Reg8Name::A);
+}
+void Cpu::xor_a_b()
+{
+    xor_a_r8(Reg8Name::B);
+}
+void Cpu::xor_a_c()
+{
+    xor_a_r8(Reg8Name::C);
+}
+void Cpu::xor_a_d()
+{
+    xor_a_r8(Reg8Name::D);
+}
+void Cpu::xor_a_e()
+{
+    xor_a_r8(Reg8Name::E);
+}
+void Cpu::xor_a_h()
+{
+    xor_a_r8(Reg8Name::H);
+}
+void Cpu::xor_a_l()
+{
+    xor_a_r8(Reg8Name::L);
+}
+
+// CP A, r8
+void Cpu::cp_a_a()
+{
+    cp_a_r8(Reg8Name::A);
+}
+void Cpu::cp_a_b()
+{
+    cp_a_r8(Reg8Name::B);
+}
+void Cpu::cp_a_c()
+{
+    cp_a_r8(Reg8Name::C);
+}
+void Cpu::cp_a_d()
+{
+    cp_a_r8(Reg8Name::D);
+}
+void Cpu::cp_a_e()
+{
+    cp_a_r8(Reg8Name::E);
+}
+void Cpu::cp_a_h()
+{
+    cp_a_r8(Reg8Name::H);
+}
+void Cpu::cp_a_l()
+{
+    cp_a_r8(Reg8Name::L);
+}
+
+// ADC A, r8
+void Cpu::adc_a_a()
+{
+    adc_a_r8(Reg8Name::A);
+}
+void Cpu::adc_a_b()
+{
+    adc_a_r8(Reg8Name::B);
+}
+void Cpu::adc_a_c()
+{
+    adc_a_r8(Reg8Name::C);
+}
+void Cpu::adc_a_d()
+{
+    adc_a_r8(Reg8Name::D);
+}
+void Cpu::adc_a_e()
+{
+    adc_a_r8(Reg8Name::E);
+}
+void Cpu::adc_a_h()
+{
+    adc_a_r8(Reg8Name::H);
+}
+void Cpu::adc_a_l()
+{
+    adc_a_r8(Reg8Name::L);
+}
+
+// SBC A, r8
+void Cpu::sbc_a_a()
+{
+    sbc_a_r8(Reg8Name::A);
+}
+void Cpu::sbc_a_b()
+{
+    sbc_a_r8(Reg8Name::B);
+}
+void Cpu::sbc_a_c()
+{
+    sbc_a_r8(Reg8Name::C);
+}
+void Cpu::sbc_a_d()
+{
+    sbc_a_r8(Reg8Name::D);
+}
+void Cpu::sbc_a_e()
+{
+    sbc_a_r8(Reg8Name::E);
+}
+void Cpu::sbc_a_h()
+{
+    sbc_a_r8(Reg8Name::H);
+}
+void Cpu::sbc_a_l()
+{
+    sbc_a_r8(Reg8Name::L);
 }
 
 // Individual CPU instruction implementations (CB-prefixed)

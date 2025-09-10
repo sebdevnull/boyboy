@@ -86,8 +86,8 @@ private:
     void reset_flags() { registers_.f(0); }
 
     // ALU operations
-    void add(uint8_t val, bool carry);
-    void sub(uint8_t val, bool carry);
+    void add(uint8_t val, bool use_carry);
+    void sub(uint8_t val, bool use_carry);
     void aand(uint8_t val);
     void xxor(uint8_t val);
     void oor(uint8_t val);
@@ -173,5 +173,47 @@ private:
 #define CPU_SUB_A_E
 #define CPU_SUB_A_H
 #define CPU_SUB_A_L
+#define CPU_AND_A_A
+#define CPU_AND_A_B
+#define CPU_AND_A_C
+#define CPU_AND_A_D
+#define CPU_AND_A_E
+#define CPU_AND_A_H
+#define CPU_AND_A_L
+#define CPU_OR_A_A
+#define CPU_OR_A_B
+#define CPU_OR_A_C
+#define CPU_OR_A_D
+#define CPU_OR_A_E
+#define CPU_OR_A_H
+#define CPU_OR_A_L
+#define CPU_XOR_A_A
+#define CPU_XOR_A_B
+#define CPU_XOR_A_C
+#define CPU_XOR_A_D
+#define CPU_XOR_A_E
+#define CPU_XOR_A_H
+#define CPU_XOR_A_L
+#define CPU_CP_A_A
+#define CPU_CP_A_B
+#define CPU_CP_A_C
+#define CPU_CP_A_D
+#define CPU_CP_A_E
+#define CPU_CP_A_H
+#define CPU_CP_A_L
+#define CPU_ADC_A_A
+#define CPU_ADC_A_B
+#define CPU_ADC_A_C
+#define CPU_ADC_A_D
+#define CPU_ADC_A_E
+#define CPU_ADC_A_H
+#define CPU_ADC_A_L
+#define CPU_SBC_A_A
+#define CPU_SBC_A_B
+#define CPU_SBC_A_C
+#define CPU_SBC_A_D
+#define CPU_SBC_A_E
+#define CPU_SBC_A_H
+#define CPU_SBC_A_L
 
 } // namespace boyboy::cpu
