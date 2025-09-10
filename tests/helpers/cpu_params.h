@@ -31,6 +31,8 @@ struct R8ALUParam {
     std::optional<boyboy::cpu::Reg8Name> src = std::nullopt;
     std::optional<boyboy::cpu::Reg8Name> dst = std::nullopt;
 
+    std::optional<uint16_t> src_addr = std::nullopt;
+
     std::optional<uint8_t> initial_a = std::nullopt; // initial value of A register
     uint8_t src_value;
     std::optional<bool> carry_in = std::nullopt; // for ADC and SBC instructions

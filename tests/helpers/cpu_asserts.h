@@ -20,11 +20,18 @@ inline void expect_r8(const boyboy::cpu::Cpu& cpu, R8ALUParam& p)
     EXPECT_EQ(cpu.get_register(p.target()), p.expected_value) << "Register mismatch: " << p.name;
 }
 
+inline void expect_at_addr(const boyboy::cpu::Cpu& cpu, R8ALUParam& p)
+{
+    EXPECT_EQ(cpu.read_byte(*p.src_addr), p.expected_value) << "Register mismatch: " << p.name;
+}
+
 inline void expect_flags(const boyboy::cpu::Cpu& cpu, R8ALUParam& p)
 {
     EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Zero), p.expect_z) << "Z flag mismatch: " << p.name;
-    EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Substract), p.expect_n) << "N flag mismatch: " << p.name;
-    EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::HalfCarry), p.expect_h) << "H flag mismatch: " << p.name;
+    EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Substract), p.expect_n)
+        << "N flag mismatch: " << p.name;
+    EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::HalfCarry), p.expect_h)
+        << "H flag mismatch: " << p.name;
     EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Carry), p.expect_c) << "C flag mismatch: " << p.name;
 }
 

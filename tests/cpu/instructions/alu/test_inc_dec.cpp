@@ -12,6 +12,7 @@
 
 using namespace boyboy::cpu;
 
+using boyboy::test::cpu::ALUOperandType;
 using boyboy::test::cpu::R8ALUParam;
 using boyboy::test::cpu::R8Test;
 
@@ -19,13 +20,17 @@ using boyboy::test::cpu::R8Test;
 // Test types
 // -----------------------------
 using IncR8Test = R8Test<R8ALUParam>;
+using IncHLTest = R8Test<R8ALUParam>;
 using DecR8Test = R8Test<R8ALUParam>;
+using DecHLTest = R8Test<R8ALUParam>;
 
 // -----------------------------
 // Test definitions
 // -----------------------------
 TEST_P(IncR8Test, Works) { run_test(); }
+TEST_P(IncHLTest, Works) { run_test(); }
 TEST_P(DecR8Test, Works) { run_test(); }
+TEST_P(DecHLTest, Works) { run_test(); }
 
 // -----------------------------
 // Parameter instantiations
@@ -87,6 +92,48 @@ INSTANTIATE_TEST_SUITE_P(IncInstructions,
                                  .src_value      = 0xFE,
                                  .expected_value = 0xFF,
                                  .name           = "L_Normal",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+// INC [HL]
+INSTANTIATE_TEST_SUITE_P(IncInstructions,
+                         IncHLTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::INC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0x0000,
+                                 .src_value      = 0x00,
+                                 .expected_value = 0x01,
+                                 .name           = "Normal",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::INC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0x1234,
+                                 .src_value      = 0x0F,
+                                 .expected_value = 0x10,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarry",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::INC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0x5678,
+                                 .src_value      = 0xFF,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_h       = true,
+                                 .name           = "ZeroOverflow",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::INC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0x9ABC,
+                                 .src_value      = 0x7F,
+                                 .expected_value = 0x80,
+                                 .expect_h       = true,
+                                 .name           = "SignChange",
                              }),
                          boyboy::test::cpu::param_name<R8ALUParam>);
 
@@ -156,5 +203,59 @@ INSTANTIATE_TEST_SUITE_P(DecInstructions,
                                  .expected_value = 0x09,
                                  .expect_n       = true,
                                  .name           = "L_Normal",
+                             }),
+                         boyboy::test::cpu::param_name<R8ALUParam>);
+
+INSTANTIATE_TEST_SUITE_P(DecInstructions,
+                         DecHLTest,
+                         ::testing::Values(
+                             R8ALUParam{
+                                 .opcode         = Opcode::DEC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0x0000,
+                                 .src_value      = 0xAB,
+                                 .expected_value = 0xAA,
+                                 .expect_n       = true,
+                                 .name           = "Normal",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::DEC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0x1234,
+                                 .src_value      = 0x01,
+                                 .expected_value = 0x00,
+                                 .expect_z       = true,
+                                 .expect_n       = true,
+                                 .name           = "Zero",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::DEC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0x5678,
+                                 .src_value      = 0x10,
+                                 .expected_value = 0x0F,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .name           = "HalfCarry",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::DEC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0x9ABC,
+                                 .src_value      = 0x00,
+                                 .expected_value = 0xFF,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .name           = "Underflow",
+                             },
+                             R8ALUParam{
+                                 .opcode         = Opcode::DEC_AT_HL,
+                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .src_addr       = 0xDEF0,
+                                 .src_value      = 0x80,
+                                 .expected_value = 0x7F,
+                                 .expect_n       = true,
+                                 .expect_h       = true,
+                                 .name           = "SignChange",
                              }),
                          boyboy::test::cpu::param_name<R8ALUParam>);

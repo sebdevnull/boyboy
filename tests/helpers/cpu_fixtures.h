@@ -11,11 +11,12 @@
 
 #include <cstdint>
 
-#include "boyboy/cpu/registers.h"
-#include "helpers/cpu_asserts.h"
-
 // boyboy
 #include "boyboy/cpu/cpu.h"
+#include "boyboy/cpu/registers.h"
+
+// Helpers
+#include "helpers/cpu_asserts.h"
 #include "helpers/cpu_params.h"
 
 namespace boyboy::test::cpu {
@@ -57,9 +58,9 @@ public:
     void run_test()
     {
         auto param = this->GetParam();
-        if (!(param.src.has_value() || param.dst.has_value())) {
-            throw std::runtime_error("Either src or dst register must be specified");
-        }
+        // if (!(param.src.has_value() || param.dst.has_value())) {
+        //     throw std::runtime_error("Either src or dst register must be specified");
+        // }
 
         // Set initial A register if provided
         if (param.initial_a.has_value()) {
@@ -84,7 +85,12 @@ public:
             cpu.write_byte(cpu.get_pc() + 1, param.src_value);
             break;
         case ALUOperandType::IndirectHL:
-            cpu.write_byte(cpu.get_register(boyboy::cpu::Reg16Name::HL), param.src_value);
+            if (!param.src_addr.has_value()) {
+                throw std::runtime_error(
+                    "Source address must be specified for IndirectHL operand type");
+            }
+            cpu.set_register(boyboy::cpu::Reg16Name::HL, *param.src_addr);
+            cpu.write_byte(*param.src_addr, param.src_value);
             break;
         }
 
@@ -97,7 +103,17 @@ public:
         cpu.execute(param.opcode);
 
         // Run asserts
-        expect_r8(cpu, param);
+        switch (param.operand_type) {
+        case ALUOperandType::Reg8:
+            expect_r8(cpu, param);
+            break;
+        case ALUOperandType::Immediate:
+            throw std::runtime_error("Immediate operand type not implemented yet");
+            break;
+        case ALUOperandType::IndirectHL:
+            expect_at_addr(cpu, param);
+            break;
+        }
         expect_flags(cpu, param);
     }
 };
