@@ -9,6 +9,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <iomanip>
+#include <ios>
+#include <ostream>
 
 namespace boyboy::utils {
 
@@ -36,6 +39,21 @@ constexpr uint8_t get_lsb(uint16_t value)
 constexpr uint8_t get_msb(uint16_t value)
 {
     return (value >> 8) & 0xFF;
+}
+
+// Print utilities
+struct PrettyHex {
+    uint32_t value;
+    int width;
+
+    PrettyHex(uint8_t v)  : value(v), width(2) {}
+    PrettyHex(uint16_t v) : value(v), width(4) {}
+    PrettyHex(uint32_t v, int w) : value(v), width(w) {}
+};
+
+inline std::ostream& operator<<(std::ostream& os, const PrettyHex& ph) {
+    os << "0x" << std::hex << std::setw(ph.width) << std::setfill('0') << ph.value << std::dec;
+    return os;
 }
 
 } // namespace boyboy::utils
