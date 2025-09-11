@@ -16,14 +16,14 @@
 namespace boyboy::utils {
 
 // Byte manipulation utilities
-constexpr uint16_t to_u16(uint8_t high, uint8_t low)
+constexpr uint16_t to_u16(uint8_t msb, uint8_t lsb)
 {
-    return (static_cast<uint16_t>(high) << 8) | low;
+    return (static_cast<uint16_t>(msb) << 8) | lsb;
 }
 
-constexpr uint16_t to_u16(std::byte high, std::byte low)
+constexpr uint16_t to_u16(std::byte msb, std::byte lsb)
 {
-    return (static_cast<uint16_t>(high) << 8) | static_cast<uint16_t>(low);
+    return (static_cast<uint16_t>(msb) << 8) | static_cast<uint16_t>(lsb);
 }
 
 constexpr uint8_t to_u8(std::byte byte)
@@ -31,12 +31,12 @@ constexpr uint8_t to_u8(std::byte byte)
     return static_cast<uint8_t>(byte);
 }
 
-constexpr uint8_t get_lsb(uint16_t value)
+constexpr uint8_t lsb(uint16_t value)
 {
     return value & 0xFF;
 }
 
-constexpr uint8_t get_msb(uint16_t value)
+constexpr uint8_t msb(uint16_t value)
 {
     return (value >> 8) & 0xFF;
 }
