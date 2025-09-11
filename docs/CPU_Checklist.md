@@ -19,7 +19,7 @@
 - [x] **`LD r, imm`** — Test: `04-op r,imm.gb`
 - [x] **`LD r, r`** — Test: `06-ld r,r.gb`
 - [x] `LD r, [HL]`, `LD [HL], r` — Test: `06-ld r,r.gb`
-- [ ] **`LD A, [BC]`, `LD A, [DE]`, `LD [BC], A`, `LD [DE], A`** — Test: `06-ld r,r.gb`
+- [x] **`LD A, [BC]`, `LD A, [DE]`, `LD [BC], A`, `LD [DE], A`** — Test: `06-ld r,r.gb`
 - [ ] `LD A, [nn]`, `LD [nn], A` — Test: `06-ld r,r.gb`
 - [ ] `LD A, [FF00+n]`, `LD A, [FF00+C]`, `LD [FF00+n], A`, `LD [FF00+C], A` — Test: `06-ld r,r.gb`
 - [ ] `LD A, [HL+]`, `LD A, [HL-]`, `LD [HL+], A`, `LD [HL-], A` — Test: `06-ld r,r.gb`

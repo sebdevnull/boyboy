@@ -95,9 +95,11 @@ private:
 
     // ========== CPU Instructions definitions ==========
     // Generic unprefixed CPU instructions
+    void ld_r8_n8(Reg8Name r8);
+    void ld_r8_r8(Reg8Name dst, Reg8Name src);
+    void ld_r8_at_r16(Reg8Name dst, Reg16Name src);
+    void ld_at_r16_r8(Reg16Name dst, Reg8Name src);
     void ld_r16_n16(Reg16Name r16);
-    void ld_at_r16_a(Reg16Name r16);
-    void ld_a_at_r16(Reg16Name r16);
 
     void inc_r16(Reg16Name r16);
     void dec_r16(Reg16Name r16);
@@ -105,11 +107,6 @@ private:
 
     void inc_r8(Reg8Name r8);
     void dec_r8(Reg8Name r8);
-
-    void ld_r8_n8(Reg8Name r8);
-    void ld_r8_r8(Reg8Name dst, Reg8Name src);
-    void ld_r8_at_r16(Reg8Name dst, Reg16Name src);
-    void ld_at_r16_r8(Reg16Name dst, Reg8Name src);
 
     void add_a_r8(Reg8Name r8);
     void adc_a_r8(Reg8Name r8);
@@ -321,5 +318,10 @@ private:
 #define CPU_LD_AT_HL_H
 #define CPU_LD_AT_HL_L
 
+// LD A, [BC/DE] and LD [BC/DE], A
+#define CPU_LD_A_AT_BC
+#define CPU_LD_A_AT_DE
+#define CPU_LD_AT_BC_A
+#define CPU_LD_AT_DE_A
 
 } // namespace boyboy::cpu
