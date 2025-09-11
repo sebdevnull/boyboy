@@ -23,7 +23,13 @@
 
 namespace boyboy::test::cpu {
 
-enum class OperandType : uint8_t { Reg8, Reg16, Immediate, Indirect };
+enum class OperandType : uint8_t {
+    Reg8,
+    Reg16,
+    Immediate,
+    Indirect,
+    Memory,
+};
 
 inline const char* to_string(OperandType op)
 {
@@ -36,6 +42,8 @@ inline const char* to_string(OperandType op)
         return "Immediate";
     case OperandType::Indirect:
         return "Indirect";
+    case OperandType::Memory:
+        return "Memory";
     default:
         return "Unknown";
     }

@@ -12,6 +12,7 @@
 #include <cstdint>
 
 // boyboy
+#include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/registers.h"
 
@@ -105,13 +106,30 @@ public:
             cpu.set_register(param.src->get_r16(), *param.src_addr);
             cpu.write_byte(*param.src_addr, param.src_value);
             break;
+        case OperandType::Memory:
+            // Set the imm 16-bit address and its value
+            uint16_t addr = *param.src_addr;
+            cpu.write_byte(cpu.get_pc() + 1, boyboy::utils::lsb(addr));
+            cpu.write_byte(cpu.get_pc() + 2, boyboy::utils::msb(addr));
+            cpu.write_byte(addr, param.src_value);
         }
 
         // Setup destination as needed
         if (param.dst_op_type) {
-            if (*param.dst_op_type == OperandType::Indirect) {
+            switch (*param.dst_op_type) {
+            case OperandType::Indirect:
                 // We don't check anything. If it fails, it fails
                 cpu.set_register(param.dst->get_r16(), *param.dst_addr);
+                break;
+            case OperandType::Memory: {
+                // Set the imm 16-bit dst address
+                uint16_t addr = *param.dst_addr;
+                cpu.write_byte(cpu.get_pc() + 1, boyboy::utils::lsb(addr));
+                cpu.write_byte(cpu.get_pc() + 2, boyboy::utils::msb(addr));
+                break;
+            }
+            default:
+                break;
             }
         }
 
@@ -135,6 +153,7 @@ public:
                 throw std::runtime_error("Reg16 operand type not supported in R8Test");
                 break;
             case OperandType::Indirect:
+            case OperandType::Memory:
                 expect_at_addr(cpu, param);
                 break;
             }
