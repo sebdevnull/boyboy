@@ -59,7 +59,16 @@ void Cpu::dec_r8(Reg8Name r8)
 }
 
 // void Cpu::ld_r8_n8(Reg8Name r8) {}
-// void Cpu::ld_r8_r8(Reg8Name dest, Reg8Name src) {}
+
+void Cpu::ld_r8_r8(Reg8Name dst, Reg8Name src)
+{
+    if (dst == src) {
+        // If same register do nothing (NOP)
+        nop();
+        return;
+    }
+    set_register(dst, get_register(src));
+}
 
 void Cpu::add_a_r8(Reg8Name r8)
 {
@@ -565,6 +574,67 @@ void Cpu::cp_a_n8()
     uint8_t value = fetch();
     cp(value);
 }
+
+// LD r8, r8'
+// clang-format off
+// A
+void Cpu::ld_a_a() { ld_r8_r8(Reg8Name::A, Reg8Name::A); }
+void Cpu::ld_a_b() { ld_r8_r8(Reg8Name::A, Reg8Name::B); }
+void Cpu::ld_a_c() { ld_r8_r8(Reg8Name::A, Reg8Name::C); }
+void Cpu::ld_a_d() { ld_r8_r8(Reg8Name::A, Reg8Name::D); }
+void Cpu::ld_a_e() { ld_r8_r8(Reg8Name::A, Reg8Name::E); }
+void Cpu::ld_a_h() { ld_r8_r8(Reg8Name::A, Reg8Name::H); }
+void Cpu::ld_a_l() { ld_r8_r8(Reg8Name::A, Reg8Name::L); }
+// B
+void Cpu::ld_b_a() { ld_r8_r8(Reg8Name::B, Reg8Name::A); }
+void Cpu::ld_b_b() { ld_r8_r8(Reg8Name::B, Reg8Name::B); }
+void Cpu::ld_b_c() { ld_r8_r8(Reg8Name::B, Reg8Name::C); }
+void Cpu::ld_b_d() { ld_r8_r8(Reg8Name::B, Reg8Name::D); }
+void Cpu::ld_b_e() { ld_r8_r8(Reg8Name::B, Reg8Name::E); }
+void Cpu::ld_b_h() { ld_r8_r8(Reg8Name::B, Reg8Name::H); }
+void Cpu::ld_b_l() { ld_r8_r8(Reg8Name::B, Reg8Name::L); }
+// C
+void Cpu::ld_c_a() { ld_r8_r8(Reg8Name::C, Reg8Name::A); }
+void Cpu::ld_c_b() { ld_r8_r8(Reg8Name::C, Reg8Name::B); }
+void Cpu::ld_c_c() { ld_r8_r8(Reg8Name::C, Reg8Name::C); }
+void Cpu::ld_c_d() { ld_r8_r8(Reg8Name::C, Reg8Name::D); }
+void Cpu::ld_c_e() { ld_r8_r8(Reg8Name::C, Reg8Name::E); }
+void Cpu::ld_c_h() { ld_r8_r8(Reg8Name::C, Reg8Name::H); }
+void Cpu::ld_c_l() { ld_r8_r8(Reg8Name::C, Reg8Name::L); }
+// D
+void Cpu::ld_d_a() { ld_r8_r8(Reg8Name::D, Reg8Name::A); }
+void Cpu::ld_d_b() { ld_r8_r8(Reg8Name::D, Reg8Name::B); }
+void Cpu::ld_d_c() { ld_r8_r8(Reg8Name::D, Reg8Name::C); }
+void Cpu::ld_d_d() { ld_r8_r8(Reg8Name::D, Reg8Name::D); }
+void Cpu::ld_d_e() { ld_r8_r8(Reg8Name::D, Reg8Name::E); }
+void Cpu::ld_d_h() { ld_r8_r8(Reg8Name::D, Reg8Name::H); }
+void Cpu::ld_d_l() { ld_r8_r8(Reg8Name::D, Reg8Name::L); }
+// E
+void Cpu::ld_e_a() { ld_r8_r8(Reg8Name::E, Reg8Name::A); }
+void Cpu::ld_e_b() { ld_r8_r8(Reg8Name::E, Reg8Name::B); }
+void Cpu::ld_e_c() { ld_r8_r8(Reg8Name::E, Reg8Name::C); }
+void Cpu::ld_e_d() { ld_r8_r8(Reg8Name::E, Reg8Name::D); }
+void Cpu::ld_e_e() { ld_r8_r8(Reg8Name::E, Reg8Name::E); }
+void Cpu::ld_e_h() { ld_r8_r8(Reg8Name::E, Reg8Name::H); }
+void Cpu::ld_e_l() { ld_r8_r8(Reg8Name::E, Reg8Name::L); }
+// H
+void Cpu::ld_h_a() { ld_r8_r8(Reg8Name::H, Reg8Name::A); }
+void Cpu::ld_h_b() { ld_r8_r8(Reg8Name::H, Reg8Name::B); }
+void Cpu::ld_h_c() { ld_r8_r8(Reg8Name::H, Reg8Name::C); }
+void Cpu::ld_h_d() { ld_r8_r8(Reg8Name::H, Reg8Name::D); }
+void Cpu::ld_h_e() { ld_r8_r8(Reg8Name::H, Reg8Name::E); }
+void Cpu::ld_h_h() { ld_r8_r8(Reg8Name::H, Reg8Name::H); }
+void Cpu::ld_h_l() { ld_r8_r8(Reg8Name::H, Reg8Name::L); }
+// L
+void Cpu::ld_l_a() { ld_r8_r8(Reg8Name::L, Reg8Name::A); }
+void Cpu::ld_l_b() { ld_r8_r8(Reg8Name::L, Reg8Name::B); }
+void Cpu::ld_l_c() { ld_r8_r8(Reg8Name::L, Reg8Name::C); }
+void Cpu::ld_l_d() { ld_r8_r8(Reg8Name::L, Reg8Name::D); }
+void Cpu::ld_l_e() { ld_r8_r8(Reg8Name::L, Reg8Name::E); }
+void Cpu::ld_l_h() { ld_r8_r8(Reg8Name::L, Reg8Name::H); }
+void Cpu::ld_l_l() { ld_r8_r8(Reg8Name::L, Reg8Name::L); }
+// clang-format on
+
 
 // Individual CPU instruction implementations (CB-prefixed)
 

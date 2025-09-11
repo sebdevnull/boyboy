@@ -17,7 +17,7 @@
 ## Step 2 – Loads
 
 - [ ] **`LD r, imm`** — Test: `04-op r,imm.gb`
-- [ ] **`LD r, r`** — Test: `06-ld r,r.gb`
+- [x] **`LD r, r`** — Test: `06-ld r,r.gb`
 - [ ] `LD r, [HL]`, `LD [HL], r` — Test: `06-ld r,r.gb`
 - [ ] **`LD A, [BC]`, `LD A, [DE]`, `LD [BC], A`, `LD [DE], A`** — Test: `06-ld r,r.gb`
 - [ ] `LD A, [nn]`, `LD [nn], A` — Test: `06-ld r,r.gb`
@@ -71,6 +71,6 @@
 - [x] INC / DEC / INC [HL] / DEC [HL]
 - [x] NOP
 - [ ] LD r, imm
-- [ ] LD r, r
+- [x] LD r, r
 - [ ] LD A, [BC] / [DE] / [BC] → A / [DE] → A
 - [ ] JP / JR

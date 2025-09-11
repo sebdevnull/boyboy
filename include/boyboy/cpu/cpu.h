@@ -107,7 +107,7 @@ private:
     void dec_r8(Reg8Name r8);
 
     void ld_r8_n8(Reg8Name r8);
-    void ld_r8_r8(Reg8Name dest, Reg8Name src);
+    void ld_r8_r8(Reg8Name dst, Reg8Name src);
 
     void add_a_r8(Reg8Name r8);
     void adc_a_r8(Reg8Name r8);
@@ -143,7 +143,7 @@ private:
     friend class InstructionTable;
 };
 
-// Stub disabling macros for implemented opcodes
+// ----- Stub disabling macros for implemented opcodes -----
 #define CPU_NOP
 #define CPU_INC_A
 #define CPU_INC_B
@@ -233,5 +233,63 @@ private:
 #define CPU_OR_A_N8
 #define CPU_XOR_A_N8
 #define CPU_CP_A_N8
+
+// LD r8, r8'
+// A
+#define CPU_LD_A_A
+#define CPU_LD_A_B
+#define CPU_LD_A_C
+#define CPU_LD_A_D
+#define CPU_LD_A_E
+#define CPU_LD_A_H
+#define CPU_LD_A_L
+// B
+#define CPU_LD_B_A
+#define CPU_LD_B_B
+#define CPU_LD_B_C
+#define CPU_LD_B_D
+#define CPU_LD_B_E
+#define CPU_LD_B_H
+#define CPU_LD_B_L
+// C
+#define CPU_LD_C_A
+#define CPU_LD_C_B
+#define CPU_LD_C_C
+#define CPU_LD_C_D
+#define CPU_LD_C_E
+#define CPU_LD_C_H
+#define CPU_LD_C_L
+// D
+#define CPU_LD_D_A
+#define CPU_LD_D_B
+#define CPU_LD_D_C
+#define CPU_LD_D_D
+#define CPU_LD_D_E
+#define CPU_LD_D_H
+#define CPU_LD_D_L
+// E
+#define CPU_LD_E_A
+#define CPU_LD_E_B
+#define CPU_LD_E_C
+#define CPU_LD_E_D
+#define CPU_LD_E_E
+#define CPU_LD_E_H
+#define CPU_LD_E_L
+// H
+#define CPU_LD_H_A
+#define CPU_LD_H_B
+#define CPU_LD_H_C
+#define CPU_LD_H_D
+#define CPU_LD_H_E
+#define CPU_LD_H_H
+#define CPU_LD_H_L
+// L
+#define CPU_LD_L_A
+#define CPU_LD_L_B
+#define CPU_LD_L_C
+#define CPU_LD_L_D
+#define CPU_LD_L_E
+#define CPU_LD_L_H
+#define CPU_LD_L_L
 
 } // namespace boyboy::cpu
