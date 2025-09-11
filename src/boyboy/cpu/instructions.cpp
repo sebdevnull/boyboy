@@ -435,6 +435,26 @@ void Cpu::ld_at_bc_a() { ld_at_r16_r8(Reg16Name::BC, Reg8Name::A); }
 void Cpu::ld_at_de_a() { ld_at_r16_r8(Reg16Name::DE, Reg8Name::A); }
 // clang-format on
 
+// LD A, [a16]
+void Cpu::ld_a_at_a16()
+{
+    uint8_t lsb = fetch();
+    uint8_t msb = fetch();
+    uint16_t addr = utils::to_u16(msb, lsb);
+    uint8_t value = read_byte(addr);
+    set_register(Reg8Name::A, value);
+}
+
+// LD [a16], A
+void Cpu::ld_at_a16_a()
+{
+    uint8_t lsb = fetch();
+    uint8_t msb = fetch();
+    uint16_t addr = utils::to_u16(msb, lsb);
+    uint8_t value = get_register(Reg8Name::A);
+    write_byte(addr, value);
+}
+
 // Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu

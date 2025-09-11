@@ -324,4 +324,8 @@ private:
 #define CPU_LD_AT_BC_A
 #define CPU_LD_AT_DE_A
 
+// LD A, [n16] and LD [n16], A
+#define CPU_LD_A_AT_A16
+#define CPU_LD_AT_A16_A
+
 } // namespace boyboy::cpu
