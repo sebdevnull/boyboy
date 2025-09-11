@@ -64,21 +64,21 @@ public:
         auto param = this->GetParam();
 
         // Set initial A register if provided
-        if (param.initial_a.has_value()) {
+        if (param.initial_a) {
             cpu.set_register(boyboy::cpu::Reg8Name::A, *param.initial_a);
         }
 
         // Setup source register or memory depending on operand type
         switch (param.src_op_type) {
         case OperandType::Reg8:
-            if (param.src.has_value()) {
-                if (!param.src.is_r8()) {
+            if (param.src) {
+                if (!param.src->is_r8()) {
                     throw std::runtime_error(
                         "Source must be an 8-bit register for Reg8 operand type");
                 }
                 // Only write src_value if src != dst (in practice only A -> A)
-                if (!param.dst.has_value() || !param.src.overlaps(param.dst)) {
-                    cpu.set_register(param.src.get_r8(), param.src_value);
+                if (!param.dst || !param.src->overlaps(*param.dst)) {
+                    cpu.set_register(param.src->get_r8(), param.src_value);
                 }
             }
             else {
@@ -93,30 +93,30 @@ public:
             cpu.write_byte(cpu.get_pc() + 1, param.src_value);
             break;
         case OperandType::Indirect:
-            if (!param.src.is_r16()) {
+            if (!param.src->is_r16()) {
                 throw std::runtime_error(
                     "Source must be a 16-bit register for Indirect operand type");
             }
-            if (!param.src_addr.has_value()) {
+            if (!param.src_addr) {
                 throw std::runtime_error(
                     "Source address must be specified for Indirect operand type");
             }
 
-            cpu.set_register(param.src.get_r16(), *param.src_addr);
+            cpu.set_register(param.src->get_r16(), *param.src_addr);
             cpu.write_byte(*param.src_addr, param.src_value);
             break;
         }
 
         // Setup destination as needed
-        if (param.dst_op_type.has_value()) {
+        if (param.dst_op_type) {
             if (*param.dst_op_type == OperandType::Indirect) {
                 // We don't check anything. If it fails, it fails
-                cpu.set_register(param.dst.get_r16(), *param.dst_addr);
+                cpu.set_register(param.dst->get_r16(), *param.dst_addr);
             }
         }
 
         // Set carry if needed for ADC and SBC
-        if (param.carry_in.has_value()) {
+        if (param.carry_in) {
             cpu.set_flag(boyboy::cpu::Flag::Carry, *param.carry_in);
         }
 
