@@ -22,27 +22,27 @@
 
 namespace boyboy::test::cpu {
 
-enum class ALUOperandType : uint8_t { Reg8, Immediate, IndirectHL };
+enum class OperandType : uint8_t { Reg8, Immediate, IndirectHL };
 
-inline const char* to_string(ALUOperandType op)
+inline const char* to_string(OperandType op)
 {
     switch (op) {
-    case ALUOperandType::Reg8:
+    case OperandType::Reg8:
         return "Reg8";
-    case ALUOperandType::Immediate:
+    case OperandType::Immediate:
         return "Immediate";
-    case ALUOperandType::IndirectHL:
+    case OperandType::IndirectHL:
         return "IndirectHL";
     default:
         return "Unknown";
     }
 }
 
-inline std::ostream& operator<<(std::ostream& os, ALUOperandType op) { return os << to_string(op); }
+inline std::ostream& operator<<(std::ostream& os, OperandType op) { return os << to_string(op); }
 
-struct R8ALUParam {
+struct R8Param {
     boyboy::cpu::Opcode opcode;
-    ALUOperandType operand_type = ALUOperandType::Reg8;
+    OperandType operand_type = OperandType::Reg8;
 
     std::optional<boyboy::cpu::Reg8Name> src = std::nullopt;
     std::optional<boyboy::cpu::Reg8Name> dst = std::nullopt;
@@ -69,7 +69,7 @@ struct R8ALUParam {
     [[nodiscard]] boyboy::cpu::Reg8Name target() const { return dst.value_or(*src); }
 
     // For better test case naming in GTest output
-    friend std::ostream& operator<<(std::ostream& os, const R8ALUParam& p)
+    friend std::ostream& operator<<(std::ostream& os, const R8Param& p)
     {
         // clang-format off
         os << p.name

@@ -17,25 +17,25 @@
 using boyboy::cpu::Opcode;
 using boyboy::cpu::Reg8Name;
 
-using boyboy::test::cpu::ALUOperandType;
-using boyboy::test::cpu::R8ALUParam;
+using boyboy::test::cpu::OperandType;
+using boyboy::test::cpu::R8Param;
 using boyboy::test::cpu::R8Test;
 
 // -----------------------------
 // Test types
 // -----------------------------
-using AddR8Test  = R8Test<R8ALUParam>;
-using AddHLTest  = R8Test<R8ALUParam>;
-using AddImmTest = R8Test<R8ALUParam>;
-using AdcR8Test  = R8Test<R8ALUParam>;
-using AdcHLTest  = R8Test<R8ALUParam>;
-using AdcImmTest = R8Test<R8ALUParam>;
-using SubR8Test  = R8Test<R8ALUParam>;
-using SubHLTest  = R8Test<R8ALUParam>;
-using SubImmTest = R8Test<R8ALUParam>;
-using SbcR8Test  = R8Test<R8ALUParam>;
-using SbcHLTest  = R8Test<R8ALUParam>;
-using SbcImmTest = R8Test<R8ALUParam>;
+using AddR8Test  = R8Test<R8Param>;
+using AddHLTest  = R8Test<R8Param>;
+using AddImmTest = R8Test<R8Param>;
+using AdcR8Test  = R8Test<R8Param>;
+using AdcHLTest  = R8Test<R8Param>;
+using AdcImmTest = R8Test<R8Param>;
+using SubR8Test  = R8Test<R8Param>;
+using SubHLTest  = R8Test<R8Param>;
+using SubImmTest = R8Test<R8Param>;
+using SbcR8Test  = R8Test<R8Param>;
+using SbcHLTest  = R8Test<R8Param>;
+using SbcImmTest = R8Test<R8Param>;
 
 // -----------------------------
 // Test definitions
@@ -61,7 +61,7 @@ TEST_P(SbcImmTest, Works) { run_test(); }
 INSTANTIATE_TEST_SUITE_P(AddInstructions,
                          AddR8Test,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -71,7 +71,7 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "B_CarryOverflow",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -83,7 +83,7 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "C_ZeroFlagSet",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -93,14 +93,14 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_h       = true,
                                  .name           = "D_HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0x11,
                                  .expected_value = 0x22,
                                  .name           = "A_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0x0F,
@@ -108,7 +108,7 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_h       = true,
                                  .name           = "A_HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0xFF,
@@ -117,7 +117,7 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "A_Overflow",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -129,7 +129,7 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "E_OverflowZero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -138,7 +138,7 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expected_value = 0x12,
                                  .name           = "H_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -147,15 +147,15 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expected_value = 0x1B,
                                  .name           = "L_Normal",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // ADD A, [HL]
 INSTANTIATE_TEST_SUITE_P(AddInstructions,
                          AddHLTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x00,
@@ -163,9 +163,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expected_value = 0x01,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0123,
                                  .initial_a      = 0x0F,
@@ -174,9 +174,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x4567,
                                  .initial_a      = 0x00,
@@ -185,9 +185,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x89AB,
                                  .initial_a      = 0xFF,
@@ -196,9 +196,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
                                  .initial_a      = 0xFF,
@@ -209,24 +209,24 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowHalfCarryZero",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // ADD A, n8
 INSTANTIATE_TEST_SUITE_P(AddInstructions,
                          AddImmTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x01,
                                  .expected_value = 0x01,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
                                  .src_value      = 0x01,
@@ -234,9 +234,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x00,
@@ -244,9 +244,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
                                  .src_value      = 0x10,
@@ -254,9 +254,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADD_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
                                  .src_value      = 0x01,
@@ -266,13 +266,13 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowHalfCarryZero",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // ADC A, r8
 INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                          AdcR8Test,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0x55,
@@ -280,7 +280,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expected_value = 0xAA,
                                  .name           = "A_A_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0x55,
@@ -288,7 +288,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expected_value = 0xAB,
                                  .name           = "A_A_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -299,7 +299,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_B_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -310,7 +310,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_B_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -321,7 +321,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_C_OverflowBit7_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -332,7 +332,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_C_OverflowBit7_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -343,7 +343,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_z       = true,
                                  .name           = "A_D_Zero_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -353,7 +353,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expected_value = 0x01,
                                  .name           = "A_D_Zero_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -366,7 +366,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_c       = true,
                                  .name           = "A_E_CarryOut_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -378,7 +378,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_c       = true,
                                  .name           = "A_E_CarryOut_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -389,7 +389,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_H_HalfCarry_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -400,7 +400,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_H_HalfCarry_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -410,7 +410,7 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expected_value = 0x46,
                                  .name           = "A_L_Normal_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -420,15 +420,15 @@ INSTANTIATE_TEST_SUITE_P(AdcInstructions,
                                  .expected_value = 0x47,
                                  .name           = "A_L_Normal_WithCarry",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // ADC A, [HL]
 INSTANTIATE_TEST_SUITE_P(AddInstructions,
                          AdcHLTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x00,
@@ -437,9 +437,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expected_value = 0x01,
                                  .name           = "NormalNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x00,
@@ -448,9 +448,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expected_value = 0x02,
                                  .name           = "NormalCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0123,
                                  .initial_a      = 0x0F,
@@ -460,9 +460,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarryNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0123,
                                  .initial_a      = 0x0F,
@@ -472,9 +472,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarryCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x4567,
                                  .initial_a      = 0x00,
@@ -484,9 +484,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_z       = true,
                                  .name           = "ZeroNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x4567,
                                  .initial_a      = 0x00,
@@ -496,9 +496,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_z       = false,
                                  .name           = "NoZeroCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x89AB,
                                  .initial_a      = 0xFF,
@@ -508,9 +508,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x89AB,
                                  .initial_a      = 0xFE,
@@ -520,9 +520,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
                                  .initial_a      = 0xFF,
@@ -534,9 +534,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowZeroNoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
                                  .initial_a      = 0xFF,
@@ -548,15 +548,15 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowZeroCarryIn",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // ADC A, n8
 INSTANTIATE_TEST_SUITE_P(AddInstructions,
                          AdcImmTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x01,
@@ -564,9 +564,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expected_value = 0x01,
                                  .name           = "NormalNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x01,
@@ -574,9 +574,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expected_value = 0x02,
                                  .name           = "NormalCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
                                  .src_value      = 0x01,
@@ -585,9 +585,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarryNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
                                  .src_value      = 0x01,
@@ -596,9 +596,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarryCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x00,
@@ -607,9 +607,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_z       = true,
                                  .name           = "ZeroNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x00,
@@ -618,9 +618,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_z       = false,
                                  .name           = "NoZeroCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
                                  .src_value      = 0x10,
@@ -629,9 +629,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFE,
                                  .src_value      = 0x10,
@@ -640,9 +640,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
                                  .src_value      = 0x01,
@@ -653,9 +653,9 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowZeroNoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::ADC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
                                  .src_value      = 0x00,
@@ -666,13 +666,13 @@ INSTANTIATE_TEST_SUITE_P(AddInstructions,
                                  .expect_c       = true,
                                  .name           = "OverflowZeroCarryIn",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // SUB A, r8
 INSTANTIATE_TEST_SUITE_P(SubInstructions,
                          SubR8Test,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -684,7 +684,7 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "B_Underflow",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -695,7 +695,7 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "C_HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -708,7 +708,7 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                              },
 
                              // Normal tests
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0xFF,
@@ -717,7 +717,7 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "A_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -727,7 +727,7 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "E_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -738,7 +738,7 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "H_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -749,15 +749,15 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "L_Normal",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // SUB A, [HL]
 INSTANTIATE_TEST_SUITE_P(SubInstructions,
                          SubHLTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x02,
@@ -766,9 +766,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0123,
                                  .initial_a      = 0x01,
@@ -778,9 +778,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x4567,
                                  .initial_a      = 0x10,
@@ -790,9 +790,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x89AB,
                                  .initial_a      = 0x0F,
@@ -802,9 +802,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
                                  .initial_a      = 0x10,
@@ -815,15 +815,15 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowCarryHalfCarry",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // SUB A, n8
 INSTANTIATE_TEST_SUITE_P(SubInstructions,
                          SubImmTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x02,
                                  .src_value      = 0x01,
@@ -831,9 +831,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x01,
                                  .src_value      = 0x01,
@@ -842,9 +842,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x01,
@@ -853,9 +853,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
                                  .src_value      = 0x10,
@@ -864,9 +864,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SUB_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x11,
@@ -876,13 +876,13 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowCarryHalfCarry",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // SBC A, r8
 INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                          SbcR8Test,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0x55,
@@ -892,7 +892,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_n       = true,
                                  .name           = "A_A_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0x55,
@@ -903,7 +903,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_c       = true,
                                  .name           = "A_A_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -915,7 +915,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_B_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -927,7 +927,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_B_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -940,7 +940,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_c       = true,
                                  .name           = "A_C_Underflow_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -953,7 +953,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_c       = true,
                                  .name           = "A_C_Underflow_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -965,7 +965,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_n       = true,
                                  .name           = "A_D_Zero_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -978,7 +978,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_c       = true,
                                  .name           = "A_D_Zero_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -990,7 +990,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_n       = true,
                                  .name           = "A_E_Zero_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -1003,7 +1003,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_c       = true,
                                  .name           = "A_E_Zero_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -1015,7 +1015,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_H_HalfBorrow_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -1027,7 +1027,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_H_HalfBorrow_WithCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -1038,7 +1038,7 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_n       = true,
                                  .name           = "A_L_Normal_NoCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -1050,15 +1050,15 @@ INSTANTIATE_TEST_SUITE_P(SbcInstructions,
                                  .expect_h       = true,
                                  .name           = "A_L_Normal_WithCarry",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // SBC A, [HL]
 INSTANTIATE_TEST_SUITE_P(SubInstructions,
                          SbcHLTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x02,
@@ -1068,9 +1068,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "NormalNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x03,
@@ -1080,9 +1080,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "NormalCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0123,
                                  .initial_a      = 0x01,
@@ -1093,9 +1093,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "ZeroNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0123,
                                  .initial_a      = 0x02,
@@ -1106,9 +1106,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "ZeroCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x4567,
                                  .initial_a      = 0x10,
@@ -1119,9 +1119,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarryNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x4567,
                                  .initial_a      = 0x10,
@@ -1132,9 +1132,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarryCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x89AB,
                                  .initial_a      = 0x0F,
@@ -1145,9 +1145,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x89AB,
                                  .initial_a      = 0x0F,
@@ -1159,9 +1159,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
                                  .initial_a      = 0x10,
@@ -1173,9 +1173,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "HalfCarryUnderflowNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0xCDEF,
                                  .initial_a      = 0x10,
@@ -1187,15 +1187,15 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "HalfCarryUnderflowCarryIn",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // SBC A, n8
 INSTANTIATE_TEST_SUITE_P(SubInstructions,
                          SbcImmTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x02,
                                  .src_value      = 0x01,
@@ -1204,9 +1204,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "NormalNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x03,
                                  .src_value      = 0x01,
@@ -1215,9 +1215,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "NormalCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x01,
                                  .src_value      = 0x01,
@@ -1227,9 +1227,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "ZeroNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x02,
                                  .src_value      = 0x01,
@@ -1239,9 +1239,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_n       = true,
                                  .name           = "ZeroCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x01,
@@ -1251,9 +1251,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarryNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x01,
@@ -1263,9 +1263,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarryCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
                                  .src_value      = 0x10,
@@ -1275,9 +1275,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
                                  .src_value      = 0x0F,
@@ -1288,9 +1288,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x11,
@@ -1301,9 +1301,9 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "HalfCarryUnderflowNoCarryIn",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::SBC_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x10,
@@ -1314,4 +1314,4 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_c       = true,
                                  .name           = "HalfCarryUnderflowCarryIn",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);

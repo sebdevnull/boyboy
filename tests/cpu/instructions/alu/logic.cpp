@@ -13,25 +13,25 @@
 
 using namespace boyboy::cpu;
 
-using boyboy::test::cpu::ALUOperandType;
-using boyboy::test::cpu::R8ALUParam;
+using boyboy::test::cpu::OperandType;
+using boyboy::test::cpu::R8Param;
 using boyboy::test::cpu::R8Test;
 
 // -----------------------------
 // Test types
 // -----------------------------
-using ANDR8Test  = R8Test<R8ALUParam>;
-using ANDHLTest  = R8Test<R8ALUParam>;
-using ANDImmTest = R8Test<R8ALUParam>;
-using ORR8Test   = R8Test<R8ALUParam>;
-using ORHLTest   = R8Test<R8ALUParam>;
-using ORImmTest  = R8Test<R8ALUParam>;
-using XORR8Test  = R8Test<R8ALUParam>;
-using XORHLTest  = R8Test<R8ALUParam>;
-using XORImmTest = R8Test<R8ALUParam>;
-using CPR8Test   = R8Test<R8ALUParam>;
-using CPHLTest   = R8Test<R8ALUParam>;
-using CPImmTest  = R8Test<R8ALUParam>;
+using ANDR8Test  = R8Test<R8Param>;
+using ANDHLTest  = R8Test<R8Param>;
+using ANDImmTest = R8Test<R8Param>;
+using ORR8Test   = R8Test<R8Param>;
+using ORHLTest   = R8Test<R8Param>;
+using ORImmTest  = R8Test<R8Param>;
+using XORR8Test  = R8Test<R8Param>;
+using XORHLTest  = R8Test<R8Param>;
+using XORImmTest = R8Test<R8Param>;
+using CPR8Test   = R8Test<R8Param>;
+using CPHLTest   = R8Test<R8Param>;
+using CPImmTest  = R8Test<R8Param>;
 
 // -----------------------------
 // Test definitions
@@ -57,7 +57,7 @@ TEST_P(CPImmTest, Works) { run_test(); }
 INSTANTIATE_TEST_SUITE_P(AndInstructions,
                          ANDR8Test,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0xAA,
@@ -65,7 +65,7 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "A_SameBits",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -76,7 +76,7 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "B_Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -88,7 +88,7 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .name           = "C_NoCommonBits",
                              },
 
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -98,7 +98,7 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "D_UpperNibble",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -108,7 +108,7 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "E_LowerNibble",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -118,7 +118,7 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "H_SameBits",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -130,15 +130,15 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                              }
 
                              ),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // AND A, [HL]
 INSTANTIATE_TEST_SUITE_P(AndInstructions,
                          ANDHLTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0xF0,
@@ -147,9 +147,9 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x1234,
                                  .initial_a      = 0x0F,
@@ -159,9 +159,9 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x5678,
                                  .initial_a      = 0x55,
@@ -170,9 +170,9 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "SameValue",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x9ABC,
                                  .initial_a      = 0xAA,
@@ -181,15 +181,15 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // AND A, n8
 INSTANTIATE_TEST_SUITE_P(AndInstructions,
                          ANDImmTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xF0,
                                  .src_value      = 0xAA,
@@ -197,9 +197,9 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
                                  .src_value      = 0xF0,
@@ -208,9 +208,9 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
                                  .src_value      = 0x55,
@@ -218,9 +218,9 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "SameValue",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::AND_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
                                  .src_value      = 0xFF,
@@ -228,20 +228,20 @@ INSTANTIATE_TEST_SUITE_P(AndInstructions,
                                  .expect_h       = true,
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // OR A, r8
 INSTANTIATE_TEST_SUITE_P(OrInstructions,
                          ORR8Test,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0x55,
                                  .expected_value = 0x55,
                                  .name           = "A_A_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -250,7 +250,7 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expected_value = 0x5F,
                                  .name           = "A_B_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -260,7 +260,7 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expect_z       = true,
                                  .name           = "A_C_Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -269,7 +269,7 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expected_value = 0xF7,
                                  .name           = "A_D_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -278,7 +278,7 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expected_value = 0xFF,
                                  .name           = "A_E_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -287,7 +287,7 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expected_value = 0xFF,
                                  .name           = "A_H_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -296,15 +296,15 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expected_value = 0xFF,
                                  .name           = "A_L_Normal",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // OR A, [HL]
 INSTANTIATE_TEST_SUITE_P(OrInstructions,
                          ORHLTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0xF0,
@@ -312,9 +312,9 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expected_value = 0xFA,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x1234,
                                  .initial_a      = 0x00,
@@ -323,9 +323,9 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x5678,
                                  .initial_a      = 0x55,
@@ -333,9 +333,9 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expected_value = 0x55,
                                  .name           = "SameValue",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x9ABC,
                                  .initial_a      = 0x5A,
@@ -343,24 +343,24 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expected_value = 0xFF,
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // OR A, n8
 INSTANTIATE_TEST_SUITE_P(OrInstructions,
                          ORImmTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xF0,
                                  .src_value      = 0x0A,
                                  .expected_value = 0xFA,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x00,
@@ -368,31 +368,31 @@ INSTANTIATE_TEST_SUITE_P(OrInstructions,
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
                                  .src_value      = 0x55,
                                  .expected_value = 0x55,
                                  .name           = "SameValue",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::OR_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x5A,
                                  .src_value      = 0xFF,
                                  .expected_value = 0xFF,
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // XOR A, r8
 INSTANTIATE_TEST_SUITE_P(XorInstructions,
                          XORR8Test,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_A,
                                  .src            = Reg8Name::A,
                                  .dst            = Reg8Name::A,
@@ -401,7 +401,7 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expect_z       = true,
                                  .name           = "A_A_Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -410,7 +410,7 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expected_value = 0xF0,
                                  .name           = "A_B_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -420,7 +420,7 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expect_z       = true,
                                  .name           = "A_C_Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -429,7 +429,7 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expected_value = 0x0F,
                                  .name           = "A_D_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -439,7 +439,7 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expect_z       = true,
                                  .name           = "A_E_Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -448,7 +448,7 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expected_value = 0xFF,
                                  .name           = "A_H_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -457,15 +457,15 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expected_value = 0xFF,
                                  .name           = "A_L_Normal",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // XOR A, [HL]
 INSTANTIATE_TEST_SUITE_P(XorInstructions,
                          XORHLTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x00,
@@ -474,9 +474,9 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x1234,
                                  .initial_a      = 0x55,
@@ -485,9 +485,9 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expect_z       = true,
                                  .name           = "ZeroSameBits",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x5678,
                                  .initial_a      = 0xAA,
@@ -495,9 +495,9 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expected_value = 0xFF,
                                  .name           = "DifferentBits",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x9ABC,
                                  .initial_a      = 0x5A,
@@ -505,15 +505,15 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expected_value = 0xA5,
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // XOR A, n8
 INSTANTIATE_TEST_SUITE_P(XorInstructions,
                          XORImmTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x00,
@@ -521,9 +521,9 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
                                  .src_value      = 0x55,
@@ -531,31 +531,31 @@ INSTANTIATE_TEST_SUITE_P(XorInstructions,
                                  .expect_z       = true,
                                  .name           = "ZeroSameBits",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
                                  .src_value      = 0x55,
                                  .expected_value = 0xFF,
                                  .name           = "DifferentBits",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::XOR_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x5A,
                                  .src_value      = 0xFF,
                                  .expected_value = 0xA5,
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // CP A, r8
 INSTANTIATE_TEST_SUITE_P(CpInstructions,
                          CPR8Test,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_A,
                                  .src            = Reg8Name::A,
                                  .src_value      = 0xFF,
@@ -564,7 +564,7 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_n       = true,
                                  .name           = "A_A_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
@@ -575,7 +575,7 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_n       = true,
                                  .name           = "A_B_Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
@@ -586,7 +586,7 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_h       = true,
                                  .name           = "A_C_HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
@@ -598,7 +598,7 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_c       = true,
                                  .name           = "A_D_Underflow",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
@@ -608,7 +608,7 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_n       = true,
                                  .name           = "A_E_Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
@@ -619,7 +619,7 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_c       = true,
                                  .name           = "A_H_Underflow",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
@@ -630,15 +630,15 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_n       = true,
                                  .name           = "A_L_Zero",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // CP A, [HL]
 INSTANTIATE_TEST_SUITE_P(CpInstructions,
                          CPHLTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x80,
@@ -647,9 +647,9 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_n       = true,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x55,
@@ -659,9 +659,9 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_n       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x10,
@@ -671,9 +671,9 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_c       = true,
                                  .name           = "Underflow",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x10,
@@ -683,9 +683,9 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_AT_HL,
-                                 .operand_type   = ALUOperandType::IndirectHL,
+                                 .operand_type   = OperandType::IndirectHL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x00,
@@ -696,15 +696,15 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowHalfCarry",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);
 
 // CP A, n8
 INSTANTIATE_TEST_SUITE_P(CpInstructions,
                          CPImmTest,
                          ::testing::Values(
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x80,
                                  .src_value      = 0x70,
@@ -712,9 +712,9 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_n       = true,
                                  .name           = "Normal",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
                                  .src_value      = 0x55,
@@ -723,9 +723,9 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_n       = true,
                                  .name           = "Zero",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x20,
@@ -734,9 +734,9 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_c       = true,
                                  .name           = "Underflow",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
                                  .src_value      = 0x01,
@@ -745,9 +745,9 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_h       = true,
                                  .name           = "HalfCarry",
                              },
-                             R8ALUParam{
+                             R8Param{
                                  .opcode         = Opcode::CP_A_N8,
-                                 .operand_type   = ALUOperandType::Immediate,
+                                 .operand_type   = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
                                  .src_value      = 0x01,
@@ -757,4 +757,4 @@ INSTANTIATE_TEST_SUITE_P(CpInstructions,
                                  .expect_c       = true,
                                  .name           = "UnderflowHalfCarry",
                              }),
-                         boyboy::test::cpu::param_name<R8ALUParam>);
+                         boyboy::test::cpu::param_name<R8Param>);

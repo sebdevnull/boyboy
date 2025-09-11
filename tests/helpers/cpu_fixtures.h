@@ -73,7 +73,7 @@ public:
 
         // Setup source register or memory depending on operand type
         switch (param.operand_type) {
-        case ALUOperandType::Reg8:
+        case OperandType::Reg8:
             if (param.src.has_value()) {
                 // Only write src_value if src != dst (in practice only A -> A)
                 if (!param.dst.has_value() || param.src.value() != param.dst.value()) {
@@ -84,11 +84,11 @@ public:
                 throw std::runtime_error("Source register must be specified for Reg8 operand type");
             }
             break;
-        case ALUOperandType::Immediate:
+        case OperandType::Immediate:
             // Set next byte so that the CPU can read imm from
             cpu.write_byte(cpu.get_pc() + 1, param.src_value);
             break;
-        case ALUOperandType::IndirectHL:
+        case OperandType::IndirectHL:
             if (!param.src_addr.has_value()) {
                 throw std::runtime_error(
                     "Source address must be specified for IndirectHL operand type");
@@ -109,11 +109,11 @@ public:
         // Run asserts
         if (!param.skip_assert) {
             switch (param.operand_type) {
-            case ALUOperandType::Reg8:
-            case ALUOperandType::Immediate:
+            case OperandType::Reg8:
+            case OperandType::Immediate:
                 expect_r8(cpu, param);
                 break;
-            case ALUOperandType::IndirectHL:
+            case OperandType::IndirectHL:
                 if (param.dst.has_value()) {
                     expect_r8(cpu, param);
                 }
