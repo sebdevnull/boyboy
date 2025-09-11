@@ -17,12 +17,18 @@ namespace boyboy::test::cpu {
 
 inline void expect_r8(const boyboy::cpu::Cpu& cpu, R8Param& p)
 {
-    EXPECT_EQ(cpu.get_register(p.target()), p.expected_value) << "Register mismatch: " << p.name;
+    auto tgt = p.target();
+    if (!tgt.is_r8()) {
+        throw std::runtime_error("Target register must be an 8-bit register");
+    }
+
+    EXPECT_EQ(cpu.get_register(tgt.get_r8()), p.expected_value) << "Register mismatch: " << p.name;
 }
 
 inline void expect_at_addr(const boyboy::cpu::Cpu& cpu, R8Param& p)
 {
-    EXPECT_EQ(cpu.read_byte(*p.src_addr), p.expected_value) << "Register mismatch: " << p.name;
+    uint16_t tgt_addr = p.target_addr();
+    EXPECT_EQ(cpu.read_byte(tgt_addr), p.expected_value) << "Register mismatch: " << p.name;
 }
 
 inline void expect_flags(const boyboy::cpu::Cpu& cpu, R8Param& p)

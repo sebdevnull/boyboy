@@ -11,10 +11,12 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <expected>
 #include <ios>
 #include <optional>
 #include <ostream>
 #include <string>
+#include <variant>
 
 #include "boyboy/common/utils.h"
 #include "boyboy/cpu/opcodes.h"
@@ -22,17 +24,19 @@
 
 namespace boyboy::test::cpu {
 
-enum class OperandType : uint8_t { Reg8, Immediate, IndirectHL };
+enum class OperandType : uint8_t { Reg8, Reg16, Immediate, Indirect };
 
 inline const char* to_string(OperandType op)
 {
     switch (op) {
     case OperandType::Reg8:
         return "Reg8";
+    case OperandType::Reg16:
+        return "Reg16";
     case OperandType::Immediate:
         return "Immediate";
-    case OperandType::IndirectHL:
-        return "IndirectHL";
+    case OperandType::Indirect:
+        return "Indirect";
     default:
         return "Unknown";
     }
@@ -40,14 +44,137 @@ inline const char* to_string(OperandType op)
 
 inline std::ostream& operator<<(std::ostream& os, OperandType op) { return os << to_string(op); }
 
+// TODO: not used for now, but could be a cleaner alternative to RegParam
+struct Operand {
+    using Variant = std::variant<boyboy::cpu::Reg8Name,
+                                 boyboy::cpu::Reg16Name,
+                                 uint16_t>; // for immediates/addresses
+
+    OperandType type             = OperandType::Reg8;
+    std::optional<Variant> value = std::nullopt;
+
+    Operand() = default;
+    Operand(OperandType t, std::nullopt_t nopt) : type(t), value(nopt) {}
+    Operand(OperandType t, Variant v) : type(t), value(v) {}
+};
+
+class RegParam {
+public:
+    using Variant = std::variant<boyboy::cpu::Reg8Name, boyboy::cpu::Reg16Name>;
+
+    // constructors
+    RegParam() = default;
+    RegParam(std::nullopt_t nopt) : value_(nopt) {}
+    RegParam(boyboy::cpu::Reg8Name r8) : value_(r8) {}
+    RegParam(boyboy::cpu::Reg16Name r16) : value_(r16) {}
+
+    // getter
+    [[nodiscard]] const std::optional<Variant>& get_value() const { return value_; }
+
+    // assignment operators
+    RegParam& operator=(boyboy::cpu::Reg8Name r8)
+    {
+        value_ = r8;
+        return *this;
+    }
+    RegParam& operator=(boyboy::cpu::Reg16Name r16)
+    {
+        value_ = r16;
+        return *this;
+    }
+    RegParam& operator=([[maybe_unused]] std::nullopt_t nopt)
+    {
+        value_ = nopt;
+        return *this;
+    }
+
+    // equality
+    bool operator==(const RegParam& other) const noexcept { return value_ == other.value_; }
+    bool operator!=(const RegParam& other) const noexcept { return !(*this == other); }
+
+    // helpers
+    [[nodiscard]] bool has_value() const { return value_.has_value(); }
+    [[nodiscard]] bool is_r8() const
+    {
+        return has_value() && std::holds_alternative<boyboy::cpu::Reg8Name>(*value_);
+    }
+    [[nodiscard]] bool is_r16() const
+    {
+        return has_value() && std::holds_alternative<boyboy::cpu::Reg16Name>(*value_);
+    }
+    [[nodiscard]] boyboy::cpu::Reg8Name get_r8() const
+    {
+        return std::get<boyboy::cpu::Reg8Name>(*value_);
+    }
+    [[nodiscard]] boyboy::cpu::Reg16Name get_r16() const
+    {
+        return std::get<boyboy::cpu::Reg16Name>(*value_);
+    }
+
+    [[nodiscard]] bool overlaps(const RegParam& other) const
+    {
+        if (!value_ || !other.value_) {
+            return false; // nothing to compare
+        }
+
+        // Compare register pairs
+        if (std::holds_alternative<boyboy::cpu::Reg16Name>(*value_) &&
+            std::holds_alternative<boyboy::cpu::Reg16Name>(*other.value_)) {
+            return std::get<boyboy::cpu::Reg16Name>(*value_) ==
+                   std::get<boyboy::cpu::Reg16Name>(*other.value_);
+        }
+
+        // Compare register 8-bit halves with 16-bit full
+        if (std::holds_alternative<boyboy::cpu::Reg8Name>(*value_) &&
+            std::holds_alternative<boyboy::cpu::Reg16Name>(*other.value_)) {
+            return half_matches(std::get<boyboy::cpu::Reg8Name>(*value_),
+                                std::get<boyboy::cpu::Reg16Name>(*other.value_));
+        }
+        if (std::holds_alternative<boyboy::cpu::Reg16Name>(*value_) &&
+            std::holds_alternative<boyboy::cpu::Reg8Name>(*other.value_)) {
+            return half_matches(std::get<boyboy::cpu::Reg8Name>(*other.value_),
+                                std::get<boyboy::cpu::Reg16Name>(*value_));
+        }
+
+        // Both 8-bit
+        return std::get<boyboy::cpu::Reg8Name>(*value_) ==
+               std::get<boyboy::cpu::Reg8Name>(*other.value_);
+    }
+
+private:
+    // using RegParamOpt = std::optional<std::variant<boyboy::cpu::Reg8Name,
+    // boyboy::cpu::Reg16Name>>; RegParamOpt value_ = std::nullopt; using Variant =
+    // std::variant<boyboy::cpu::Reg8Name, boyboy::cpu::Reg16Name>;
+    std::optional<Variant> value_ = std::nullopt;
+
+    static bool half_matches(boyboy::cpu::Reg8Name r8, boyboy::cpu::Reg16Name r16)
+    {
+        switch (r16) {
+        case boyboy::cpu::Reg16Name::HL:
+            return (r8 == boyboy::cpu::Reg8Name::H || r8 == boyboy::cpu::Reg8Name::L);
+        case boyboy::cpu::Reg16Name::BC:
+            return (r8 == boyboy::cpu::Reg8Name::B || r8 == boyboy::cpu::Reg8Name::C);
+        case boyboy::cpu::Reg16Name::DE:
+            return (r8 == boyboy::cpu::Reg8Name::D || r8 == boyboy::cpu::Reg8Name::E);
+        case boyboy::cpu::Reg16Name::AF:
+            return (r8 == boyboy::cpu::Reg8Name::A /* || r8 == Reg8Name::F */);
+        default:
+            return false;
+        }
+    }
+};
+
 struct R8Param {
     boyboy::cpu::Opcode opcode;
-    OperandType operand_type = OperandType::Reg8;
 
-    std::optional<boyboy::cpu::Reg8Name> src = std::nullopt;
-    std::optional<boyboy::cpu::Reg8Name> dst = std::nullopt;
+    OperandType src_op_type                = OperandType::Reg8;
+    std::optional<OperandType> dst_op_type = OperandType::Reg8;
+
+    RegParam src = std::nullopt;
+    RegParam dst = std::nullopt;
 
     std::optional<uint16_t> src_addr = std::nullopt;
+    std::optional<uint16_t> dst_addr = std::nullopt;
 
     std::optional<uint8_t> initial_a = std::nullopt; // initial value of A register
     uint8_t src_value;
@@ -66,7 +193,11 @@ struct R8Param {
     bool skip_assert = false;
 
     // Return the target register of the test
-    [[nodiscard]] boyboy::cpu::Reg8Name target() const { return dst.value_or(*src); }
+    [[nodiscard]] RegParam target() const { return dst.has_value() ? dst : src; }
+    [[nodiscard]] uint16_t target_addr() const { return dst_addr.value_or(*src_addr); }
+    [[nodiscard]] OperandType target_operand() const { return dst_op_type.value_or(src_op_type); }
+
+    // Helpers for easier src/dst access
 
     // For better test case naming in GTest output
     friend std::ostream& operator<<(std::ostream& os, const R8Param& p)
@@ -74,21 +205,31 @@ struct R8Param {
         // clang-format off
         os << p.name
            << " [opcode=" << boyboy::utils::PrettyHex{static_cast<uint8_t>(p.opcode)}
-           << ", operand_type=" << p.operand_type;
-
-        if (p.src.has_value())
+           << ", src_op_type=" << p.src_op_type;
+           
+        if (p.dst_op_type.has_value())
         {
-            os << ", src=" << *p.src;
+            os << ", dst_op_type=" << *p.dst_op_type;
+        }
+        
+        if (p.src.has_value() && p.src.get_value().has_value())
+        {
+            std::visit([&](auto r){ os << ", src=" << r; }, *p.src.get_value());
         }
 
-        if (p.dst.has_value())
+        if (p.dst.has_value()&& p.src.get_value().has_value())
         {
-            os << ", dst=" << *p.dst;
+            std::visit([&](auto r){ os << ", dst=" << r; }, *p.dst.get_value());
         }
 
         if (p.src_addr.has_value())
         {
             os << ", src_addr=" << boyboy::utils::PrettyHex{*p.src_addr};
+        }
+
+        if (p.dst_addr.has_value())
+        {
+            os << ", dst_addr=" << boyboy::utils::PrettyHex{*p.dst_addr};
         }
 
         if (p.initial_a.has_value())

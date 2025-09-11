@@ -7,9 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "boyboy/cpu/opcodes.h"
-#include "boyboy/cpu/registers.h"
-
 // Helpers
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
@@ -33,9 +30,8 @@ TEST_P(LdR8R8Test, Works) { run_test(); }
 // -----------------------------
 // Parameter instantiations
 // -----------------------------
-
 // LD A, r8
-INSTANTIATE_TEST_SUITE_P(LdAR8Instructions,
+INSTANTIATE_TEST_SUITE_P(LdInstructions,
                          LdR8R8Test,
                          ::testing::Values(
                              R8Param{

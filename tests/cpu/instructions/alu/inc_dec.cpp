@@ -7,10 +7,13 @@
 
 #include <gtest/gtest.h>
 
+// Helpers
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
-using namespace boyboy::cpu;
+using boyboy::cpu::Opcode;
+using boyboy::cpu::Reg16Name;
+using boyboy::cpu::Reg8Name;
 
 using boyboy::test::cpu::OperandType;
 using boyboy::test::cpu::R8Param;
@@ -35,7 +38,6 @@ TEST_P(DecHLTest, Works) { run_test(); }
 // -----------------------------
 // Parameter instantiations
 // -----------------------------
-
 // INC r8
 INSTANTIATE_TEST_SUITE_P(IncInstructions,
                          IncR8Test,
@@ -101,7 +103,9 @@ INSTANTIATE_TEST_SUITE_P(IncInstructions,
                          ::testing::Values(
                              R8Param{
                                  .opcode         = Opcode::INC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0x0000,
                                  .src_value      = 0x00,
                                  .expected_value = 0x01,
@@ -109,7 +113,9 @@ INSTANTIATE_TEST_SUITE_P(IncInstructions,
                              },
                              R8Param{
                                  .opcode         = Opcode::INC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0x1234,
                                  .src_value      = 0x0F,
                                  .expected_value = 0x10,
@@ -118,7 +124,9 @@ INSTANTIATE_TEST_SUITE_P(IncInstructions,
                              },
                              R8Param{
                                  .opcode         = Opcode::INC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0x5678,
                                  .src_value      = 0xFF,
                                  .expected_value = 0x00,
@@ -128,7 +136,9 @@ INSTANTIATE_TEST_SUITE_P(IncInstructions,
                              },
                              R8Param{
                                  .opcode         = Opcode::INC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0x9ABC,
                                  .src_value      = 0x7F,
                                  .expected_value = 0x80,
@@ -206,12 +216,15 @@ INSTANTIATE_TEST_SUITE_P(DecInstructions,
                              }),
                          boyboy::test::cpu::param_name<R8Param>);
 
+// DEC [HL]                         
 INSTANTIATE_TEST_SUITE_P(DecInstructions,
                          DecHLTest,
                          ::testing::Values(
                              R8Param{
                                  .opcode         = Opcode::DEC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0x0000,
                                  .src_value      = 0xAB,
                                  .expected_value = 0xAA,
@@ -220,7 +233,9 @@ INSTANTIATE_TEST_SUITE_P(DecInstructions,
                              },
                              R8Param{
                                  .opcode         = Opcode::DEC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0x1234,
                                  .src_value      = 0x01,
                                  .expected_value = 0x00,
@@ -230,7 +245,9 @@ INSTANTIATE_TEST_SUITE_P(DecInstructions,
                              },
                              R8Param{
                                  .opcode         = Opcode::DEC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0x5678,
                                  .src_value      = 0x10,
                                  .expected_value = 0x0F,
@@ -240,7 +257,9 @@ INSTANTIATE_TEST_SUITE_P(DecInstructions,
                              },
                              R8Param{
                                  .opcode         = Opcode::DEC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0x9ABC,
                                  .src_value      = 0x00,
                                  .expected_value = 0xFF,
@@ -250,7 +269,9 @@ INSTANTIATE_TEST_SUITE_P(DecInstructions,
                              },
                              R8Param{
                                  .opcode         = Opcode::DEC_AT_HL,
-                                 .operand_type   = OperandType::IndirectHL,
+                                 .src_op_type    = OperandType::Indirect,
+                                 .dst_op_type    = std::nullopt,
+                                 .src            = Reg16Name::HL,
                                  .src_addr       = 0xDEF0,
                                  .src_value      = 0x80,
                                  .expected_value = 0x7F,

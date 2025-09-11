@@ -62,9 +62,6 @@ public:
     void run_test()
     {
         auto param = this->GetParam();
-        // if (!(param.src.has_value() || param.dst.has_value())) {
-        //     throw std::runtime_error("Either src or dst register must be specified");
-        // }
 
         // Set initial A register if provided
         if (param.initial_a.has_value()) {
@@ -72,30 +69,50 @@ public:
         }
 
         // Setup source register or memory depending on operand type
-        switch (param.operand_type) {
+        switch (param.src_op_type) {
         case OperandType::Reg8:
             if (param.src.has_value()) {
+                if (!param.src.is_r8()) {
+                    throw std::runtime_error(
+                        "Source must be an 8-bit register for Reg8 operand type");
+                }
                 // Only write src_value if src != dst (in practice only A -> A)
-                if (!param.dst.has_value() || param.src.value() != param.dst.value()) {
-                    cpu.set_register(*param.src, param.src_value);
+                if (!param.dst.has_value() || !param.src.overlaps(param.dst)) {
+                    cpu.set_register(param.src.get_r8(), param.src_value);
                 }
             }
             else {
                 throw std::runtime_error("Source register must be specified for Reg8 operand type");
             }
             break;
+        case OperandType::Reg16:
+            throw std::runtime_error("Reg16 operand type not supported in R8Test");
+            break;
         case OperandType::Immediate:
             // Set next byte so that the CPU can read imm from
             cpu.write_byte(cpu.get_pc() + 1, param.src_value);
             break;
-        case OperandType::IndirectHL:
+        case OperandType::Indirect:
+            if (!param.src.is_r16()) {
+                throw std::runtime_error(
+                    "Source must be a 16-bit register for Indirect operand type");
+            }
             if (!param.src_addr.has_value()) {
                 throw std::runtime_error(
-                    "Source address must be specified for IndirectHL operand type");
+                    "Source address must be specified for Indirect operand type");
             }
-            cpu.set_register(boyboy::cpu::Reg16Name::HL, *param.src_addr);
+
+            cpu.set_register(param.src.get_r16(), *param.src_addr);
             cpu.write_byte(*param.src_addr, param.src_value);
             break;
+        }
+
+        // Setup destination as needed
+        if (param.dst_op_type.has_value()) {
+            if (*param.dst_op_type == OperandType::Indirect) {
+                // We don't check anything. If it fails, it fails
+                cpu.set_register(param.dst.get_r16(), *param.dst_addr);
+            }
         }
 
         // Set carry if needed for ADC and SBC
@@ -108,18 +125,17 @@ public:
 
         // Run asserts
         if (!param.skip_assert) {
-            switch (param.operand_type) {
+            OperandType op = param.target_operand();
+            switch (op) {
             case OperandType::Reg8:
             case OperandType::Immediate:
                 expect_r8(cpu, param);
                 break;
-            case OperandType::IndirectHL:
-                if (param.dst.has_value()) {
-                    expect_r8(cpu, param);
-                }
-                else {
-                    expect_at_addr(cpu, param);
-                }
+            case OperandType::Reg16:
+                throw std::runtime_error("Reg16 operand type not supported in R8Test");
+                break;
+            case OperandType::Indirect:
+                expect_at_addr(cpu, param);
                 break;
             }
             expect_flags(cpu, param);
