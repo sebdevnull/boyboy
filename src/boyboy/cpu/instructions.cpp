@@ -455,6 +455,43 @@ void Cpu::ld_at_a16_a()
     write_byte(addr, value);
 }
 
+// LD A, [HL+]
+void Cpu::ld_a_at_hl_inc()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    set_register(Reg8Name::A, value);
+    set_register(Reg16Name::HL, addr + 1);
+}
+
+// LD A, [HL-]
+void Cpu::ld_a_at_hl_dec()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    set_register(Reg8Name::A, value);
+    set_register(Reg16Name::HL, addr - 1);
+}
+
+// LD [HL+], A
+void Cpu::ld_at_hl_inc_a()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = get_register(Reg8Name::A);
+    write_byte(addr, value);
+    set_register(Reg16Name::HL, addr + 1);
+}
+
+// LD [HL-], A
+void Cpu::ld_at_hl_dec_a()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = get_register(Reg8Name::A);
+    write_byte(addr, value);
+    set_register(Reg16Name::HL, addr - 1);
+}
+
+
 // Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu
