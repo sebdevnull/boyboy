@@ -108,6 +108,8 @@ private:
 
     void ld_r8_n8(Reg8Name r8);
     void ld_r8_r8(Reg8Name dst, Reg8Name src);
+    void ld_r8_at_r16(Reg8Name dst, Reg16Name src);
+    void ld_at_r16_r8(Reg16Name dst, Reg8Name src);
 
     void add_a_r8(Reg8Name r8);
     void adc_a_r8(Reg8Name r8);
@@ -300,5 +302,24 @@ private:
 #define CPU_LD_E_N8
 #define CPU_LD_H_N8
 #define CPU_LD_L_N8
+
+// LD r8, [HL]
+#define CPU_LD_A_AT_HL
+#define CPU_LD_B_AT_HL
+#define CPU_LD_C_AT_HL
+#define CPU_LD_D_AT_HL
+#define CPU_LD_E_AT_HL
+#define CPU_LD_H_AT_HL
+#define CPU_LD_L_AT_HL
+
+// LD [HL], r8
+#define CPU_LD_AT_HL_A
+#define CPU_LD_AT_HL_B
+#define CPU_LD_AT_HL_C
+#define CPU_LD_AT_HL_D
+#define CPU_LD_AT_HL_E
+#define CPU_LD_AT_HL_H
+#define CPU_LD_AT_HL_L
+
 
 } // namespace boyboy::cpu
