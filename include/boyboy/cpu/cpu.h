@@ -292,4 +292,13 @@ private:
 #define CPU_LD_L_H
 #define CPU_LD_L_L
 
+// LD r8, n8
+#define CPU_LD_A_N8
+#define CPU_LD_B_N8
+#define CPU_LD_C_N8
+#define CPU_LD_D_N8
+#define CPU_LD_E_N8
+#define CPU_LD_H_N8
+#define CPU_LD_L_N8
+
 } // namespace boyboy::cpu

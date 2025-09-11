@@ -58,7 +58,11 @@ void Cpu::dec_r8(Reg8Name r8)
     set_flag(Flag::HalfCarry, (res & 0x0F) == 0x0F);
 }
 
-// void Cpu::ld_r8_n8(Reg8Name r8) {}
+void Cpu::ld_r8_n8(Reg8Name r8)
+{
+    uint8_t n8 = fetch();
+    set_register(r8, n8);
+}
 
 void Cpu::ld_r8_r8(Reg8Name dst, Reg8Name src)
 {
@@ -635,6 +639,16 @@ void Cpu::ld_l_h() { ld_r8_r8(Reg8Name::L, Reg8Name::H); }
 void Cpu::ld_l_l() { ld_r8_r8(Reg8Name::L, Reg8Name::L); }
 // clang-format on
 
+// LD r8, n8
+// clang-format off
+void Cpu::ld_a_n8() { ld_r8_n8(Reg8Name::A); }
+void Cpu::ld_b_n8() { ld_r8_n8(Reg8Name::B); }
+void Cpu::ld_c_n8() { ld_r8_n8(Reg8Name::C); }
+void Cpu::ld_d_n8() { ld_r8_n8(Reg8Name::D); }
+void Cpu::ld_e_n8() { ld_r8_n8(Reg8Name::E); }
+void Cpu::ld_h_n8() { ld_r8_n8(Reg8Name::H); }
+void Cpu::ld_l_n8() { ld_r8_n8(Reg8Name::L); }
+// clang-format on
 
 // Individual CPU instruction implementations (CB-prefixed)
 
