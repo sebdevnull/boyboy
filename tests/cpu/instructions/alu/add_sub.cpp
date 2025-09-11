@@ -1,5 +1,5 @@
 /**
- * @file test_add_sub.cpp
+ * @file add_sub.cpp
  * @brief Unit tests for ADD, ADC, SUB and SBC CPU instructions.
  *
  * @license GPLv3 (see LICENSE file)

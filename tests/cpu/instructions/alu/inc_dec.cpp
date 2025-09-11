@@ -1,5 +1,5 @@
 /**
- * @file test_inc_dec.cpp
+ * @file inc_dec.cpp
  * @brief Unit tests for INC and DEC CPU instructions.
  *
  * @license GPLv3 (see LICENSE file)

@@ -1,5 +1,5 @@
 /**
- * @file test_misc.cpp
+ * @file misc.cpp
  * @brief Unit tests for miscellaneous CPU instructions.
  *
  * @license GPLv3 (see LICENSE file)

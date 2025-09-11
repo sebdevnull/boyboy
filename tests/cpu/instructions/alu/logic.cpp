@@ -1,5 +1,5 @@
 /**
- * @file test_logic.cpp
+ * @file logic.cpp
  * @brief Unit tests for AND, OR, XOR and CP CPU instructions.
  *
  * @license GPLv3 (see LICENSE file)

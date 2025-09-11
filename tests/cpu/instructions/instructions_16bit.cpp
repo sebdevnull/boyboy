@@ -1,5 +1,5 @@
 /**
- * @file test_instructions_16bit.cpp
+ * @file instructions_16bit.cpp
  * @brief Workbench file for developing and debugging 16-bit CPU tests.
  *
  * @license GPLv3 (see LICENSE file)

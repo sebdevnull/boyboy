@@ -1,5 +1,5 @@
 /**
- * @file test_instructions_8bit.cpp
+ * @file instructions_8bit.cpp
  * @brief Workbench file for developing and debugging 8-bit CPU tests.
  *
  * @license GPLv3 (see LICENSE file)
