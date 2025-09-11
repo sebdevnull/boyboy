@@ -24,6 +24,22 @@ namespace boyboy::test::cpu {
 
 enum class ALUOperandType : uint8_t { Reg8, Immediate, IndirectHL };
 
+inline const char* to_string(ALUOperandType op)
+{
+    switch (op) {
+    case ALUOperandType::Reg8:
+        return "Reg8";
+    case ALUOperandType::Immediate:
+        return "Immediate";
+    case ALUOperandType::IndirectHL:
+        return "IndirectHL";
+    default:
+        return "Unknown";
+    }
+}
+
+inline std::ostream& operator<<(std::ostream& os, ALUOperandType op) { return os << to_string(op); }
+
 struct R8ALUParam {
     boyboy::cpu::Opcode opcode;
     ALUOperandType operand_type = ALUOperandType::Reg8;
@@ -45,6 +61,10 @@ struct R8ALUParam {
 
     std::string name;
 
+    // Some operations behave as NOPs, but we still might want to execute them to test that the
+    // corresponding functions are implemented (e.g. LD A, A)
+    bool skip_assert = false;
+
     // Return the target register of the test
     [[nodiscard]] boyboy::cpu::Reg8Name target() const { return dst.value_or(*src); }
 
@@ -54,7 +74,7 @@ struct R8ALUParam {
         // clang-format off
         os << p.name
            << " [opcode=" << boyboy::utils::PrettyHex{static_cast<uint8_t>(p.opcode)}
-           << ", operand_type=" << static_cast<int>(p.operand_type);
+           << ", operand_type=" << p.operand_type;
 
         if (p.src.has_value())
         {
@@ -64,6 +84,11 @@ struct R8ALUParam {
         if (p.dst.has_value())
         {
             os << ", dst=" << *p.dst;
+        }
+
+        if (p.src_addr.has_value())
+        {
+            os << ", src_addr=" << boyboy::utils::PrettyHex{*p.src_addr};
         }
 
         if (p.initial_a.has_value())

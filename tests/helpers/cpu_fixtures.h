@@ -107,21 +107,26 @@ public:
         run(param.opcode);
 
         // Run asserts
-        switch (param.operand_type) {
-        case ALUOperandType::Reg8:
-        case ALUOperandType::Immediate:
-            expect_r8(cpu, param);
-            break;
-        case ALUOperandType::IndirectHL:
-            if (param.dst.has_value()) {
+        if (!param.skip_assert) {
+            switch (param.operand_type) {
+            case ALUOperandType::Reg8:
+            case ALUOperandType::Immediate:
                 expect_r8(cpu, param);
+                break;
+            case ALUOperandType::IndirectHL:
+                if (param.dst.has_value()) {
+                    expect_r8(cpu, param);
+                }
+                else {
+                    expect_at_addr(cpu, param);
+                }
+                break;
             }
-            else {
-                expect_at_addr(cpu, param);
-            }
-            break;
+            expect_flags(cpu, param);
         }
-        expect_flags(cpu, param);
+        else {
+            GTEST_LOG_(INFO) << param.name << " is a NOP, skipping value check";
+        }
     }
 };
 
