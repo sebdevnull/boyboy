@@ -15,7 +15,7 @@
 
 namespace boyboy::test::cpu {
 
-inline void expect_r8(const boyboy::cpu::Cpu& cpu, R8Param& p)
+inline void expect_r8(const boyboy::cpu::Cpu& cpu, const R8Param& p)
 {
     auto tgt = p.target();
     if (!tgt.is_r8()) {
@@ -25,13 +25,13 @@ inline void expect_r8(const boyboy::cpu::Cpu& cpu, R8Param& p)
     EXPECT_EQ(cpu.get_register(tgt.get_r8()), p.expected_value) << "Register mismatch: " << p.name;
 }
 
-inline void expect_at_addr(const boyboy::cpu::Cpu& cpu, R8Param& p)
+inline void expect_at_addr(const boyboy::cpu::Cpu& cpu, const R8Param& p)
 {
     uint16_t tgt_addr = p.target_addr();
     EXPECT_EQ(cpu.read_byte(tgt_addr), p.expected_value) << "Register mismatch: " << p.name;
 }
 
-inline void expect_flags(const boyboy::cpu::Cpu& cpu, R8Param& p)
+inline void expect_flags(const boyboy::cpu::Cpu& cpu, const R8Param& p)
 {
     EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Zero), p.expect_z) << "Z flag mismatch: " << p.name;
     EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Substract), p.expect_n)
@@ -39,6 +39,18 @@ inline void expect_flags(const boyboy::cpu::Cpu& cpu, R8Param& p)
     EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::HalfCarry), p.expect_h)
         << "H flag mismatch: " << p.name;
     EXPECT_EQ(cpu.get_flag(boyboy::cpu::Flag::Carry), p.expect_c) << "C flag mismatch: " << p.name;
+}
+
+inline void expect_hl_inc(const boyboy::cpu::Cpu& cpu, const R8Param& p)
+{
+    EXPECT_EQ(cpu.get_register(boyboy::cpu::Reg16Name::HL), p.target_addr() + 1)
+        << "HL increment mismatch: " << p.name;
+}
+
+inline void expect_hl_dec(const boyboy::cpu::Cpu& cpu, const R8Param& p)
+{
+    EXPECT_EQ(cpu.get_register(boyboy::cpu::Reg16Name::HL), p.target_addr() - 1)
+        << "HL increment mismatch: " << p.name;
 }
 
 } // namespace boyboy::test::cpu

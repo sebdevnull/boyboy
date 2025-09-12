@@ -64,6 +64,21 @@ public:
     {
         auto param = this->GetParam();
 
+        // Setup test data
+        setup_source(param);
+        setup_destination(param);
+        setup_flags(param);
+
+        // Execute opcode
+        run(param.opcode);
+
+        // Run asserts
+        run_asserts(param);
+    }
+
+private:
+    void setup_source(const R8Param& param)
+    {
         // Set initial A register if provided
         if (param.initial_a) {
             cpu.set_register(boyboy::cpu::Reg8Name::A, *param.initial_a);
@@ -113,7 +128,10 @@ public:
             cpu.write_byte(cpu.get_pc() + 2, boyboy::utils::msb(addr));
             cpu.write_byte(addr, param.src_value);
         }
+    }
 
+    void setup_destination(const R8Param& param)
+    {
         // Setup destination as needed
         if (param.dst_op_type) {
             switch (*param.dst_op_type) {
@@ -132,35 +150,43 @@ public:
                 break;
             }
         }
+    }
 
+    void setup_flags(const R8Param& param)
+    {
         // Set carry if needed for ADC and SBC
         if (param.carry_in) {
             cpu.set_flag(boyboy::cpu::Flag::Carry, *param.carry_in);
         }
+    }
 
-        // Execute opcode
-        run(param.opcode);
-
-        // Run asserts
-        if (!param.skip_assert) {
-            OperandType op = param.target_operand();
-            switch (op) {
-            case OperandType::Reg8:
-            case OperandType::Immediate:
-                expect_r8(cpu, param);
-                break;
-            case OperandType::Reg16:
-                throw std::runtime_error("Reg16 operand type not supported in R8Test");
-                break;
-            case OperandType::Indirect:
-            case OperandType::Memory:
-                expect_at_addr(cpu, param);
-                break;
-            }
-            expect_flags(cpu, param);
-        }
-        else {
+    void run_asserts(const R8Param& param)
+    {
+        if (param.skip_assert) {
             GTEST_LOG_(INFO) << param.name << " is a NOP, skipping value check";
+            return;
+        }
+
+        OperandType op = param.target_operand();
+        switch (op) {
+        case OperandType::Reg8:
+        case OperandType::Immediate:
+            expect_r8(cpu, param);
+            break;
+        case OperandType::Reg16:
+            throw std::runtime_error("Reg16 operand type not supported in R8Test");
+            break;
+        case OperandType::Indirect:
+        case OperandType::Memory:
+            expect_at_addr(cpu, param);
+            break;
+        }
+
+        expect_flags(cpu, param);
+
+        // Run custom asserts
+        for (const auto& f : param.validators) {
+            f(cpu, param);
         }
     }
 };

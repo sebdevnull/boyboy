@@ -18,6 +18,7 @@
 #include <variant>
 
 #include "boyboy/common/utils.h"
+#include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/opcodes.h"
 #include "boyboy/cpu/registers.h"
 
@@ -184,6 +185,10 @@ struct R8Param {
     // Some operations behave as NOPs, but we still might want to execute them to test that the
     // corresponding functions are implemented (e.g. LD A, A)
     bool skip_assert = false;
+
+    // Extra validators to run at the assert stage
+    // NOLINTNEXTLINE
+    std::vector<std::function<void(const boyboy::cpu::Cpu&, const R8Param&)>> validators{};
 
     // Return the target register of the test
     [[nodiscard]] RegParam target() const { return dst.value_or(*src); }
