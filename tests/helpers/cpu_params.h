@@ -30,6 +30,7 @@ enum class OperandType : uint8_t {
     Immediate,
     Indirect,
     Memory,
+    HighRAM,
 };
 
 inline const char* to_string(OperandType op)
@@ -45,6 +46,8 @@ inline const char* to_string(OperandType op)
         return "Indirect";
     case OperandType::Memory:
         return "Memory";
+        case OperandType::HighRAM:
+        return "HighRAM";
     default:
         return "Unknown";
     }

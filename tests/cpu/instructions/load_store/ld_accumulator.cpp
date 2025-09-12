@@ -4,6 +4,7 @@
  *
  * LD A, [BC/DE/HL+/-] and LD [BC/DE/HL+/-], A
  * LD A, [n16] and LD [n16], A
+ * LDH A, [C/n8] and LDH [C/n8], A
  *
  * @license GPLv3 (see LICENSE file)
  */
@@ -33,6 +34,8 @@ using LdAMemTest      = R8Test<R8Param>;
 using LdMemATest      = R8Test<R8Param>;
 using LdAHLIncDecTest = R8Test<R8Param>;
 using LdHLIncADecTest = R8Test<R8Param>;
+using LdhAMemTest     = R8Test<R8Param>;
+using LdhMemATest     = R8Test<R8Param>;
 
 // -----------------------------
 // Test definitions
@@ -43,6 +46,8 @@ TEST_P(LdAMemTest, Works) { run_test(); }
 TEST_P(LdMemATest, Works) { run_test(); }
 TEST_P(LdAHLIncDecTest, Works) { run_test(); }
 TEST_P(LdHLIncADecTest, Works) { run_test(); }
+TEST_P(LdhAMemTest, Works) { run_test(); }
+TEST_P(LdhMemATest, Works) { run_test(); }
 
 // -----------------------------
 // Parameter instantiations
@@ -180,5 +185,55 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .expected_value = 0x55,
                                  .name           = "LD_AT_HL_DEC_A",
                                  .validators     = {expect_hl_dec},
+                             }),
+                         boyboy::test::cpu::param_name<R8Param>);
+
+// LDH A, [C/n8]
+INSTANTIATE_TEST_SUITE_P(LdInstructions,
+                         LdhAMemTest,
+                         ::testing::Values(
+                             R8Param{
+                                 .opcode         = Opcode::LDH_A_AT_C,
+                                 .src_op_type    = OperandType::HighRAM,
+                                 .src            = Reg8Name::C,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0xFFAB,
+                                 .src_value      = 0xAA,
+                                 .expected_value = 0xAA,
+                                 .name           = "LDH_A_AT_C",
+                             },
+                             R8Param{
+                                 .opcode         = Opcode::LDH_A_AT_A8,
+                                 .src_op_type    = OperandType::HighRAM,
+                                 .dst            = Reg8Name::A,
+                                 .src_addr       = 0xFFBA,
+                                 .src_value      = 0x55,
+                                 .expected_value = 0x55,
+                                 .name           = "LDH_A_AT_A8",
+                             }),
+                         boyboy::test::cpu::param_name<R8Param>);
+
+// LDH [C/n8], A
+INSTANTIATE_TEST_SUITE_P(LdInstructions,
+                         LdhMemATest,
+                         ::testing::Values(
+                             R8Param{
+                                 .opcode         = Opcode::LDH_AT_C_A,
+                                 .dst_op_type    = OperandType::HighRAM,
+                                 .src            = Reg8Name::A,
+                                 .dst            = Reg8Name::C,
+                                 .dst_addr       = 0xFFAB,
+                                 .src_value      = 0xAA,
+                                 .expected_value = 0xAA,
+                                 .name           = "LDH_AT_C_A",
+                             },
+                             R8Param{
+                                 .opcode         = Opcode::LDH_AT_A8_A,
+                                 .dst_op_type    = OperandType::HighRAM,
+                                 .src            = Reg8Name::A,
+                                 .dst_addr       = 0xFFBA,
+                                 .src_value      = 0x55,
+                                 .expected_value = 0x55,
+                                 .name           = "LDH_AT_A8_A",
                              }),
                          boyboy::test::cpu::param_name<R8Param>);

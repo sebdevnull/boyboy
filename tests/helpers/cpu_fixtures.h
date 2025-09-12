@@ -121,12 +121,25 @@ private:
             cpu.set_register(param.src->get_r16(), *param.src_addr);
             cpu.write_byte(*param.src_addr, param.src_value);
             break;
-        case OperandType::Memory:
+        case OperandType::Memory: {
             // Set the imm 16-bit address and its value
             uint16_t addr = *param.src_addr;
             cpu.write_byte(cpu.get_pc() + 1, boyboy::utils::lsb(addr));
             cpu.write_byte(cpu.get_pc() + 2, boyboy::utils::msb(addr));
             cpu.write_byte(addr, param.src_value);
+            break;
+        }
+        case OperandType::HighRAM: {
+            uint8_t addr_lsb = boyboy::utils::lsb(*param.src_addr);
+            if (param.src) {
+                cpu.set_register(param.src->get_r8(), addr_lsb);
+            }
+            else {
+                cpu.write_byte(cpu.get_pc() + 1, addr_lsb);
+            }
+            cpu.write_byte(*param.src_addr, param.src_value);
+            break;
+        }
         }
     }
 
@@ -144,6 +157,16 @@ private:
                 uint16_t addr = *param.dst_addr;
                 cpu.write_byte(cpu.get_pc() + 1, boyboy::utils::lsb(addr));
                 cpu.write_byte(cpu.get_pc() + 2, boyboy::utils::msb(addr));
+                break;
+            }
+            case OperandType::HighRAM: {
+                uint8_t addr_lsb = boyboy::utils::lsb(*param.dst_addr);
+                if (param.dst) {
+                    cpu.set_register(param.dst->get_r8(), addr_lsb);
+                }
+                else {
+                    cpu.write_byte(cpu.get_pc() + 1, addr_lsb);
+                }
                 break;
             }
             default:
@@ -178,6 +201,7 @@ private:
             break;
         case OperandType::Indirect:
         case OperandType::Memory:
+        case OperandType::HighRAM:
             expect_at_addr(cpu, param);
             break;
         }
