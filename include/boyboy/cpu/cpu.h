@@ -12,6 +12,7 @@
 
 #include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/cpu/instructions.h"
+#include "boyboy/cpu/opcodes.h"
 #include "boyboy/cpu/registers.h"
 #include "boyboy/mmu.h"
 
@@ -19,52 +20,74 @@ namespace boyboy::cpu {
 
 class Cpu {
 public:
-    Cpu()
+    Cpu() { reset(); }
+
+    // Reset CPU state
+    void reset()
     {
+        // Registers
         registers_.af = 0;
         registers_.bc = 0;
         registers_.de = 0;
         registers_.hl = 0;
         registers_.sp = SPStartValue;
         registers_.pc = PCStartValue;
+
+        // Memory
+        mmu_.reset();
+
+        // Other states
+        cycles_ = 0;
     }
 
     // Register accessors
-    [[nodiscard]] uint8_t get_register(Register8Name reg) const;
-    [[nodiscard]] uint16_t get_register(Register16Name reg) const;
-    void set_register(Register8Name reg, uint8_t value);
-    void set_register(Register16Name reg, uint16_t value);
+    [[nodiscard]] uint8_t get_register(Reg8Name reg) const;
+    [[nodiscard]] uint16_t get_register(Reg16Name reg) const;
+    void set_register(Reg8Name reg, uint8_t value);
+    void set_register(Reg16Name reg, uint16_t value);
+    [[nodiscard]] uint16_t get_pc() const { return registers_.pc; }
 
     // Flag accessors
-    [[nodiscard]] bool get_flag(uint8_t flag) const;
-    void set_flag(uint8_t flag, bool value);
+    [[nodiscard]] bool get_flag(uint8_t flag) const { return registers_.af.get_flag(flag); }
+    void set_flag(uint8_t flag, bool value) { registers_.af.set_flag(flag, value); }
+    [[nodiscard]] uint8_t get_flags() const { return registers_.f(); }
 
     // Execution functions
     void tick();
     uint8_t fetch();
     void execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
 
+    // Execute aliases
+    void execute(Opcode opcode)
+    {
+        execute(static_cast<uint8_t>(opcode), InstructionType::Unprefixed);
+    }
+    void execute(CBOpcode opcode)
+    {
+        execute(static_cast<uint8_t>(opcode), InstructionType::CBPrefixed);
+    }
+
+    // Memory access wrappers
+    [[nodiscard]] uint8_t read_byte(uint16_t addr) const { return mmu_.read_byte(addr); }
+    [[nodiscard]] uint16_t read_word(uint16_t addr) const { return mmu_.read_word(addr); }
+    void write_byte(uint16_t addr, uint8_t value) { mmu_.write_byte(addr, value); }
+    void write_word(uint16_t addr, uint16_t value) { mmu_.write_word(addr, value); }
+
     // Helpers mainly for debugging and testing
     [[nodiscard]] std::string_view disassemble(uint16_t addr) const;
     [[nodiscard]] uint64_t get_cycles() const { return cycles_; }
 
 private:
-    mmu::Mmu mmu_{};
-    Registers registers_{};
+    mmu::Mmu mmu_;
+    Registers registers_;
     uint64_t cycles_{};
-
-    // Memory access
-    [[nodiscard]] uint8_t read_byte(uint16_t addr) const;
-    [[nodiscard]] uint16_t read_word(uint16_t addr) const;
-    void write_byte(uint16_t addr, uint8_t value);
-    void write_word(uint16_t addr, uint16_t value);
 
     // Helper functions
     void reset_flags() { registers_.f(0); }
 
     // ALU operations
-    void add(uint8_t val, bool carry);
-    void sub(uint8_t val, bool carry);
+    void add(uint8_t val, bool use_carry);
+    void sub(uint8_t val, bool use_carry);
     void aand(uint8_t val);
     void xxor(uint8_t val);
     void oor(uint8_t val);
@@ -72,44 +95,43 @@ private:
 
     // ========== CPU Instructions definitions ==========
     // Generic unprefixed CPU instructions
-    void ld_r16_n16(Register16Name r16);
-    void ld_at_r16_a(Register16Name r16);
-    void ld_a_at_r16(Register16Name r16);
+    void ld_r8_n8(Reg8Name r8);
+    void ld_r8_r8(Reg8Name dst, Reg8Name src);
+    void ld_r8_at_r16(Reg8Name dst, Reg16Name src);
+    void ld_at_r16_r8(Reg16Name dst, Reg8Name src);
+    void ld_r16_n16(Reg16Name r16);
 
-    void inc_r16(Register16Name r16);
-    void dec_r16(Register16Name r16);
-    void add_hl_r16(Register16Name r16);
+    void inc_r16(Reg16Name r16);
+    void dec_r16(Reg16Name r16);
+    void add_hl_r16(Reg16Name r16);
 
-    void inc_r8(Register8Name r8);
-    void dec_r8(Register8Name r8);
+    void inc_r8(Reg8Name r8);
+    void dec_r8(Reg8Name r8);
 
-    void ld_r8_n8(Register8Name r8);
-    void ld_r8_r8(Register8Name dest, Register8Name src);
+    void add_a_r8(Reg8Name r8);
+    void adc_a_r8(Reg8Name r8);
+    void sub_a_r8(Reg8Name r8);
+    void sbc_a_r8(Reg8Name r8);
+    void and_a_r8(Reg8Name r8);
+    void xor_a_r8(Reg8Name r8);
+    void or_a_r8(Reg8Name r8);
+    void cp_a_r8(Reg8Name r8);
 
-    void add_a_r8(Register8Name r8);
-    void adc_a_r8(Register8Name r8);
-    void sub_a_r8(Register8Name r8);
-    void sbc_a_r8(Register8Name r8);
-    void and_a_r8(Register8Name r8);
-    void xor_a_r8(Register8Name r8);
-    void or_a_r8(Register8Name r8);
-    void cp_a_r8(Register8Name r8);
-
-    void pop_r16(Register16Name r16);
-    void push_r16(Register16Name r16);
+    void pop_r16(Reg16Name r16);
+    void push_r16(Reg16Name r16);
 
     // Generic CB-prefixed CPU instructions
-    void rlc_r8(Register8Name r8);
-    void rrc_r8(Register8Name r8);
-    void rl_r8(Register8Name r8);
-    void rr_r8(Register8Name r8);
-    void sla_r8(Register8Name r8);
-    void sra_r8(Register8Name r8);
-    void swap_r8(Register8Name r8);
-    void srl_r8(Register8Name r8);
-    void bit_b3_r8(uint8_t bit, Register8Name r8);
-    void res_b3_r8(uint8_t bit, Register8Name r8);
-    void set_b3_r8(uint8_t bit, Register8Name r8);
+    void rlc_r8(Reg8Name r8);
+    void rrc_r8(Reg8Name r8);
+    void rl_r8(Reg8Name r8);
+    void rr_r8(Reg8Name r8);
+    void sla_r8(Reg8Name r8);
+    void sra_r8(Reg8Name r8);
+    void swap_r8(Reg8Name r8);
+    void srl_r8(Reg8Name r8);
+    void bit_b3_r8(uint8_t bit, Reg8Name r8);
+    void res_b3_r8(uint8_t bit, Reg8Name r8);
+    void set_b3_r8(uint8_t bit, Reg8Name r8);
 
     // Autogenerated CPU instructions definitions from Opcodes.json
     // clang-format off
@@ -120,7 +142,204 @@ private:
     friend class InstructionTable;
 };
 
-// Stub disabling macros for implemented opcodes
+// ----- Stub disabling macros for implemented opcodes -----
 #define CPU_NOP
+#define CPU_INC_A
+#define CPU_INC_B
+#define CPU_INC_C
+#define CPU_INC_D
+#define CPU_INC_E
+#define CPU_INC_H
+#define CPU_INC_L
+#define CPU_DEC_A
+#define CPU_DEC_B
+#define CPU_DEC_C
+#define CPU_DEC_D
+#define CPU_DEC_E
+#define CPU_DEC_H
+#define CPU_DEC_L
+#define CPU_ADD_A_A
+#define CPU_ADD_A_B
+#define CPU_ADD_A_C
+#define CPU_ADD_A_D
+#define CPU_ADD_A_E
+#define CPU_ADD_A_H
+#define CPU_ADD_A_L
+#define CPU_SUB_A_A
+#define CPU_SUB_A_B
+#define CPU_SUB_A_C
+#define CPU_SUB_A_D
+#define CPU_SUB_A_E
+#define CPU_SUB_A_H
+#define CPU_SUB_A_L
+#define CPU_AND_A_A
+#define CPU_AND_A_B
+#define CPU_AND_A_C
+#define CPU_AND_A_D
+#define CPU_AND_A_E
+#define CPU_AND_A_H
+#define CPU_AND_A_L
+#define CPU_OR_A_A
+#define CPU_OR_A_B
+#define CPU_OR_A_C
+#define CPU_OR_A_D
+#define CPU_OR_A_E
+#define CPU_OR_A_H
+#define CPU_OR_A_L
+#define CPU_XOR_A_A
+#define CPU_XOR_A_B
+#define CPU_XOR_A_C
+#define CPU_XOR_A_D
+#define CPU_XOR_A_E
+#define CPU_XOR_A_H
+#define CPU_XOR_A_L
+#define CPU_CP_A_A
+#define CPU_CP_A_B
+#define CPU_CP_A_C
+#define CPU_CP_A_D
+#define CPU_CP_A_E
+#define CPU_CP_A_H
+#define CPU_CP_A_L
+#define CPU_ADC_A_A
+#define CPU_ADC_A_B
+#define CPU_ADC_A_C
+#define CPU_ADC_A_D
+#define CPU_ADC_A_E
+#define CPU_ADC_A_H
+#define CPU_ADC_A_L
+#define CPU_SBC_A_A
+#define CPU_SBC_A_B
+#define CPU_SBC_A_C
+#define CPU_SBC_A_D
+#define CPU_SBC_A_E
+#define CPU_SBC_A_H
+#define CPU_SBC_A_L
+#define CPU_INC_AT_HL
+#define CPU_DEC_AT_HL
+#define CPU_ADD_A_AT_HL
+#define CPU_ADC_A_AT_HL
+#define CPU_SUB_A_AT_HL
+#define CPU_SBC_A_AT_HL
+#define CPU_AND_A_AT_HL
+#define CPU_OR_A_AT_HL
+#define CPU_XOR_A_AT_HL
+#define CPU_CP_A_AT_HL
+#define CPU_ADD_A_N8
+#define CPU_ADC_A_N8
+#define CPU_SUB_A_N8
+#define CPU_SBC_A_N8
+#define CPU_AND_A_N8
+#define CPU_OR_A_N8
+#define CPU_XOR_A_N8
+#define CPU_CP_A_N8
+
+// LD r8, r8'
+// A
+#define CPU_LD_A_A
+#define CPU_LD_A_B
+#define CPU_LD_A_C
+#define CPU_LD_A_D
+#define CPU_LD_A_E
+#define CPU_LD_A_H
+#define CPU_LD_A_L
+// B
+#define CPU_LD_B_A
+#define CPU_LD_B_B
+#define CPU_LD_B_C
+#define CPU_LD_B_D
+#define CPU_LD_B_E
+#define CPU_LD_B_H
+#define CPU_LD_B_L
+// C
+#define CPU_LD_C_A
+#define CPU_LD_C_B
+#define CPU_LD_C_C
+#define CPU_LD_C_D
+#define CPU_LD_C_E
+#define CPU_LD_C_H
+#define CPU_LD_C_L
+// D
+#define CPU_LD_D_A
+#define CPU_LD_D_B
+#define CPU_LD_D_C
+#define CPU_LD_D_D
+#define CPU_LD_D_E
+#define CPU_LD_D_H
+#define CPU_LD_D_L
+// E
+#define CPU_LD_E_A
+#define CPU_LD_E_B
+#define CPU_LD_E_C
+#define CPU_LD_E_D
+#define CPU_LD_E_E
+#define CPU_LD_E_H
+#define CPU_LD_E_L
+// H
+#define CPU_LD_H_A
+#define CPU_LD_H_B
+#define CPU_LD_H_C
+#define CPU_LD_H_D
+#define CPU_LD_H_E
+#define CPU_LD_H_H
+#define CPU_LD_H_L
+// L
+#define CPU_LD_L_A
+#define CPU_LD_L_B
+#define CPU_LD_L_C
+#define CPU_LD_L_D
+#define CPU_LD_L_E
+#define CPU_LD_L_H
+#define CPU_LD_L_L
+
+// LD r8, n8
+#define CPU_LD_A_N8
+#define CPU_LD_B_N8
+#define CPU_LD_C_N8
+#define CPU_LD_D_N8
+#define CPU_LD_E_N8
+#define CPU_LD_H_N8
+#define CPU_LD_L_N8
+
+// LD r8, [HL]
+#define CPU_LD_A_AT_HL
+#define CPU_LD_B_AT_HL
+#define CPU_LD_C_AT_HL
+#define CPU_LD_D_AT_HL
+#define CPU_LD_E_AT_HL
+#define CPU_LD_H_AT_HL
+#define CPU_LD_L_AT_HL
+
+// LD [HL], r8
+#define CPU_LD_AT_HL_A
+#define CPU_LD_AT_HL_B
+#define CPU_LD_AT_HL_C
+#define CPU_LD_AT_HL_D
+#define CPU_LD_AT_HL_E
+#define CPU_LD_AT_HL_H
+#define CPU_LD_AT_HL_L
+
+// LD A, [BC/DE] and LD [BC/DE], A
+#define CPU_LD_A_AT_BC
+#define CPU_LD_A_AT_DE
+#define CPU_LD_AT_BC_A
+#define CPU_LD_AT_DE_A
+
+// LD A, [n16] and LD [n16], A
+#define CPU_LD_A_AT_A16
+#define CPU_LD_AT_A16_A
+
+// LD A, [HL+/-]
+#define CPU_LD_A_AT_HL_INC
+#define CPU_LD_A_AT_HL_DEC
+
+// LD [HL+/-], A
+#define CPU_LD_AT_HL_INC_A
+#define CPU_LD_AT_HL_DEC_A
+
+// LDH
+#define CPU_LDH_A_AT_C
+#define CPU_LDH_A_AT_A8
+#define CPU_LDH_AT_C_A
+#define CPU_LDH_AT_A8_A
 
 } // namespace boyboy::cpu

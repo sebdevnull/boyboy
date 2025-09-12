@@ -14,75 +14,75 @@
 
 namespace boyboy::cpu {
 
-uint8_t Cpu::get_register(Register8Name reg) const
+uint8_t Cpu::get_register(Reg8Name reg) const
 {
     switch (reg) {
-    case Register8Name::A:
+    case Reg8Name::A:
         return registers_.a();
-    case Register8Name::F:
+    case Reg8Name::F:
         return registers_.f();
-    case Register8Name::B:
+    case Reg8Name::B:
         return registers_.b();
-    case Register8Name::C:
+    case Reg8Name::C:
         return registers_.c();
-    case Register8Name::D:
+    case Reg8Name::D:
         return registers_.d();
-    case Register8Name::E:
+    case Reg8Name::E:
         return registers_.e();
-    case Register8Name::H:
+    case Reg8Name::H:
         return registers_.h();
-    case Register8Name::L:
+    case Reg8Name::L:
         return registers_.l();
     default:
         return 0;
     }
 }
 
-uint16_t Cpu::get_register(Register16Name reg) const
+uint16_t Cpu::get_register(Reg16Name reg) const
 {
     switch (reg) {
-    case Register16Name::AF:
+    case Reg16Name::AF:
         return registers_.af;
-    case Register16Name::BC:
+    case Reg16Name::BC:
         return registers_.bc;
-    case Register16Name::DE:
+    case Reg16Name::DE:
         return registers_.de;
-    case Register16Name::HL:
+    case Reg16Name::HL:
         return registers_.hl;
-    case Register16Name::SP:
+    case Reg16Name::SP:
         return registers_.sp;
-    case Register16Name::PC:
+    case Reg16Name::PC:
         return registers_.pc;
     default:
         return 0;
     }
 }
 
-void Cpu::set_register(Register8Name reg, uint8_t value)
+void Cpu::set_register(Reg8Name reg, uint8_t value)
 {
     switch (reg) {
-    case Register8Name::A:
+    case Reg8Name::A:
         registers_.a(value);
         break;
-    case Register8Name::F:
+    case Reg8Name::F:
         registers_.f(value);
         break;
-    case Register8Name::B:
+    case Reg8Name::B:
         registers_.b(value);
         break;
-    case Register8Name::C:
+    case Reg8Name::C:
         registers_.c(value);
         break;
-    case Register8Name::D:
+    case Reg8Name::D:
         registers_.d(value);
         break;
-    case Register8Name::E:
+    case Reg8Name::E:
         registers_.e(value);
         break;
-    case Register8Name::H:
+    case Reg8Name::H:
         registers_.h(value);
         break;
-    case Register8Name::L:
+    case Reg8Name::L:
         registers_.l(value);
         break;
     default:
@@ -90,40 +90,30 @@ void Cpu::set_register(Register8Name reg, uint8_t value)
     }
 }
 
-void Cpu::set_register(Register16Name reg, uint16_t value)
+void Cpu::set_register(Reg16Name reg, uint16_t value)
 {
     switch (reg) {
-    case Register16Name::AF:
+    case Reg16Name::AF:
         registers_.af = value;
         break;
-    case Register16Name::BC:
+    case Reg16Name::BC:
         registers_.bc = value;
         break;
-    case Register16Name::DE:
+    case Reg16Name::DE:
         registers_.de = value;
         break;
-    case Register16Name::HL:
+    case Reg16Name::HL:
         registers_.hl = value;
         break;
-    case Register16Name::SP:
+    case Reg16Name::SP:
         registers_.sp = value;
         break;
-    case Register16Name::PC:
+    case Reg16Name::PC:
         registers_.pc = value;
         break;
     default:
         break;
     }
-}
-
-bool Cpu::get_flag(uint8_t flag) const
-{
-    return registers_.af.get_flag(flag);
-}
-
-void Cpu::set_flag(uint8_t flag, bool value)
-{
-    registers_.af.set_flag(flag, value);
 }
 
 void Cpu::tick()
@@ -141,7 +131,7 @@ void Cpu::tick()
 
 uint8_t Cpu::fetch()
 {
-    return mmu_.read_byte(registers_.pc++);
+    return read_byte(registers_.pc++);
 }
 
 void Cpu::execute(uint8_t opcode, InstructionType instr_type)
@@ -153,11 +143,11 @@ void Cpu::execute(uint8_t opcode, InstructionType instr_type)
 
 std::string_view Cpu::disassemble(uint16_t addr) const
 {
-    uint8_t opcode = mmu_.read_byte(addr);
+    uint8_t opcode = read_byte(addr);
     InstructionType instr_type = InstructionType::Unprefixed;
 
     if (opcode == CBInstructionPrefix) {
-        opcode = mmu_.read_byte(addr + 1);
+        opcode = read_byte(addr + 1);
         instr_type = InstructionType::CBPrefixed;
     }
 
@@ -169,110 +159,81 @@ std::string_view Cpu::disassemble(uint16_t addr) const
 
 // Private methods
 
-void Cpu::add(uint8_t val, bool carry)
+void Cpu::add(uint8_t val, bool use_carry)
 {
-    uint8_t result = registers_.a() + val;
+    uint8_t a = registers_.a();
+    uint8_t carry_in = (use_carry && get_flag(Flag::Carry)) ? 1 : 0;
 
-    if (carry && (registers_.f() & Flag::Carry) != 0) {
-        result += 1;
-    }
-
-    reset_flags();
-
-    // set flags
-    if (result == 0) {
-        registers_.af.zero_flag(true);
-    }
-    if (result < registers_.a()) {
-        registers_.af.carry_flag(true);
-    }
-    if ((registers_.a() & 0x0F) > (result & 0x0F)) {
-        registers_.af.half_carry_flag(true);
-    }
+    uint16_t sum = uint16_t(a) + uint16_t(val) + carry_in;
+    uint8_t result = sum & 0xFF;
 
     registers_.a(result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, ((a & 0xF) + (val & 0xF) + carry_in) > 0xF);
+    set_flag(Flag::Carry, sum > 0xFF);
 }
 
-void Cpu::sub(uint8_t val, bool carry)
+void Cpu::sub(uint8_t val, bool use_carry)
 {
-    uint8_t result = registers_.a() - val;
+    uint8_t a = registers_.a();
+    uint8_t carry_in = (use_carry && get_flag(Flag::Carry)) ? 1 : 0;
 
-    if (carry && (registers_.f() & Flag::Carry) != 0) {
-        result -= 1;
-    }
-
-    reset_flags();
-
-    // set flags
-    registers_.af.substract_flag(true);
-    if (result == 0) {
-        registers_.af.zero_flag(true);
-    }
-    if (result > registers_.a()) {
-        registers_.af.carry_flag(true);
-    }
-    if ((registers_.a() & 0x0F) < (result & 0x0F)) {
-        registers_.af.half_carry_flag(true);
-    }
+    uint16_t sub = uint16_t(val) + carry_in;
+    uint8_t result = a - sub;
 
     registers_.a(result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, true);
+    set_flag(Flag::HalfCarry, (a & 0xF) < ((val & 0xF) + carry_in));
+    set_flag(Flag::Carry, a < sub);
 }
 
 void Cpu::aand(uint8_t val)
 {
-    auto new_val = registers_.a() & val;
-    registers_.a(new_val);
+    auto result = registers_.a() & val;
+    registers_.a(result);
 
-    reset_flags();
-
-    // set flags
-    registers_.af.half_carry_flag(true);
-    if (registers_.a() == 0) {
-        registers_.af.zero_flag(true);
-    }
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, true);
+    set_flag(Flag::Carry, false);
 }
 
 void Cpu::xxor(uint8_t val)
 {
-    auto new_val = registers_.a() ^ val;
-    registers_.a(new_val);
+    auto result = registers_.a() ^ val;
+    registers_.a(result);
 
-    reset_flags();
-
-    // set flags
-    if (registers_.a() == 0) {
-        registers_.af.zero_flag(true);
-    }
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, false);
 }
 
 void Cpu::oor(uint8_t val)
 {
-    auto new_val = registers_.a() | val;
-    registers_.a(new_val);
+    auto result = registers_.a() | val;
+    registers_.a(result);
 
-    reset_flags();
-
-    // set flags
-    if (registers_.a() == 0) {
-        registers_.af.zero_flag(true);
-    }
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, false);
 }
 
 void Cpu::cp(uint8_t val)
 {
-    reset_flags();
+    // Compare is essentially a subtraction without modifying A
+    uint8_t a = registers_.a();
+    uint8_t result = a - val;
 
-    // set flags
-    registers_.af.substract_flag(true);
-    if (registers_.a() == val) {
-        registers_.af.zero_flag(true);
-    }
-    else if (registers_.a() > val) {
-        registers_.af.half_carry_flag(true);
-    }
-    else {
-        registers_.af.carry_flag(true);
-    }
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, true);
+    set_flag(Flag::HalfCarry, (result & 0x0F) > (a & 0x0F));
+    set_flag(Flag::Carry, result > a);
 }
 
 } // namespace boyboy::cpu

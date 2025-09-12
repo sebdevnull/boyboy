@@ -27,6 +27,7 @@
             "description": "Debug Configuration",
             "cacheVariables": {
                 "CPU_STUBS": "ON",
+                "TEST_CPU_STUBS": "ON",
                 "BOYBOY_DEBUG": "ON",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "ENABLE_SANITIZERS": "ON",
@@ -59,6 +60,15 @@
                 "ENABLE_CLANG_TIDY": "ON",
                 "BUILD_TESTING": "OFF"
             }
+        },
+        {
+            "name": "debug-tidy-tests",
+            "inherits": "debug",
+            "description": "Debug build with clang-tidy and tests enabled",
+            "cacheVariables": {
+                "ENABLE_CLANG_TIDY": "ON",
+                "BUILD_TESTING": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -85,6 +95,11 @@
         {
             "name": "debug-tidy",
             "configurePreset": "debug-tidy",
+            "inherits": "default"
+        },
+        {
+            "name": "debug-tidy-tests",
+            "configurePreset": "debug-tidy-tests",
             "inherits": "default"
         }
     ],
@@ -163,6 +178,20 @@
                 {
                     "type": "build",
                     "name": "debug-tidy"
+                }
+            ]
+        },
+        {
+            "name": "tidy-tests",
+            "description": "Configure and build with clang-tidy including tests",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "debug-tidy-tests"
+                },
+                {
+                    "type": "build",
+                    "name": "debug-tidy-tests"
                 }
             ]
         }

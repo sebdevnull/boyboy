@@ -1,0 +1,5 @@
+BasedOnStyle: InheritParentConfig
+
+AlignConsecutiveAssignments: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortLambdasOnASingleLine: All
