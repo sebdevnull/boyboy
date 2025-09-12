@@ -11,6 +11,7 @@
 
 #include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu.h"
+#include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/cpu/registers.h"
 
 namespace boyboy::cpu {
@@ -491,6 +492,41 @@ void Cpu::ld_at_hl_dec_a()
     set_register(Reg16Name::HL, addr - 1);
 }
 
+// LDH A, [C]
+void Cpu::ldh_a_at_c()
+{
+    uint8_t c = get_register(Reg8Name::C);
+    uint16_t addr = HighRAMOffset + c;
+    uint8_t value = read_byte(addr);
+    set_register(Reg8Name::A, value);
+}
+
+// LDH [C], A
+void Cpu::ldh_at_c_a()
+{
+    uint8_t c = get_register(Reg8Name::C);
+    uint16_t addr = HighRAMOffset + c;
+    uint8_t value = get_register(Reg8Name::A);
+    write_byte(addr, value);
+}
+
+// LDH A, [a8]
+void Cpu::ldh_a_at_a8()
+{
+    uint8_t n8 = fetch();
+    uint16_t addr = HighRAMOffset + n8;
+    uint8_t value = read_byte(addr);
+    set_register(Reg8Name::A, value);
+}
+
+// LDH [a8], A
+void Cpu::ldh_at_a8_a()
+{
+    uint8_t n8 = fetch();
+    uint16_t addr = HighRAMOffset + n8;
+    uint8_t value = get_register(Reg8Name::A);
+    write_byte(addr, value);
+}
 
 // Individual CPU instruction implementations (CB-prefixed)
 
