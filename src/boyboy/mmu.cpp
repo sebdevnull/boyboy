@@ -7,53 +7,256 @@
 
 #include "boyboy/mmu.h"
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <span>
+#include <stdexcept>
+
+#include "boyboy/common/utils.h"
 
 namespace boyboy::mmu {
 
-uint8_t* Mmu::get_pointer(uint16_t address) const
+void Mmu::reset()
 {
-    for (const auto& region : region_table_) {
-        if (address >= region.start && address <= region.end) {
-            auto index = static_cast<size_t>(address - region.start);
-            return &region.data[index];
+    cart_.fill(0);
+    vram_.fill(0);
+    eram_.fill(0);
+    wram_.fill(0);
+    oam_.fill(0);
+    ior_.fill(0);
+    hram_.fill(0);
+    ier_ = 0;
+
+    init_memory_map();
+}
+
+// copy map version
+void Mmu::map_rom(const cartridge::Cartridge& cart)
+{
+    const auto& rom = cart.get_rom(); // std::vector<std::byte>
+
+    // Clear cart memory
+    cart_.fill(0);
+
+    // Copy ROM data into MMU cart_ array
+    size_t bytes_to_copy = std::min(rom.size(), cart_.size());
+    for (size_t i = 0; i < bytes_to_copy; ++i) {
+        cart_.at(i) = static_cast<uint8_t>(rom.at(i));
+    }
+
+    // Map ROMBank0 (0x0000 - 0x3FFF)
+    map(MemoryMapIndex::ROMBank0).data = std::span<uint8_t>(cart_).subspan(0, ROMBank0Size);
+
+    // Map ROMBank1 (0x4000 - 0x7FFF)
+    map(MemoryMapIndex::ROMBank1).data =
+        std::span<uint8_t>(cart_).subspan(ROMBank0Size, ROMBank1Size);
+
+    rom_loaded_ = true;
+}
+
+// real map version
+// void Mmu::map_rom(const cartridge::Cartridge& cart)
+// {
+//     const auto& rom = cart.get_rom();
+
+//     // NOLINTBEGIN
+
+//     const auto rom_ptr = reinterpret_cast<const uint8_t*>(rom.data());
+
+//     // Map ROMBank0 to the first 16KB of the cartridge ROM
+//     size_t bank0_size = std::min(ROMBank0Size, rom.size());
+//     map(MemoryMapIndex::ROMBank0).data =
+//         std::span<uint8_t>(const_cast<uint8_t*>(rom_ptr), bank0_size);
+
+//     // Map ROMBank1
+//     size_t bank1_size =
+//         std::min(ROMBank1Size, rom.size() > ROMBank0Size ? rom.size() - ROMBank0Size : 0);
+//     map(MemoryMapIndex::ROMBank1).data =
+//         std::span<uint8_t>(const_cast<uint8_t*>(rom_ptr + ROMBank0Size), bank1_size);
+
+//     // NOLINTEND
+// }
+
+uint8_t Mmu::read_byte(uint16_t addr) const
+{
+    const auto& region = find_region(addr);
+
+    if (&region == &dummy_open_bus_) {
+        return open_bus_;
+    }
+
+    if (region.read_handler) {
+        return region.read_handler(addr);
+    }
+
+    return region.data[addr - region.start];
+}
+
+uint16_t Mmu::read_word(uint16_t addr) const
+{
+    const auto& region = find_region(addr);
+
+    if (&region == &dummy_open_bus_) {
+        return open_bus_;
+    }
+
+    if (region.read_handler) {
+        return region.read_handler(addr);
+    }
+
+    uint16_t local_addr = addr - region.start;
+
+    return utils::to_u16(region.data[local_addr], region.data[local_addr + 1]);
+}
+
+void Mmu::write_byte(uint16_t addr, uint8_t value)
+{
+    auto& region = find_region(addr);
+
+    if (region.read_only) {
+        return;
+    }
+
+    if (&region == &dummy_open_bus_) {
+        return;
+    }
+
+    if (region.write_handler) {
+        region.write_handler(addr, value);
+        return;
+    }
+
+    region.data[addr - region.start] = value;
+}
+
+void Mmu::write_word(uint16_t addr, uint16_t value)
+{
+    auto& region = find_region(addr);
+
+    if (region.read_only) {
+        return;
+    }
+
+    if (&region == &dummy_open_bus_) {
+        return;
+    }
+
+    if (region.write_handler) {
+        region.write_handler(addr, value);
+        return;
+    }
+
+    uint16_t local_addr = addr - region.start;
+    region.data[local_addr] = utils::msb(value);
+    region.data[local_addr + 1] = utils::lsb(value);
+}
+
+void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
+{
+    auto& region = find_region(dst_addr);
+
+    if (region.read_only) {
+        return;
+    }
+
+    if (&region == &dummy_open_bus_) {
+        return;
+    }
+
+    for (size_t i = 0; i < src.size(); i++) {
+        write_byte(dst_addr + i, src[i]);
+    }
+}
+
+void Mmu::init_memory_map()
+{
+    map(MemoryMapIndex::ROMBank0) = {
+        .start = ROMBank0Start,
+        .end = ROMBank0End,
+        .data = cart_,
+        // .read_only = true,
+        .read_only = false,
+    };
+    map(MemoryMapIndex::ROMBank1) = {
+        .start = ROMBank1Start,
+        .end = ROMBank1End,
+        .data = std::span<uint8_t>(cart_).subspan(ROMBank0Size),
+        // .read_only = true,
+        .read_only = false,
+    };
+    map(MemoryMapIndex::VRAM) = {
+        .start = VRAMStart,
+        .end = VRAMEnd,
+        .data = vram_,
+    };
+    map(MemoryMapIndex::ERAM) = {
+        .start = ERAMStart,
+        .end = ERAMEnd,
+        .data = eram_,
+    };
+    map(MemoryMapIndex::WRAM0) = {
+        .start = WRAM0Start,
+        .end = WRAM0End,
+        .data = wram_,
+    };
+    map(MemoryMapIndex::WRAM1) = {
+        .start = WRAM1Start,
+        .end = WRAM1End,
+        .data = std::span<uint8_t>(wram_).subspan(WRAM0Size),
+        .mirrored = true,
+    };
+    map(MemoryMapIndex::OAM) = {
+        .start = OAMStart,
+        .end = OAMEnd,
+        .data = oam_,
+    };
+    map(MemoryMapIndex::IO) = {
+        .start = IOStart,
+        .end = IOEnd,
+        .data = ior_,
+        .io_register = true,
+        .write_handler = nullptr, // TODO: implement
+        .read_handler = nullptr,  // TODO: implement
+    };
+    map(MemoryMapIndex::HRAM) = {
+        .start = HRAMStart,
+        .end = HRAMEnd,
+        .data = hram_,
+    };
+    map(MemoryMapIndex::IEReg) = {
+        .start = IEAddr,
+        .end = IEAddr,
+        .data = {&ier_, 1},
+        // .read_only = true,
+        .read_only = false,
+    };
+}
+
+[[nodiscard]] size_t Mmu::find_region_index(uint16_t addr) const
+{
+    for (size_t i = 0; i < memory_map_.size(); i++) {
+        auto region = memory_map_.at(i);
+        if (addr >= region.start && addr <= region.end) {
+            return i;
         }
     }
-
-    // Unusable or invalid memory
-    return nullptr;
+#ifndef NDEBUG
+    throw std::out_of_range("Invalid memory access at " + utils::PrettyHex(addr).to_string());
+#else
+    return size_t(-1);
+#endif
 }
 
-uint8_t Mmu::read_byte(uint16_t address) const
+Mmu::MemoryRegion& Mmu::find_region(uint16_t addr)
 {
-    auto* pointer = get_pointer(address);
-    auto pointer_val = *pointer;
-    return pointer_val;
-    // return *get_pointer(address);
+    size_t idx = find_region_index(addr);
+    return (idx == size_t(-1)) ? dummy_open_bus_ : memory_map_.at(idx);
 }
-
-uint16_t Mmu::read_word(uint16_t address) const
+const Mmu::MemoryRegion& Mmu::find_region(uint16_t addr) const
 {
-    return (*get_pointer(address) << 8) + *get_pointer(address + 1);
-}
-
-void Mmu::write_byte(uint16_t address, uint8_t value)
-{
-    *get_pointer(address) = value;
-}
-
-void Mmu::write_word(uint16_t address, uint16_t value)
-{
-    *get_pointer(address) = static_cast<uint8_t>(value >> 8);
-    *get_pointer(address + 1) = static_cast<uint8_t>(value & 0xFF);
-}
-
-void Mmu::copy(uint16_t dst_address, std::span<uint8_t> src)
-{
-    for (size_t i = 0; i < src.size(); i++) {
-        write_byte(dst_address + i, src[i]);
-    }
+    size_t idx = find_region_index(addr);
+    return (idx == size_t(-1)) ? dummy_open_bus_ : memory_map_.at(idx);
 }
 
 } // namespace boyboy::mmu
