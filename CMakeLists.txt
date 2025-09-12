@@ -74,6 +74,7 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/cartridge.cpp
     src/boyboy/display.cpp
     src/boyboy/mmu.cpp
+    src/boyboy/emulator.cpp
 )
 
 # --- Include directories ---
