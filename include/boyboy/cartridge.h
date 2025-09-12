@@ -46,7 +46,7 @@ enum class CartridgeType : uint8_t {
     HUC1RAMBattery = 0xFF
 };
 
-constexpr std::string_view to_string(CartridgeType type);
+[[nodiscard]] std::string_view to_string(CartridgeType type);
 
 class Cartridge {
 public:
@@ -60,9 +60,15 @@ public:
         uint8_t header_checksum;
         uint16_t checksum;
 
+        void reset() { *this = Header{}; }
         void print() const;
 
+        [[nodiscard]] std::string to_string() const;
+        [[nodiscard]] std::string pretty_string() const;
+
         // Header field constants
+        static constexpr uint16_t HeaderStart = 0x134;
+        static constexpr uint16_t HeaderEnd = 0x14C;
         static constexpr uint16_t TitlePos = 0x134;
         static constexpr uint16_t TitleLen = 16;
         static constexpr uint16_t TitleEnd = TitlePos + TitleLen;
@@ -75,11 +81,14 @@ public:
         static constexpr uint16_t ChecksumPos = 0x14E;
     };
 
-    void load(std::string_view path);
-    void unload();
+    Cartridge() = default;
+    Cartridge(std::string_view path) { load_rom(path); }
 
-    void parse_header();
+    // ROM loading
+    void load_rom(std::string_view path);
+    void unload_rom();
 
+    // Accessors
     [[nodiscard]] const std::vector<std::byte>& get_rom() const { return rom_; }
     [[nodiscard]] const std::byte* data() const { return rom_.data(); }
     [[nodiscard]] size_t size() const { return rom_.size(); }
@@ -88,6 +97,12 @@ public:
 private:
     Header header_{};
     std::vector<std::byte> rom_;
+
+    void load(std::string_view path);
+    void unload();
+    void parse_header();
+    bool header_checksum();
+    bool checksum();
 };
 
 } // namespace boyboy::cartridge
