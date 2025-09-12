@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string_view>
 
 #include "boyboy/cpu/cpu_constants.h"
@@ -20,7 +21,14 @@ namespace boyboy::cpu {
 
 class Cpu {
 public:
-    Cpu() { reset(); }
+    Cpu(std::shared_ptr<mmu::Mmu> mmu) : mmu_(std::move(mmu)) { reset(); }
+    ~Cpu() = default;
+
+    // delete move and copy
+    Cpu(const Cpu&) = delete;
+    Cpu& operator=(const Cpu&) = delete;
+    Cpu(Cpu&&) = delete;
+    Cpu& operator=(Cpu&&) = delete;
 
     // Reset CPU state
     void reset()
@@ -32,9 +40,6 @@ public:
         registers_.hl = 0;
         registers_.sp = SPStartValue;
         registers_.pc = PCStartValue;
-
-        // Memory
-        mmu_.reset();
 
         // Other states
         cycles_ = 0;
@@ -53,7 +58,7 @@ public:
     [[nodiscard]] uint8_t get_flags() const { return registers_.f(); }
 
     // Execution functions
-    void tick();
+    void step();
     uint8_t fetch();
     void execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
 
@@ -68,17 +73,17 @@ public:
     }
 
     // Memory access wrappers
-    [[nodiscard]] uint8_t read_byte(uint16_t addr) const { return mmu_.read_byte(addr); }
-    [[nodiscard]] uint16_t read_word(uint16_t addr) const { return mmu_.read_word(addr); }
-    void write_byte(uint16_t addr, uint8_t value) { mmu_.write_byte(addr, value); }
-    void write_word(uint16_t addr, uint16_t value) { mmu_.write_word(addr, value); }
+    [[nodiscard]] uint8_t read_byte(uint16_t addr) const { return mmu_->read_byte(addr); }
+    [[nodiscard]] uint16_t read_word(uint16_t addr) const { return mmu_->read_word(addr); }
+    void write_byte(uint16_t addr, uint8_t value) { mmu_->write_byte(addr, value); }
+    void write_word(uint16_t addr, uint16_t value) { mmu_->write_word(addr, value); }
 
     // Helpers mainly for debugging and testing
     [[nodiscard]] std::string_view disassemble(uint16_t addr) const;
     [[nodiscard]] uint64_t get_cycles() const { return cycles_; }
 
 private:
-    mmu::Mmu mmu_;
+    std::shared_ptr<mmu::Mmu> mmu_;
     Registers registers_;
     uint64_t cycles_{};
 

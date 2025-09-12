@@ -116,7 +116,7 @@ void Cpu::set_register(Reg16Name reg, uint16_t value)
     }
 }
 
-void Cpu::tick()
+void Cpu::step()
 {
     uint8_t opcode = fetch();
     InstructionType instr_type = InstructionType::Unprefixed;
