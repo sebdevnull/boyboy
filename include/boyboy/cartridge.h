@@ -87,6 +87,7 @@ public:
     // ROM loading
     void load_rom(std::string_view path);
     void unload_rom();
+    [[nodiscard]] bool is_loaded() const { return rom_loaded_; }
 
     // Accessors
     [[nodiscard]] const std::vector<std::byte>& get_rom() const { return rom_; }
@@ -97,6 +98,7 @@ public:
 private:
     Header header_{};
     std::vector<std::byte> rom_;
+    bool rom_loaded_ = false;
 
     void load(std::string_view path);
     void unload();

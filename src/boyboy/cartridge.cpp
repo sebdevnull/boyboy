@@ -50,10 +50,12 @@ void Cartridge::load_rom(std::string_view path)
     parse_header();
 
     if (!header_checksum()) {
+        unload_rom();
         throw std::runtime_error("Invalid ROM header checksum");
     }
 
     if (!checksum()) {
+        unload_rom();
         throw std::runtime_error("Invalid ROM checksum");
     }
 }
@@ -138,12 +140,15 @@ void Cartridge::load(std::string_view path)
         rom_.clear();
         throw std::runtime_error("Failed to read entire file");
     }
+
+    rom_loaded_ = true;
 }
 
 void Cartridge::unload()
 {
     rom_.clear();
     rom_.shrink_to_fit();
+    rom_loaded_ = false;
 }
 
 void Cartridge::parse_header()
