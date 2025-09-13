@@ -10,12 +10,17 @@
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/opcodes.h"
 
-using namespace boyboy::cpu;
+#include "helpers/cpu_fixtures.h"
+
+using boyboy::test::cpu::CpuTest;
+
+using boyboy::cpu::Opcode;
 
 // ======================= NOP =======================
-TEST(NopTest, NOPDefault)
+class NopTest : public CpuTest {};
+
+TEST_F(NopTest, NOPDefault)
 {
-    Cpu cpu;
     uint16_t initial_pc = cpu.get_pc();
 
     // Load NOP instruction at current PC

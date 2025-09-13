@@ -10,11 +10,13 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
+#include <memory>
 
 // boyboy
 #include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/registers.h"
+#include "boyboy/mmu.h"
 
 // Helpers
 #include "helpers/cpu_asserts.h"
@@ -23,12 +25,16 @@
 namespace boyboy::test::cpu {
 
 struct CpuTest : public ::testing::Test {
+    std::shared_ptr<boyboy::mmu::Mmu> mmu;
     boyboy::cpu::Cpu cpu;
+
+    CpuTest() : mmu(std::make_shared<boyboy::mmu::Mmu>()), cpu(mmu) {}
 
     void SetUp() override
     {
         // Reset CPU to a clean state before each test
         cpu.reset();
+        mmu->reset();
     }
 
     void run(boyboy::cpu::Opcode opcode)
