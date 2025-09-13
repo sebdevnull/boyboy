@@ -55,8 +55,16 @@ void Cpu::ld_r16_n16(Reg16Name r16)
     set_register(r16, n16);
 }
 
-// void Cpu::inc_r16(Reg16Name r16) {}
-// void Cpu::dec_r16(Reg16Name r16) {}
+void Cpu::inc_r16(Reg16Name r16)
+{
+    set_register(r16, get_register(r16) + 1);
+}
+
+void Cpu::dec_r16(Reg16Name r16)
+{
+    set_register(r16, get_register(r16) - 1);
+}
+
 // void Cpu::add_hl_r16(Reg16Name r16) {}
 
 void Cpu::inc_r8(Reg8Name r8)
@@ -527,6 +535,20 @@ void Cpu::ldh_at_a8_a()
     uint8_t value = get_register(Reg8Name::A);
     write_byte(addr, value);
 }
+
+// clang-format off
+// INC r16
+void Cpu::inc_bc() { inc_r16(Reg16Name::BC); }
+void Cpu::inc_de() { inc_r16(Reg16Name::DE); }
+void Cpu::inc_hl() { inc_r16(Reg16Name::HL); }
+void Cpu::inc_sp() { inc_r16(Reg16Name::SP); }
+// DEC r6
+void Cpu::dec_bc() { dec_r16(Reg16Name::BC); }
+void Cpu::dec_de() { dec_r16(Reg16Name::DE); }
+void Cpu::dec_hl() { dec_r16(Reg16Name::HL); }
+void Cpu::dec_sp() { dec_r16(Reg16Name::SP); }
+// clang-format on
+
 
 // Individual CPU instruction implementations (CB-prefixed)
 

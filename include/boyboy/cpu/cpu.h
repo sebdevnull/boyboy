@@ -348,4 +348,16 @@ private:
 #define CPU_LDH_AT_C_A
 #define CPU_LDH_AT_A8_A
 
+// INC r16
+#define CPU_INC_BC
+#define CPU_INC_DE
+#define CPU_INC_HL
+#define CPU_INC_SP
+
+// DEC r16
+#define CPU_DEC_BC
+#define CPU_DEC_DE
+#define CPU_DEC_HL
+#define CPU_DEC_SP
+
 } // namespace boyboy::cpu
