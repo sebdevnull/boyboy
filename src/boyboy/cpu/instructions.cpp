@@ -65,7 +65,17 @@ void Cpu::dec_r16(Reg16Name r16)
     set_register(r16, get_register(r16) - 1);
 }
 
-// void Cpu::add_hl_r16(Reg16Name r16) {}
+void Cpu::add_hl_r16(Reg16Name r16)
+{
+    uint16_t r16_val = get_register(r16);
+    uint16_t hl = registers_.hl;
+    uint32_t sum = uint32_t(hl) + uint32_t(r16_val);
+    registers_.hl = sum & 0xFFFF;
+
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, ((hl & 0x0FFF) + (r16_val & 0x0FFF)) > 0x0FFF);
+    set_flag(Flag::Carry, sum > 0xFFFF);
+}
 
 void Cpu::inc_r8(Reg8Name r8)
 {
@@ -547,8 +557,27 @@ void Cpu::dec_bc() { dec_r16(Reg16Name::BC); }
 void Cpu::dec_de() { dec_r16(Reg16Name::DE); }
 void Cpu::dec_hl() { dec_r16(Reg16Name::HL); }
 void Cpu::dec_sp() { dec_r16(Reg16Name::SP); }
+// ADD HL, r16
+void Cpu::add_hl_bc() { add_hl_r16(Reg16Name::BC); }
+void Cpu::add_hl_de() { add_hl_r16(Reg16Name::DE); }
+void Cpu::add_hl_hl() { add_hl_r16(Reg16Name::HL); }
+void Cpu::add_hl_sp() { add_hl_r16(Reg16Name::SP); }
 // clang-format on
 
+// ADD SP, e8
+void Cpu::add_sp_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    uint16_t sp = registers_.sp;
+    uint32_t sum = uint32_t(sp) + int32_t(e8);
+
+    registers_.sp = sum & 0xFFFF;
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, ((sp & 0x0F) + (e8 & 0x0F)) > 0x0F);
+    set_flag(Flag::Carry, ((sp & 0xFF) + (e8 & 0xFF)) > 0xFF);
+}
 
 // Individual CPU instruction implementations (CB-prefixed)
 

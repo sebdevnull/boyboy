@@ -360,4 +360,13 @@ private:
 #define CPU_DEC_HL
 #define CPU_DEC_SP
 
+// ADD HL, r16
+#define CPU_ADD_HL_BC
+#define CPU_ADD_HL_DE
+#define CPU_ADD_HL_HL
+#define CPU_ADD_HL_SP
+
+// ADD SP, e8
+#define CPU_ADD_SP_E8
+
 } // namespace boyboy::cpu
