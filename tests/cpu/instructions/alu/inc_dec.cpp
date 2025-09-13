@@ -22,18 +22,22 @@ using boyboy::test::cpu::OperandType;
 // -----------------------------
 // Test types
 // -----------------------------
-using IncR8Test = InstrTest<InstrParam>;
-using IncHLTest = InstrTest<InstrParam>;
-using DecR8Test = InstrTest<InstrParam>;
-using DecHLTest = InstrTest<InstrParam>;
+using IncR8Test  = InstrTest<InstrParam>;
+using IncHLTest  = InstrTest<InstrParam>;
+using IncR16Test = InstrTest<InstrParam>;
+using DecR8Test  = InstrTest<InstrParam>;
+using DecHLTest  = InstrTest<InstrParam>;
+using DecR16Test = InstrTest<InstrParam>;
 
 // -----------------------------
 // Test definitions
 // -----------------------------
 TEST_P(IncR8Test, Works) { run_test(); }
 TEST_P(IncHLTest, Works) { run_test(); }
+TEST_P(IncR16Test, Works) { run_test(); }
 TEST_P(DecR8Test, Works) { run_test(); }
 TEST_P(DecHLTest, Works) { run_test(); }
+TEST_P(DecR16Test, Works) { run_test(); }
 
 // -----------------------------
 // Parameter instantiations
@@ -144,6 +148,68 @@ INSTANTIATE_TEST_SUITE_P(IncInstructions,
                                  .expected_value = uint8_t{0x80},
                                  .expect_h       = true,
                                  .name           = "SignChange",
+                             }),
+                         boyboy::test::cpu::param_name<InstrParam>);
+
+// INC r16
+INSTANTIATE_TEST_SUITE_P(IncInstructions,
+                         IncR16Test,
+                         ::testing::Values(
+                             InstrParam{
+                                 .opcode         = Opcode::INC_BC,
+                                 .src            = Reg16Name::BC,
+                                 .src_value      = uint16_t{0x0123},
+                                 .expected_value = uint16_t{0x0124},
+                                 .name           = "INC_BC",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::INC_DE,
+                                 .src            = Reg16Name::DE,
+                                 .src_value      = uint16_t{0x0FFF},
+                                 .expected_value = uint16_t{0x1000},
+                                 .name           = "INC_DE",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::INC_HL,
+                                 .src            = Reg16Name::HL,
+                                 .src_value      = uint16_t{0xABCD},
+                                 .expected_value = uint16_t{0xABCE},
+                                 .name           = "INC_HL",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::INC_SP,
+                                 .src            = Reg16Name::SP,
+                                 .src_value      = uint16_t{0xFFFE},
+                                 .expected_value = uint16_t{0xFFFF},
+                                 .name           = "INC_SP",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::INC_BC,
+                                 .src            = Reg16Name::BC,
+                                 .src_value      = uint16_t{0xFFFF},
+                                 .expected_value = uint16_t{0x0000},
+                                 .name           = "INC_BC_Overflow",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::INC_DE,
+                                 .src            = Reg16Name::DE,
+                                 .src_value      = uint16_t{0xFFFF},
+                                 .expected_value = uint16_t{0x0000},
+                                 .name           = "INC_DE_Overflow",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::INC_HL,
+                                 .src            = Reg16Name::HL,
+                                 .src_value      = uint16_t{0xFFFF},
+                                 .expected_value = uint16_t{0x0000},
+                                 .name           = "INC_HL_Overflow",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::INC_SP,
+                                 .src            = Reg16Name::SP,
+                                 .src_value      = uint16_t{0xFFFF},
+                                 .expected_value = uint16_t{0x0000},
+                                 .name           = "INC_SP_Overflow",
                              }),
                          boyboy::test::cpu::param_name<InstrParam>);
 
@@ -278,5 +344,67 @@ INSTANTIATE_TEST_SUITE_P(DecInstructions,
                                  .expect_n       = true,
                                  .expect_h       = true,
                                  .name           = "SignChange",
+                             }),
+                         boyboy::test::cpu::param_name<InstrParam>);
+
+// DEC r16
+INSTANTIATE_TEST_SUITE_P(DecInstructions,
+                         DecR16Test,
+                         ::testing::Values(
+                             InstrParam{
+                                 .opcode         = Opcode::DEC_BC,
+                                 .src            = Reg16Name::BC,
+                                 .src_value      = uint16_t{0x0123},
+                                 .expected_value = uint16_t{0x0122},
+                                 .name           = "DEC_BC",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::DEC_DE,
+                                 .src            = Reg16Name::DE,
+                                 .src_value      = uint16_t{0x1000},
+                                 .expected_value = uint16_t{0x0FFF},
+                                 .name           = "DEC_DE",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::DEC_HL,
+                                 .src            = Reg16Name::HL,
+                                 .src_value      = uint16_t{0xABCD},
+                                 .expected_value = uint16_t{0xABCC},
+                                 .name           = "DEC_HL",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::DEC_SP,
+                                 .src            = Reg16Name::SP,
+                                 .src_value      = uint16_t{0x0001},
+                                 .expected_value = uint16_t{0x0000},
+                                 .name           = "DEC_SP",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::DEC_BC,
+                                 .src            = Reg16Name::BC,
+                                 .src_value      = uint16_t{0x0000},
+                                 .expected_value = uint16_t{0xFFFF},
+                                 .name           = "DEC_BC_Underflow",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::DEC_DE,
+                                 .src            = Reg16Name::DE,
+                                 .src_value      = uint16_t{0x0000},
+                                 .expected_value = uint16_t{0xFFFF},
+                                 .name           = "DEC_DE_Underflow",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::DEC_HL,
+                                 .src            = Reg16Name::HL,
+                                 .src_value      = uint16_t{0x0000},
+                                 .expected_value = uint16_t{0xFFFF},
+                                 .name           = "DEC_HL_Underflow",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::DEC_SP,
+                                 .src            = Reg16Name::SP,
+                                 .src_value      = uint16_t{0x0000},
+                                 .expected_value = uint16_t{0xFFFF},
+                                 .name           = "DEC_SP_Underflow",
                              }),
                          boyboy::test::cpu::param_name<InstrParam>);
