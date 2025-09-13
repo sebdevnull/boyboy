@@ -91,12 +91,14 @@ private:
         if (param.initial_a) {
             cpu.set_register(boyboy::cpu::Reg8Name::A, *param.initial_a);
         }
-
+        // Set initial HL if provided
+        if (param.initial_hl) {
+            cpu.set_register(boyboy::cpu::Reg16Name::HL, *param.initial_hl);
+        }
         // Set initial PC if provided
         if (param.initial_pc) {
             cpu.set_register(boyboy::cpu::Reg16Name::PC, *param.initial_pc);
         }
-
         // Set SP and preload stack if needed
         if (param.initial_sp) {
             uint16_t sp = *param.initial_sp;

@@ -22,18 +22,20 @@ using boyboy::test::cpu::OperandType;
 // -----------------------------
 // Test types
 // -----------------------------
-using AddR8Test  = InstrTest<InstrParam>;
-using AddHLTest  = InstrTest<InstrParam>;
-using AddImmTest = InstrTest<InstrParam>;
-using AdcR8Test  = InstrTest<InstrParam>;
-using AdcHLTest  = InstrTest<InstrParam>;
-using AdcImmTest = InstrTest<InstrParam>;
-using SubR8Test  = InstrTest<InstrParam>;
-using SubHLTest  = InstrTest<InstrParam>;
-using SubImmTest = InstrTest<InstrParam>;
-using SbcR8Test  = InstrTest<InstrParam>;
-using SbcHLTest  = InstrTest<InstrParam>;
-using SbcImmTest = InstrTest<InstrParam>;
+using AddR8Test    = InstrTest<InstrParam>;
+using AddHLTest    = InstrTest<InstrParam>;
+using AddImmTest   = InstrTest<InstrParam>;
+using AdcR8Test    = InstrTest<InstrParam>;
+using AdcHLTest    = InstrTest<InstrParam>;
+using AdcImmTest   = InstrTest<InstrParam>;
+using SubR8Test    = InstrTest<InstrParam>;
+using SubHLTest    = InstrTest<InstrParam>;
+using SubImmTest   = InstrTest<InstrParam>;
+using SbcR8Test    = InstrTest<InstrParam>;
+using SbcHLTest    = InstrTest<InstrParam>;
+using SbcImmTest   = InstrTest<InstrParam>;
+using AddHLR16Test = InstrTest<InstrParam>;
+using AddSPE8Test  = InstrTest<InstrParam>;
 
 // -----------------------------
 // Test definitions
@@ -50,6 +52,8 @@ TEST_P(SubImmTest, Works) { run_test(); }
 TEST_P(SbcR8Test, Works) { run_test(); }
 TEST_P(SbcHLTest, Works) { run_test(); }
 TEST_P(SbcImmTest, Works) { run_test(); }
+TEST_P(AddHLR16Test, Works) { run_test(); }
+TEST_P(AddSPE8Test, Works) { run_test(); }
 
 // -----------------------------
 // Parameter instantiations
@@ -1340,5 +1344,194 @@ INSTANTIATE_TEST_SUITE_P(SubInstructions,
                                  .expect_h       = true,
                                  .expect_c       = true,
                                  .name           = "HalfCarryUnderflowCarryIn",
+                             }),
+                         boyboy::test::cpu::param_name<InstrParam>);
+
+// ADD HL, r16
+INSTANTIATE_TEST_SUITE_P(AddInstructions,
+                         AddHLR16Test,
+                         ::testing::Values(
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_HL_BC,
+                                 .src            = Reg16Name::BC,
+                                 .dst            = Reg16Name::HL,
+                                 .initial_hl     = uint16_t{0x1234},
+                                 .src_value      = uint16_t{0x0001},
+                                 .expected_value = uint16_t{0x1235},
+                                 .expect_n       = false,
+                                 .name           = "ADD_HL_BC_Normal",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_HL_DE,
+                                 .src            = Reg16Name::DE,
+                                 .dst            = Reg16Name::HL,
+                                 .initial_hl     = uint16_t{0x0FFF},
+                                 .src_value      = uint16_t{0x0001},
+                                 .expected_value = uint16_t{0x1000},
+                                 .expect_n       = false,
+                                 .expect_h       = true,
+                                 .name           = "ADD_HL_DE_HalfCarry",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_HL_HL,
+                                 .src            = Reg16Name::HL,
+                                 .dst            = Reg16Name::HL,
+                                 .initial_hl     = uint16_t{0x8000},
+                                 .src_value      = uint16_t{0x8000},
+                                 .expected_value = uint16_t{0x0000},
+                                 .expect_z       = false, // zero isn't set in this instruction
+                                 .expect_n       = false,
+                                 .expect_c       = true,
+                                 .name           = "ADD_HL_HL_Carry",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_HL_SP,
+                                 .src            = Reg16Name::SP,
+                                 .dst            = Reg16Name::HL,
+                                 .initial_hl     = uint16_t{0xFFFF},
+                                 .src_value      = uint16_t{0x0001},
+                                 .expected_value = uint16_t{0x0000},
+                                 .expect_n       = false,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "ADD_HL_SP_HalfCarry_Overflow",
+                             }),
+                         boyboy::test::cpu::param_name<InstrParam>);
+
+// ADD SP, e8
+INSTANTIATE_TEST_SUITE_P(AddInstructions,
+                         AddSPE8Test,
+                         ::testing::Values(
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0xFFF0},
+                                 .src_value      = uint8_t{0x10},
+                                 .expected_value = uint16_t{0x0000},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = false,
+                                 .expect_c       = true,
+                                 .name           = "ADD_SP_e8_Overflow",
+                             },
+
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x1234},
+                                 .src_value      = uint8_t{0x08},
+                                 .expected_value = uint16_t{0x123C},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = false,
+                                 .expect_c       = false,
+                                 .name           = "ADD_SP_e8_Normal",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x0FEF},
+                                 .src_value      = uint8_t{0x01},
+                                 .expected_value = uint16_t{0x0FF0},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = true,
+                                 .expect_c       = false,
+                                 .name           = "ADD_SP_e8_HalfCarry",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x00FF},
+                                 .src_value      = uint8_t{0x10},
+                                 .expected_value = uint16_t{0x010F},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = false,
+                                 .expect_c       = true,
+                                 .name           = "ADD_SP_e8_Carry",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x00FF},
+                                 .src_value      = uint8_t{0x0F},
+                                 .expected_value = uint16_t{0x010E},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "ADD_SP_e8_HC_Both",
+                             },
+                             // For negative values we use unsigned in two's complement
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x0F0F},
+                                 .src_value      = uint8_t{0xFF}, // -1
+                                 .expected_value = uint16_t{0x0F0E},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "ADD_SP_e8_Neg_HalfCarry",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x0010},
+                                 .src_value      = uint8_t{0xF1}, // -15
+                                 .expected_value = uint16_t{0x0001},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = false,
+                                 .expect_c       = true,
+                                 .name           = "ADD_SP_e8_Neg",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x0010},
+                                 .src_value      = uint8_t{0xF0}, // -16
+                                 .expected_value = uint16_t{0x0000},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = false,
+                                 .expect_c       = true,
+                                 .name           = "ADD_SP_e8_Neg_Zero",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x0010},
+                                 .src_value      = uint8_t{0xE0}, // -32
+                                 .expected_value = uint16_t{0xFFF0},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = false,
+                                 .expect_c       = false,
+                                 .name           = "ADD_SP_e8_Neg_Underflow",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::ADD_SP_E8,
+                                 .src_op_type    = OperandType::Immediate,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_sp     = uint16_t{0x0101},
+                                 .src_value      = uint8_t{0xFF}, // -1
+                                 .expected_value = uint16_t{0x0100},
+                                 .expect_z       = false,
+                                 .expect_n       = false,
+                                 .expect_h       = true,
+                                 .expect_c       = true,
+                                 .name           = "ADD_SP_e8_Neg_HC_Underflow",
                              }),
                          boyboy::test::cpu::param_name<InstrParam>);

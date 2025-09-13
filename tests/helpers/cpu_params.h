@@ -170,9 +170,11 @@ struct InstrParam {
     std::optional<uint16_t> src_addr = std::nullopt;
     std::optional<uint16_t> dst_addr = std::nullopt;
 
-    std::optional<uint8_t> initial_a   = std::nullopt; // initial value of A register
-    std::optional<uint16_t> initial_pc = std::nullopt; // initial value of PC register
-    std::optional<uint16_t> initial_sp = std::nullopt; // initial value of SP register
+    // Registers initial values
+    std::optional<uint8_t> initial_a   = std::nullopt;
+    std::optional<uint16_t> initial_hl = std::nullopt;
+    std::optional<uint16_t> initial_pc = std::nullopt;
+    std::optional<uint16_t> initial_sp = std::nullopt;
 
     std::optional<uint16_t> stack_value = std::nullopt;
 
@@ -238,6 +240,7 @@ struct InstrParam {
         print_opt(p.src_addr, "src_addr");
         print_opt(p.dst_addr, "dst_addr");
         print_opt(p.initial_a, "initial_a");
+        print_opt(p.initial_hl, "initial_hl");
         print_opt(p.initial_pc, "initial_pc");
         print_opt(p.initial_sp, "initial_sp");
         print_opt(p.stack_value, "stack_value");
