@@ -9,34 +9,36 @@
 
 #include <cstdlib>
 
-#include "boyboy/cartridge.h"
-#include "common/paths.h"
 #include "common/roms.h"
+#include "helpers/rom_fixtures.h"
 
-using namespace boyboy::test::common;
+// boyboy
+#include "boyboy/cartridge.h"
 
-using boyboy::cartridge::Cartridge;
+using boyboy::test::common::InvalidROM;
+using boyboy::test::common::ValidROM;
+using boyboy::test::rom::ROMTest;
+
 using boyboy::cartridge::CartridgeType;
 
-class CartridgeTest : public ::testing::Test {};
+class CartridgeTest : public ROMTest {};
 
 TEST_F(CartridgeTest, LoadValidRom)
 {
-    Cartridge cart;
-    EXPECT_NO_THROW(cart.load_rom(local_file(ValidROM, __FILE__)));
+    EXPECT_NO_THROW(load(ValidROM));
     EXPECT_GT(cart.size(), 0);
+    EXPECT_TRUE(cart.is_loaded());
 }
 
 TEST_F(CartridgeTest, LoadInvalidRom)
 {
-    Cartridge cart;
-    EXPECT_THROW(cart.load_rom(local_file(InvalidROM, __FILE__)), std::runtime_error);
+    EXPECT_THROW(load(InvalidROM), std::runtime_error);
+    EXPECT_FALSE(cart.is_loaded());
 }
 
 TEST_F(CartridgeTest, HeaderParsing)
 {
-    Cartridge cart;
-    cart.load_rom(local_file(ValidROM, __FILE__));
+    load(ValidROM);
     const auto& header = cart.get_header();
 
     EXPECT_EQ(header.title, "LIFE");
@@ -47,9 +49,9 @@ TEST_F(CartridgeTest, HeaderParsing)
 
 TEST_F(CartridgeTest, UnloadRom)
 {
-    Cartridge cart;
-    cart.load_rom(local_file(ValidROM, __FILE__));
+    load(ValidROM);
     EXPECT_GT(cart.size(), 0);
     cart.unload_rom();
     EXPECT_EQ(cart.size(), 0);
+    EXPECT_FALSE(cart.is_loaded());
 }

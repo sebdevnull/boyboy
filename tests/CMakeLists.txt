@@ -38,6 +38,7 @@ set(TEST_SOURCES
     cpu/instructions/misc/misc.cpp
     cpu/instructions/instructions_8bit.cpp
     cpu/instructions/instructions_16bit.cpp
+    cpu/test_roms.cpp
 )
 
 # --- Options ---
