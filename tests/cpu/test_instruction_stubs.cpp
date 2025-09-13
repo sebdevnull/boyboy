@@ -11,32 +11,33 @@
 
 #include <format>
 
+// boyboy
 #include "boyboy/common/errors.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/opcodes.h"
+
+// helpers
 #include "cpu_stubs.h"
+#include "helpers/cpu_fixtures.h"
 
 using boyboy::cpu::CBOpcode;
-using boyboy::cpu::Cpu;
 using boyboy::cpu::Opcode;
 using boyboy::errors::UnimplementedOpcode;
 
-class InstructionStubTest : public ::testing::TestWithParam<uint8_t> {};
-class CBInstructionStubTest : public ::testing::TestWithParam<uint8_t> {};
+using boyboy::test::cpu::CpuTest;
+
+class InstructionStubTest : public CpuTest, public ::testing::WithParamInterface<uint8_t> {};
+class CBInstructionStubTest : public CpuTest, public ::testing::WithParamInterface<uint8_t> {};
 
 TEST_P(InstructionStubTest, ThrowsOnUnimplementedOpcode)
 {
-    Cpu cpu;
     auto opcode = static_cast<Opcode>(GetParam());
-
     EXPECT_THROW(cpu.execute(opcode), UnimplementedOpcode);
 }
 
 TEST_P(CBInstructionStubTest, ThrowsOnUnimplementedOpcode)
 {
-    Cpu cpu;
     auto opcode = static_cast<CBOpcode>(GetParam());
-
     EXPECT_THROW(cpu.execute(opcode), UnimplementedOpcode);
 }
 

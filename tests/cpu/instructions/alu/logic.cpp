@@ -15,25 +15,25 @@ using boyboy::cpu::Opcode;
 using boyboy::cpu::Reg16Name;
 using boyboy::cpu::Reg8Name;
 
+using boyboy::test::cpu::InstrParam;
+using boyboy::test::cpu::InstrTest;
 using boyboy::test::cpu::OperandType;
-using boyboy::test::cpu::R8Param;
-using boyboy::test::cpu::R8Test;
 
 // -----------------------------
 // Test types
 // -----------------------------
-using ANDR8Test  = R8Test<R8Param>;
-using ANDHLTest  = R8Test<R8Param>;
-using ANDImmTest = R8Test<R8Param>;
-using ORR8Test   = R8Test<R8Param>;
-using ORHLTest   = R8Test<R8Param>;
-using ORImmTest  = R8Test<R8Param>;
-using XORR8Test  = R8Test<R8Param>;
-using XORHLTest  = R8Test<R8Param>;
-using XORImmTest = R8Test<R8Param>;
-using CPR8Test   = R8Test<R8Param>;
-using CPHLTest   = R8Test<R8Param>;
-using CPImmTest  = R8Test<R8Param>;
+using ANDR8Test  = InstrTest<InstrParam>;
+using ANDHLTest  = InstrTest<InstrParam>;
+using ANDImmTest = InstrTest<InstrParam>;
+using ORR8Test   = InstrTest<InstrParam>;
+using ORHLTest   = InstrTest<InstrParam>;
+using ORImmTest  = InstrTest<InstrParam>;
+using XORR8Test  = InstrTest<InstrParam>;
+using XORHLTest  = InstrTest<InstrParam>;
+using XORImmTest = InstrTest<InstrParam>;
+using CPR8Test   = InstrTest<InstrParam>;
+using CPHLTest   = InstrTest<InstrParam>;
+using CPImmTest  = InstrTest<InstrParam>;
 
 // -----------------------------
 // Test definitions
@@ -58,721 +58,721 @@ TEST_P(CPImmTest, Works) { run_test(); }
 INSTANTIATE_TEST_SUITE_P(AndInstructions,
                          ANDR8Test,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_A,
                                  .src            = Reg8Name::A,
-                                 .src_value      = 0xAA,
-                                 .expected_value = 0xAA,
+                                 .src_value      = uint8_t{0xAA},
+                                 .expected_value = uint8_t{0xAA},
                                  .expect_h       = true,
                                  .name           = "A_SameBits",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0x00,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x00},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .expect_h       = true,
                                  .name           = "B_Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .expect_h       = true,
                                  .name           = "C_NoCommonBits",
                              },
 
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0xF0,
-                                 .expected_value = 0xA0,
+                                 .src_value      = uint8_t{0xF0},
+                                 .expected_value = uint8_t{0xA0},
                                  .expect_h       = true,
                                  .name           = "D_UpperNibble",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0x0F,
-                                 .expected_value = 0x0A,
+                                 .src_value      = uint8_t{0x0F},
+                                 .expected_value = uint8_t{0x0A},
                                  .expect_h       = true,
                                  .name           = "E_LowerNibble",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0xAA,
-                                 .expected_value = 0xAA,
+                                 .src_value      = uint8_t{0xAA},
+                                 .expected_value = uint8_t{0xAA},
                                  .expect_h       = true,
                                  .name           = "H_SameBits",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xAA,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xAA},
                                  .expect_h       = true,
                                  .name           = "L_SameBits",
                              }
 
                              ),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // AND A, [HL]
 INSTANTIATE_TEST_SUITE_P(AndInstructions,
                          ANDHLTest,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0xF0,
-                                 .src_value      = 0xAA,
-                                 .expected_value = 0xA0,
+                                 .src_value      = uint8_t{0xAA},
+                                 .expected_value = uint8_t{0xA0},
                                  .expect_h       = true,
                                  .name           = "Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x1234,
                                  .initial_a      = 0x0F,
-                                 .src_value      = 0xF0,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0xF0},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .expect_h       = true,
                                  .name           = "Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x5678,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x55,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x55},
                                  .expect_h       = true,
                                  .name           = "SameValue",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x9ABC,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xAA,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xAA},
                                  .expect_h       = true,
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // AND A, n8
 INSTANTIATE_TEST_SUITE_P(AndInstructions,
                          ANDImmTest,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xF0,
-                                 .src_value      = 0xAA,
-                                 .expected_value = 0xA0,
+                                 .src_value      = uint8_t{0xAA},
+                                 .expected_value = uint8_t{0xA0},
                                  .expect_h       = true,
                                  .name           = "Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
-                                 .src_value      = 0xF0,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0xF0},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .expect_h       = true,
                                  .name           = "Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x55,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x55},
                                  .expect_h       = true,
                                  .name           = "SameValue",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::AND_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xAA,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xAA},
                                  .expect_h       = true,
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // OR A, r8
 INSTANTIATE_TEST_SUITE_P(OrInstructions,
                          ORR8Test,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_A,
                                  .src            = Reg8Name::A,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x55,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x55},
                                  .name           = "A_A_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x0F,
-                                 .expected_value = 0x5F,
+                                 .src_value      = uint8_t{0x0F},
+                                 .expected_value = uint8_t{0x5F},
                                  .name           = "A_B_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0x00,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x00},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "A_C_Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xF0,
-                                 .src_value      = 0x07,
-                                 .expected_value = 0xF7,
+                                 .src_value      = uint8_t{0x07},
+                                 .expected_value = uint8_t{0xF7},
                                  .name           = "A_D_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
-                                 .src_value      = 0xF0,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0xF0},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "A_E_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "A_H_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "A_L_Normal",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // OR A, [HL]
 INSTANTIATE_TEST_SUITE_P(OrInstructions,
                          ORHLTest,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0xF0,
-                                 .src_value      = 0x0A,
-                                 .expected_value = 0xFA,
+                                 .src_value      = uint8_t{0x0A},
+                                 .expected_value = uint8_t{0xFA},
                                  .name           = "Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x1234,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0x00,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x00},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x5678,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x55,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x55},
                                  .name           = "SameValue",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x9ABC,
                                  .initial_a      = 0x5A,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // OR A, n8
 INSTANTIATE_TEST_SUITE_P(OrInstructions,
                          ORImmTest,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xF0,
-                                 .src_value      = 0x0A,
-                                 .expected_value = 0xFA,
+                                 .src_value      = uint8_t{0x0A},
+                                 .expected_value = uint8_t{0xFA},
                                  .name           = "Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0x00,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x00},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x55,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x55},
                                  .name           = "SameValue",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::OR_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x5A,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // XOR A, r8
 INSTANTIATE_TEST_SUITE_P(XorInstructions,
                          XORR8Test,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_A,
                                  .src            = Reg8Name::A,
                                  .dst            = Reg8Name::A,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "A_A_Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
-                                 .src_value      = 0x0F,
-                                 .expected_value = 0xF0,
+                                 .src_value      = uint8_t{0x0F},
+                                 .expected_value = uint8_t{0xF0},
                                  .name           = "A_B_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
-                                 .src_value      = 0x0F,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x0F},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "A_C_Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xF0,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0x0F,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0x0F},
                                  .name           = "A_D_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "A_E_Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "A_H_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xFF,
-                                 .src_value      = 0x00,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0x00},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "A_L_Normal",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // XOR A, [HL]
 INSTANTIATE_TEST_SUITE_P(XorInstructions,
                          XORHLTest,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0x00,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x00},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x1234,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "ZeroSameBits",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x5678,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "DifferentBits",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x9ABC,
                                  .initial_a      = 0x5A,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xA5,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xA5},
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // XOR A, n8
 INSTANTIATE_TEST_SUITE_P(XorInstructions,
                          XORImmTest,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0x00,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x00},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x00,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x00},
                                  .expect_z       = true,
                                  .name           = "ZeroSameBits",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0xAA,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "DifferentBits",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::XOR_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x5A,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xA5,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xA5},
                                  .name           = "AllBits",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // CP A, r8
 INSTANTIATE_TEST_SUITE_P(CpInstructions,
                          CPR8Test,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_A,
                                  .src            = Reg8Name::A,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xFF, // A is unchanged
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xFF}, // A is unchanged
                                  .expect_z       = true,
                                  .expect_n       = true,
                                  .name           = "A_A_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_B,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x0F,
-                                 .src_value      = 0x0F,
-                                 .expected_value = 0x0F, // A is unchanged
+                                 .src_value      = uint8_t{0x0F},
+                                 .expected_value = uint8_t{0x0F}, // A is unchanged
                                  .expect_z       = true,
                                  .expect_n       = true,
                                  .name           = "A_B_Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_C,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
-                                 .src_value      = 0x01,
-                                 .expected_value = 0x10, // A is unchanged
+                                 .src_value      = uint8_t{0x01},
+                                 .expected_value = uint8_t{0x10}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_h       = true,
                                  .name           = "A_C_HalfCarry",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_D,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0x01,
-                                 .expected_value = 0x00, // A is unchanged
+                                 .src_value      = uint8_t{0x01},
+                                 .expected_value = uint8_t{0x00}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_h       = true,
                                  .expect_c       = true,
                                  .name           = "A_D_Underflow",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_E,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x80,
-                                 .src_value      = 0x70,
-                                 .expected_value = 0x80, // A is unchanged
+                                 .src_value      = uint8_t{0x70},
+                                 .expected_value = uint8_t{0x80}, // A is unchanged
                                  .expect_n       = true,
                                  .name           = "A_E_Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_H,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x7F,
-                                 .src_value      = 0x80,
-                                 .expected_value = 0x7F, // A is unchanged
+                                 .src_value      = uint8_t{0x80},
+                                 .expected_value = uint8_t{0x7F}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_c       = true,
                                  .name           = "A_H_Underflow",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_L,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x01,
-                                 .src_value      = 0x01,
-                                 .expected_value = 0x01, // A is unchanged
+                                 .src_value      = uint8_t{0x01},
+                                 .expected_value = uint8_t{0x01}, // A is unchanged
                                  .expect_z       = true,
                                  .expect_n       = true,
                                  .name           = "A_L_Zero",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // CP A, [HL]
 INSTANTIATE_TEST_SUITE_P(CpInstructions,
                          CPHLTest,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x80,
-                                 .src_value      = 0x70,
-                                 .expected_value = 0x80, // A is unchanged
+                                 .src_value      = uint8_t{0x70},
+                                 .expected_value = uint8_t{0x80}, // A is unchanged
                                  .expect_n       = true,
                                  .name           = "Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x55, // A is unchanged
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x55}, // A is unchanged
                                  .expect_z       = true,
                                  .expect_n       = true,
                                  .name           = "Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x10,
-                                 .src_value      = 0x20,
-                                 .expected_value = 0x10, // A is unchanged
+                                 .src_value      = uint8_t{0x20},
+                                 .expected_value = uint8_t{0x10}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_c       = true,
                                  .name           = "Underflow",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x10,
-                                 .src_value      = 0x01,
-                                 .expected_value = 0x10, // A is unchanged
+                                 .src_value      = uint8_t{0x01},
+                                 .expected_value = uint8_t{0x10}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_h       = true,
                                  .name           = "HalfCarry",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_AT_HL,
                                  .src_op_type    = OperandType::Indirect,
                                  .src            = Reg16Name::HL,
                                  .dst            = Reg8Name::A,
                                  .src_addr       = 0x0000,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0x01,
-                                 .expected_value = 0x00, // A is unchanged
+                                 .src_value      = uint8_t{0x01},
+                                 .expected_value = uint8_t{0x00}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_h       = true,
                                  .expect_c       = true,
                                  .name           = "UnderflowHalfCarry",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
 
 // CP A, n8
 INSTANTIATE_TEST_SUITE_P(CpInstructions,
                          CPImmTest,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x80,
-                                 .src_value      = 0x70,
-                                 .expected_value = 0x80, // A is unchanged
+                                 .src_value      = uint8_t{0x70},
+                                 .expected_value = uint8_t{0x80}, // A is unchanged
                                  .expect_n       = true,
                                  .name           = "Normal",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x55,
-                                 .src_value      = 0x55,
-                                 .expected_value = 0x55, // A is unchanged
+                                 .src_value      = uint8_t{0x55},
+                                 .expected_value = uint8_t{0x55}, // A is unchanged
                                  .expect_z       = true,
                                  .expect_n       = true,
                                  .name           = "Zero",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
-                                 .src_value      = 0x20,
-                                 .expected_value = 0x10, // A is unchanged
+                                 .src_value      = uint8_t{0x20},
+                                 .expected_value = uint8_t{0x10}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_c       = true,
                                  .name           = "Underflow",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x10,
-                                 .src_value      = 0x01,
-                                 .expected_value = 0x10, // A is unchanged
+                                 .src_value      = uint8_t{0x01},
+                                 .expected_value = uint8_t{0x10}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_h       = true,
                                  .name           = "HalfCarry",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::CP_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
                                  .initial_a      = 0x00,
-                                 .src_value      = 0x01,
-                                 .expected_value = 0x00, // A is unchanged
+                                 .src_value      = uint8_t{0x01},
+                                 .expected_value = uint8_t{0x00}, // A is unchanged
                                  .expect_n       = true,
                                  .expect_h       = true,
                                  .expect_c       = true,
                                  .name           = "UnderflowHalfCarry",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);

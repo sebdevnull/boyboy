@@ -25,8 +25,7 @@
 namespace boyboy::test::cpu {
 
 enum class OperandType : uint8_t {
-    Reg8,
-    Reg16,
+    Register,
     Immediate,
     Indirect,
     Memory,
@@ -36,17 +35,15 @@ enum class OperandType : uint8_t {
 inline const char* to_string(OperandType op)
 {
     switch (op) {
-    case OperandType::Reg8:
-        return "Reg8";
-    case OperandType::Reg16:
-        return "Reg16";
+    case OperandType::Register:
+        return "Register";
     case OperandType::Immediate:
         return "Immediate";
     case OperandType::Indirect:
         return "Indirect";
     case OperandType::Memory:
         return "Memory";
-        case OperandType::HighRAM:
+    case OperandType::HighRAM:
         return "HighRAM";
     default:
         return "Unknown";
@@ -61,7 +58,7 @@ struct Operand {
                                  boyboy::cpu::Reg16Name,
                                  uint16_t>; // for immediates/addresses
 
-    OperandType type             = OperandType::Reg8;
+    OperandType type             = OperandType::Register;
     std::optional<Variant> value = std::nullopt;
 
     Operand() = default;
@@ -161,11 +158,11 @@ private:
     }
 };
 
-struct R8Param {
+struct InstrParam {
     boyboy::cpu::Opcode opcode;
 
-    OperandType src_op_type                = OperandType::Reg8;
-    std::optional<OperandType> dst_op_type = OperandType::Reg8;
+    OperandType src_op_type                = OperandType::Register;
+    std::optional<OperandType> dst_op_type = OperandType::Register;
 
     std::optional<RegParam> src = std::nullopt;
     std::optional<RegParam> dst = std::nullopt;
@@ -173,10 +170,16 @@ struct R8Param {
     std::optional<uint16_t> src_addr = std::nullopt;
     std::optional<uint16_t> dst_addr = std::nullopt;
 
-    std::optional<uint8_t> initial_a = std::nullopt; // initial value of A register
-    uint8_t src_value;
+    std::optional<uint8_t> initial_a   = std::nullopt; // initial value of A register
+    std::optional<uint16_t> initial_pc = std::nullopt; // initial value of PC register
+    std::optional<uint16_t> initial_sp = std::nullopt; // initial value of SP register
+
+    std::optional<uint16_t> stack_value = std::nullopt;
+
     std::optional<bool> carry_in = std::nullopt; // for ADC and SBC instructions
-    uint8_t expected_value;
+
+    std::variant<uint8_t, uint16_t> src_value;
+    std::variant<uint8_t, uint16_t> expected_value;
 
     bool expect_z = false;
     bool expect_n = false;
@@ -190,54 +193,64 @@ struct R8Param {
     bool skip_assert = false;
 
     // Extra validators to run at the assert stage
-    // NOLINTNEXTLINE
-    std::vector<std::function<void(const boyboy::cpu::Cpu&, const R8Param&)>> validators{};
+    // NOLINTNEXTLINE(readability-redundant-member-init)
+    std::vector<std::function<void(const boyboy::cpu::Cpu&, const InstrParam&)>> validators{};
 
     // Return the target register of the test
     [[nodiscard]] RegParam target() const { return dst.value_or(*src); }
     [[nodiscard]] uint16_t target_addr() const { return dst_addr.value_or(*src_addr); }
     [[nodiscard]] OperandType target_operand() const { return dst_op_type.value_or(src_op_type); }
 
+    // Accessors
+    [[nodiscard]] uint8_t src_value8() const { return std::get<uint8_t>(src_value); }
+    [[nodiscard]] uint16_t src_value16() const { return std::get<uint16_t>(src_value); }
+    [[nodiscard]] uint8_t expected_value8() const { return std::get<uint8_t>(expected_value); }
+    [[nodiscard]] uint16_t expected_value16() const { return std::get<uint16_t>(expected_value); }
+
     // For better test case naming in GTest output
-    friend std::ostream& operator<<(std::ostream& os, const R8Param& p)
+    friend std::ostream& operator<<(std::ostream& os, const InstrParam& p)
     {
         // clang-format off
         os << p.name
            << " [opcode=" << boyboy::utils::PrettyHex{static_cast<uint8_t>(p.opcode)}
-           << ", src_op_type=" << p.src_op_type;
+           << ", src_type=" << p.src_op_type;
            
         if (p.dst_op_type)
         {
-            os << ", dst_op_type=" << *p.dst_op_type;
+            os << ", dst_type=" << *p.dst_op_type;
         }
-        
+
         if (p.src)
         {
             std::visit([&](auto r){ os << ", src=" << r; }, p.src->get_value());
         }
-
         if (p.dst)
         {
             std::visit([&](auto r){ os << ", dst=" << r; }, p.dst->get_value());
         }
 
-        if (p.src_addr)
+        auto print_opt = [&](auto&& opt, const char* name) {
+            if (opt) {
+                os << ", " << name << "=" << boyboy::utils::PrettyHex{*opt};
+            }
+        };
+
+        print_opt(p.src_addr, "src_addr");
+        print_opt(p.dst_addr, "dst_addr");
+        print_opt(p.initial_a, "initial_a");
+        print_opt(p.initial_pc, "initial_pc");
+        print_opt(p.initial_sp, "initial_sp");
+        print_opt(p.stack_value, "stack_value");
+
+        if (p.carry_in)
         {
-            os << ", src_addr=" << boyboy::utils::PrettyHex{*p.src_addr};
+            os << ", carry_in=" << (*p.carry_in ? 1 : 0);
         }
 
-        if (p.dst_addr)
-        {
-            os << ", dst_addr=" << boyboy::utils::PrettyHex{*p.dst_addr};
-        }
-
-        if (p.initial_a)
-        {
-            os << ", initial_a=" << boyboy::utils::PrettyHex{*p.initial_a};
-        }
-
-        os << ", src_value=" << boyboy::utils::PrettyHex{p.src_value}
-           << ", expected_value=" << boyboy::utils::PrettyHex{p.expected_value}
+        os << ", src_value=" 
+           << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},p.src_value)
+           << ", expected_value="
+           << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},p.expected_value)
            << ", Z=" << (p.expect_z ? 1 : 0)
            << ", N=" << (p.expect_n ? 1 : 0)
            << ", H=" << (p.expect_h ? 1 : 0)

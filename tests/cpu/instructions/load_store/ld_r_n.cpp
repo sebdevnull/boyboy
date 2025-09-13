@@ -14,14 +14,14 @@
 using boyboy::cpu::Opcode;
 using boyboy::cpu::Reg8Name;
 
+using boyboy::test::cpu::InstrParam;
+using boyboy::test::cpu::InstrTest;
 using boyboy::test::cpu::OperandType;
-using boyboy::test::cpu::R8Param;
-using boyboy::test::cpu::R8Test;
 
 // -----------------------------
 // Test types
 // -----------------------------
-using LdR8N8Test = R8Test<R8Param>;
+using LdR8N8Test = InstrTest<InstrParam>;
 
 // -----------------------------
 // Test definitions
@@ -35,60 +35,60 @@ TEST_P(LdR8N8Test, Works) { run_test(); }
 INSTANTIATE_TEST_SUITE_P(LdInstructions,
                          LdR8N8Test,
                          ::testing::Values(
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::LD_A_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::A,
-                                 .src_value      = 0xAA,
-                                 .expected_value = 0xAA,
+                                 .src_value      = uint8_t{0xAA},
+                                 .expected_value = uint8_t{0xAA},
                                  .name           = "LD_A_N8",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::LD_B_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::B,
-                                 .src_value      = 0xBB,
-                                 .expected_value = 0xBB,
+                                 .src_value      = uint8_t{0xBB},
+                                 .expected_value = uint8_t{0xBB},
                                  .name           = "LD_B_N8",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::LD_C_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::C,
-                                 .src_value      = 0xCC,
-                                 .expected_value = 0xCC,
+                                 .src_value      = uint8_t{0xCC},
+                                 .expected_value = uint8_t{0xCC},
                                  .name           = "LD_C_N8",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::LD_D_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::D,
-                                 .src_value      = 0xDD,
-                                 .expected_value = 0xDD,
+                                 .src_value      = uint8_t{0xDD},
+                                 .expected_value = uint8_t{0xDD},
                                  .name           = "LD_D_N8",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::LD_E_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::E,
-                                 .src_value      = 0xEE,
-                                 .expected_value = 0xEE,
+                                 .src_value      = uint8_t{0xEE},
+                                 .expected_value = uint8_t{0xEE},
                                  .name           = "LD_E_N8",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::LD_H_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::H,
-                                 .src_value      = 0xFF,
-                                 .expected_value = 0xFF,
+                                 .src_value      = uint8_t{0xFF},
+                                 .expected_value = uint8_t{0xFF},
                                  .name           = "LD_H_N8",
                              },
-                             R8Param{
+                             InstrParam{
                                  .opcode         = Opcode::LD_L_N8,
                                  .src_op_type    = OperandType::Immediate,
                                  .dst            = Reg8Name::L,
-                                 .src_value      = 0x11,
-                                 .expected_value = 0x11,
+                                 .src_value      = uint8_t{0x11},
+                                 .expected_value = uint8_t{0x11},
                                  .name           = "LD_L_N8",
                              }),
-                         boyboy::test::cpu::param_name<R8Param>);
+                         boyboy::test::cpu::param_name<InstrParam>);
