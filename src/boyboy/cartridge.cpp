@@ -7,6 +7,7 @@
 
 #include "boyboy/cartridge.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <filesystem>
 #include <format>
@@ -14,6 +15,9 @@
 #include <ios>
 #include <iostream>
 #include <stdexcept>
+
+#include "boyboy/common/utils.h"
+#include "boyboy/log/logging.h"
 
 namespace boyboy::cartridge {
 
@@ -40,6 +44,70 @@ namespace {
 
 } // namespace
 
+void Cartridge::load_rom(std::string_view path)
+{
+    load(path);
+    parse_header();
+
+    if (!header_checksum()) {
+        unload_rom();
+        throw std::runtime_error("Invalid ROM header checksum");
+    }
+
+    if (!checksum()) {
+        unload_rom();
+        throw std::runtime_error("Invalid ROM checksum");
+    }
+}
+
+void Cartridge::unload_rom()
+{
+    unload();
+    header_.reset();
+}
+
+bool Cartridge::header_checksum()
+{
+    uint8_t cks = 0;
+    std::ranges::for_each(rom_.begin() + Header::HeaderStart,
+                          rom_.begin() + Header::HeaderEnd + 1,
+                          [&cks](auto b) { cks -= utils::to_u8(b) + 1; });
+
+    bool pass = cks == header_.header_checksum;
+    if (!pass) {
+        log::warn("ROM header checksum mismatch: {} != {}",
+                  utils::PrettyHex{header_.header_checksum}.to_string(),
+                  utils::PrettyHex{cks}.to_string());
+    }
+
+    return pass;
+}
+
+bool Cartridge::checksum()
+{
+    uint16_t cks = 0;
+    std::ranges::for_each(rom_.begin(), rom_.end(), [&cks](auto b) { cks += utils::to_u8(b); });
+
+    // Don't compute the checksum bytes
+    cks -= utils::msb(header_.checksum) + utils::lsb(header_.checksum);
+
+    bool pass = cks == header_.checksum;
+    if (!pass) {
+        log::warn("ROM checksum mismatch: {} != {}",
+                  utils::PrettyHex{header_.checksum}.to_string(),
+                  utils::PrettyHex{cks}.to_string());
+    }
+
+    return pass;
+}
+
+/**
+ * @brief Load a ROM from the specified file path.
+ *
+ * It loads into local memory, doesn't send to MMU yet.
+ *
+ * @param path Path to the ROM file.
+ */
 void Cartridge::load(std::string_view path)
 {
     namespace fs = std::filesystem;
@@ -47,6 +115,7 @@ void Cartridge::load(std::string_view path)
     fs::path file_path(path);
 
     if (!fs::exists(file_path)) {
+        log::debug("Current path: {}", fs::current_path().string());
         throw std::runtime_error(std::format("File not found: {}", path));
     }
 
@@ -71,12 +140,15 @@ void Cartridge::load(std::string_view path)
         rom_.clear();
         throw std::runtime_error("Failed to read entire file");
     }
+
+    rom_loaded_ = true;
 }
 
 void Cartridge::unload()
 {
     rom_.clear();
     rom_.shrink_to_fit();
+    rom_loaded_ = false;
 }
 
 void Cartridge::parse_header()
@@ -98,9 +170,11 @@ void Cartridge::parse_header()
     header_.header_checksum = static_cast<uint8_t>(rom_.at(Header::HeaderChecksumPos));
     header_.checksum = static_cast<uint16_t>(rom_.at(Header::ChecksumPos)) << 8 |
                        static_cast<uint16_t>(rom_.at(Header::ChecksumPos + 1));
+
+    log::debug("Header loaded: {}", header_.to_string());
 }
 
-constexpr std::string_view to_string(CartridgeType type)
+std::string_view to_string(CartridgeType type)
 {
     switch (type) {
     case CartridgeType::ROMOnly:
@@ -166,16 +240,38 @@ constexpr std::string_view to_string(CartridgeType type)
     }
 }
 
-void Cartridge::Header::print() const
+[[nodiscard]] std::string Cartridge::Header::to_string() const
 {
-    std::cout << "Title: " << title << "\n"
-              << "CGB Flag: " << std::to_string(cgb_flag) << "\n"
-              << "SGB Flag: " << std::to_string(sgb_flag) << "\n"
-              << "Cartridge Type: " << to_string(cartridge_type) << "\n"
-              << "ROM Size: " << std::to_string(rom_size) << "\n"
-              << "RAM Size: " << std::to_string(ram_size) << "\n"
-              << "Header Checksum: " << std::to_string(header_checksum) << "\n"
-              << "Global Checksum: " << std::to_string(checksum) << "\n";
+    using namespace utils;
+    std::ostringstream oss;
+
+    oss << "{title: " << title << ", "
+        << "cbg_flag: " << PrettyHex{cgb_flag} << ", "
+        << "sgb_flag: " << PrettyHex{sgb_flag} << ", "
+        << "cart_Type: " << cartridge::to_string(cartridge_type).data() << ", "
+        << "rom_size: " << PrettyHex{rom_size} << ", "
+        << "ram_size: " << PrettyHex{ram_size} << ", "
+        << "header_cks: " << PrettyHex{header_checksum} << ", "
+        << "cks: " << PrettyHex{checksum} << "}";
+
+    return oss.str();
+}
+
+[[nodiscard]] std::string Cartridge::Header::pretty_string() const
+{
+    using namespace utils;
+    std::ostringstream oss;
+
+    oss << "Title: " << title << "\n"
+        << "CGB Flag: " << PrettyHex{cgb_flag} << "\n"
+        << "SGB Flag: " << PrettyHex{sgb_flag} << "\n"
+        << "Cartridge Type: " << cartridge::to_string(cartridge_type).data() << "\n"
+        << "ROM Size: " << PrettyHex{rom_size} << "\n"
+        << "RAM Size: " << PrettyHex{ram_size} << "\n"
+        << "Header Checksum: " << PrettyHex{header_checksum} << "\n"
+        << "Global Checksum: " << PrettyHex{checksum} << "\n";
+
+    return oss.str();
 }
 
 } // namespace boyboy::cartridge

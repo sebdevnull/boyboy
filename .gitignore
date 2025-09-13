@@ -2,7 +2,7 @@
 bin/
 build/
 lib/
-roms/
+/roms/
 logs/
 notes/
 reference/

@@ -5,6 +5,8 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: write tests for read-only, mirrored, etc.
+
 #include <gtest/gtest.h>
 
 #include "boyboy/mmu.h"

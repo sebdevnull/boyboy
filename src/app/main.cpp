@@ -7,9 +7,10 @@
 
 #include <iostream>
 #include <span>
+#include <stdexcept>
 
-#include "boyboy/cartridge.h"
-#include "boyboy/display.h"
+#include "boyboy/emulator.h"
+#include "boyboy/log/logging.h"
 
 using namespace boyboy;
 
@@ -17,22 +18,24 @@ int main(int argc, const char** argv)
 {
     std::span<const char*> args(argv, static_cast<std::size_t>(argc));
 
-    cartridge::Cartridge cart{};
-
-    if (args.size() == 2) {
-        cart.load(args[1]);
-    }
-    else {
+    if (args.size() != 2) {
         std::cout << "Usage: " << args[0] << " <path_to_rom>\n";
         return 1;
     }
 
-    cart.parse_header();
+    log::init("logs/boyboy.log", false);
 
-    auto header = cart.get_header();
-    header.print();
+    emulator::Emulator emulator;
 
-    display::Display::init();
+    try {
+        emulator.load_cartridge(args[1]);
+    }
+    catch (const std::runtime_error& e) {
+        log::error("Failed to load ROM: {}", e.what());
+        return 1;
+    }
+
+    // emulator.run();
 
     return 0;
 }

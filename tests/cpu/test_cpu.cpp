@@ -8,15 +8,22 @@
 #include <gtest/gtest.h>
 
 #include "boyboy/cpu/cpu.h"
+#include "boyboy/cpu/registers.h"
 
-using namespace boyboy::cpu;
+#include "helpers/cpu_fixtures.h"
+
+using boyboy::cpu::Flag;
+using boyboy::cpu::Reg16Name;
+using boyboy::cpu::Reg8Name;
+
+using boyboy::test::cpu::CpuTest;
 
 // Parameterized tests for CPU register access
-class CpuRegister8Test : public ::testing::TestWithParam<std::pair<Reg8Name, uint8_t>> {};
+class CpuRegister8Test : public CpuTest,
+                         public ::testing::WithParamInterface<std::pair<Reg8Name, uint8_t>> {};
 
 TEST_P(CpuRegister8Test, SetAndGetRegister8)
 {
-    Cpu cpu;
     auto [reg, value] = GetParam();
 
     cpu.set_register(reg, value);
@@ -34,11 +41,11 @@ INSTANTIATE_TEST_SUITE_P(Register8Tests,
                                            std::make_pair(Reg8Name::L, 0xDE),
                                            std::make_pair(Reg8Name::F, 0xF0)));
 
-class CpuRegister16Test : public ::testing::TestWithParam<std::pair<Reg16Name, uint16_t>> {};
+class CpuRegister16Test : public CpuTest,
+                          public ::testing::WithParamInterface<std::pair<Reg16Name, uint16_t>> {};
 
 TEST_P(CpuRegister16Test, SetAndGetRegister16)
 {
-    Cpu cpu;
     auto [reg, value] = GetParam();
 
     cpu.set_register(reg, value);
@@ -55,11 +62,11 @@ INSTANTIATE_TEST_SUITE_P(Register16Tests,
                                            std::make_pair(Reg16Name::PC, 0xABCD)));
 
 // Flags tests
-class CpuFlagTest : public ::testing::TestWithParam<std::pair<uint8_t, bool>> {};
+class CpuFlagTest : public CpuTest,
+                    public ::testing::WithParamInterface<std::pair<uint8_t, bool>> {};
 
 TEST_P(CpuFlagTest, SetAndGetFlag)
 {
-    Cpu cpu;
     auto [flag, value] = GetParam();
 
     cpu.set_flag(flag, value);
