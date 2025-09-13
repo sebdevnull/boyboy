@@ -5,6 +5,9 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: handle better mirrored memory sections
+// TODO: map cartridge RAM
+
 #include "boyboy/mmu.h"
 
 #include <algorithm>
@@ -46,10 +49,10 @@ void Mmu::map_rom(const cartridge::Cartridge& cart)
     }
 
     // Map ROMBank0 (0x0000 - 0x3FFF)
-    map(MemoryMapIndex::ROMBank0).data = std::span<uint8_t>(cart_).subspan(0, ROMBank0Size);
+    map(MemoryRegionID::ROMBank0).data = std::span<uint8_t>(cart_).subspan(0, ROMBank0Size);
 
     // Map ROMBank1 (0x4000 - 0x7FFF)
-    map(MemoryMapIndex::ROMBank1).data =
+    map(MemoryRegionID::ROMBank1).data =
         std::span<uint8_t>(cart_).subspan(ROMBank0Size, ROMBank1Size);
 
     rom_loaded_ = true;
@@ -78,12 +81,23 @@ void Mmu::map_rom(const cartridge::Cartridge& cart)
 //     // NOLINTEND
 // }
 
+// NOLINTBEGIN(misc-no-recursion)
+
 uint8_t Mmu::read_byte(uint16_t addr) const
 {
     const auto& region = find_region(addr);
 
     if (&region == &dummy_open_bus_) {
         return open_bus_;
+    }
+
+    if (region.mirrored) {
+        if (!region.mirror) {
+            throw std::runtime_error("Mirrored region missing mirror target");
+        }
+        const auto& mirror = map(*region.mirror);
+        uint16_t mirror_addr = mirror.start + (addr - region.start);
+        return read_byte(mirror_addr);
     }
 
     if (region.read_handler) {
@@ -99,6 +113,15 @@ uint16_t Mmu::read_word(uint16_t addr) const
 
     if (&region == &dummy_open_bus_) {
         return open_bus_;
+    }
+
+    if (region.mirrored) {
+        if (!region.mirror) {
+            throw std::runtime_error("Mirrored region missing mirror target");
+        }
+        const auto& mirror = map(*region.mirror);
+        uint16_t mirror_addr = mirror.start + (addr - region.start);
+        return read_word(mirror_addr);
     }
 
     if (region.read_handler) {
@@ -122,6 +145,16 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
         return;
     }
 
+    if (region.mirrored) {
+        if (!region.mirror) {
+            throw std::runtime_error("Mirrored region missing mirror target");
+        }
+        const auto& mirror = map(*region.mirror);
+        uint16_t mirror_addr = mirror.start + (addr - region.start);
+        write_byte(mirror_addr, value);
+        return;
+    }
+
     if (region.write_handler) {
         region.write_handler(addr, value);
         return;
@@ -139,6 +172,16 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
     }
 
     if (&region == &dummy_open_bus_) {
+        return;
+    }
+
+    if (region.mirrored) {
+        if (!region.mirror) {
+            throw std::runtime_error("Mirrored region missing mirror target");
+        }
+        const auto& mirror = map(*region.mirror);
+        uint16_t mirror_addr = mirror.start + (addr - region.start);
+        write_word(mirror_addr, value);
         return;
     }
 
@@ -164,54 +207,81 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
         return;
     }
 
+    if (region.mirrored) {
+        if (!region.mirror) {
+            throw std::runtime_error("Mirrored region missing mirror target");
+        }
+        const auto& mirror = map(*region.mirror);
+        uint16_t mirror_addr = mirror.start + (dst_addr - region.start);
+        copy(mirror_addr, src);
+        return;
+    }
+
     for (size_t i = 0; i < src.size(); i++) {
         write_byte(dst_addr + i, src[i]);
     }
 }
 
+// NOLINTEND(misc-no-recursion)
+
 void Mmu::init_memory_map()
 {
-    map(MemoryMapIndex::ROMBank0) = {
+    map(MemoryRegionID::ROMBank0) = {
+        .id = MemoryRegionID::ROMBank0,
         .start = ROMBank0Start,
         .end = ROMBank0End,
         .data = cart_,
         // .read_only = true,
         .read_only = false,
     };
-    map(MemoryMapIndex::ROMBank1) = {
+    map(MemoryRegionID::ROMBank1) = {
+        .id = MemoryRegionID::ROMBank1,
         .start = ROMBank1Start,
         .end = ROMBank1End,
         .data = std::span<uint8_t>(cart_).subspan(ROMBank0Size),
         // .read_only = true,
         .read_only = false,
     };
-    map(MemoryMapIndex::VRAM) = {
+    map(MemoryRegionID::VRAM) = {
+        .id = MemoryRegionID::VRAM,
         .start = VRAMStart,
         .end = VRAMEnd,
         .data = vram_,
     };
-    map(MemoryMapIndex::ERAM) = {
+    map(MemoryRegionID::ERAM) = {
+        .id = MemoryRegionID::ERAM,
         .start = ERAMStart,
         .end = ERAMEnd,
         .data = eram_,
     };
-    map(MemoryMapIndex::WRAM0) = {
+    map(MemoryRegionID::WRAM0) = {
+        .id = MemoryRegionID::WRAM0,
         .start = WRAM0Start,
         .end = WRAM0End,
         .data = wram_,
     };
-    map(MemoryMapIndex::WRAM1) = {
+    map(MemoryRegionID::WRAM1) = {
+        .id = MemoryRegionID::WRAM1,
         .start = WRAM1Start,
         .end = WRAM1End,
         .data = std::span<uint8_t>(wram_).subspan(WRAM0Size),
-        .mirrored = true,
     };
-    map(MemoryMapIndex::OAM) = {
+    map(MemoryRegionID::ECHO) = {
+        .id = MemoryRegionID::ECHO,
+        .start = ECHOStart,
+        .end = ECHOEnd,
+        .data = {},
+        .mirrored = true,
+        .mirror = MemoryRegionID::WRAM0,
+    };
+    map(MemoryRegionID::OAM) = {
+        .id = MemoryRegionID::OAM,
         .start = OAMStart,
         .end = OAMEnd,
         .data = oam_,
     };
-    map(MemoryMapIndex::IO) = {
+    map(MemoryRegionID::IO) = {
+        .id = MemoryRegionID::IO,
         .start = IOStart,
         .end = IOEnd,
         .data = ior_,
@@ -219,12 +289,14 @@ void Mmu::init_memory_map()
         .write_handler = nullptr, // TODO: implement
         .read_handler = nullptr,  // TODO: implement
     };
-    map(MemoryMapIndex::HRAM) = {
+    map(MemoryRegionID::HRAM) = {
+        .id = MemoryRegionID::HRAM,
         .start = HRAMStart,
         .end = HRAMEnd,
         .data = hram_,
     };
-    map(MemoryMapIndex::IEReg) = {
+    map(MemoryRegionID::IEReg) = {
+        .id = MemoryRegionID::IEReg,
         .start = IEAddr,
         .end = IEAddr,
         .data = {&ier_, 1},

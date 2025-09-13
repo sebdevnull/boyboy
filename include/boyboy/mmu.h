@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <functional>
+#include <optional>
 #include <span>
 
 #include "boyboy/cartridge.h"
@@ -51,7 +52,24 @@ public:
     void copy(uint16_t dst_addr, std::span<uint8_t> src);
 
 private:
+    enum class MemoryRegionID : uint8_t {
+        ROMBank0 = 0,
+        ROMBank1,
+        VRAM,
+        ERAM,
+        WRAM0,
+        WRAM1,
+        ECHO,
+        OAM,
+        IO,
+        HRAM,
+        IEReg,
+        NumRegions,
+        OpenBus, // Invalid region
+    };
+
     struct MemoryRegion {
+        MemoryRegionID id = MemoryRegionID::OpenBus;
         uint16_t start{};
         uint16_t end{};
         std::span<uint8_t> data;
@@ -61,23 +79,12 @@ private:
         bool mirrored = false;
         bool io_register = false;
 
+        // Optional mirror
+        std::optional<MemoryRegionID> mirror = std::nullopt;
+
         // Optional I/O callbacks
         std::function<void(uint16_t, uint8_t)> write_handler = nullptr;
         std::function<uint8_t(uint16_t)> read_handler = nullptr;
-    };
-
-    enum class MemoryMapIndex : uint8_t {
-        ROMBank0 = 0,
-        ROMBank1,
-        VRAM,
-        ERAM,
-        WRAM0,
-        WRAM1,
-        OAM,
-        IO,
-        HRAM,
-        IEReg,
-        NumRegions
     };
 
     // ROM load status flag
@@ -95,21 +102,24 @@ private:
 
     // Fallback open bus region
     uint8_t open_bus_{0xFF};
-    MemoryRegion dummy_open_bus_{.start = 0x0000,
-                                              .end = 0x0000,
-                                              .data = {&open_bus_, 1},
-                                              .read_only = false,
-                                              .mirrored = false,
-                                              .io_register = false,
-                                              .write_handler = nullptr,
-                                              .read_handler = nullptr};
+    MemoryRegion dummy_open_bus_{
+        .id = MemoryRegionID::OpenBus,
+        .start = 0x0000,
+        .end = 0x0000,
+        .data = {&open_bus_, 1},
+        .read_only = false,
+        .mirrored = false,
+        .io_register = false,
+        .write_handler = nullptr,
+        .read_handler = nullptr,
+    };
 
     // Memory map table for address mapping
-    std::array<MemoryRegion, static_cast<size_t>(MemoryMapIndex::NumRegions)> memory_map_;
+    std::array<MemoryRegion, static_cast<size_t>(MemoryRegionID::NumRegions)> memory_map_;
 
     // Memory mapping helpers
-    MemoryRegion& map(MemoryMapIndex idx) { return memory_map_.at(static_cast<size_t>(idx)); }
-    [[nodiscard]] const MemoryRegion& map(MemoryMapIndex idx) const
+    MemoryRegion& map(MemoryRegionID idx) { return memory_map_.at(static_cast<size_t>(idx)); }
+    [[nodiscard]] const MemoryRegion& map(MemoryRegionID idx) const
     {
         return memory_map_.at(static_cast<size_t>(idx));
     }
@@ -117,7 +127,7 @@ private:
     // Initialize memory mappings
     void init_memory_map();
 
-    // 
+    // Memory region finding
     [[nodiscard]] inline size_t find_region_index(uint16_t addr) const;
     [[nodiscard]] inline MemoryRegion& find_region(uint16_t addr);
     [[nodiscard]] inline const MemoryRegion& find_region(uint16_t addr) const;
