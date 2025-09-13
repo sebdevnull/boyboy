@@ -5,6 +5,8 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+#pragma once
+
 #include <filesystem>
 #include <string>
 

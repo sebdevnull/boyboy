@@ -5,6 +5,8 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+#pragma once
+
 #include <string>
 
 namespace boyboy::test::common {
