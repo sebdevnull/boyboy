@@ -60,6 +60,7 @@ public:
     // Execution functions
     void step();
     uint8_t fetch();
+    [[nodiscard]] uint8_t peek() const; // fetch without PC increment
     void execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
 
     // Execute aliases

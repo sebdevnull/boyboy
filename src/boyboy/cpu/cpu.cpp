@@ -134,6 +134,11 @@ uint8_t Cpu::fetch()
     return read_byte(registers_.pc++);
 }
 
+[[nodiscard]] uint8_t Cpu::peek() const
+{
+    return read_byte(registers_.pc);
+}
+
 void Cpu::execute(uint8_t opcode, InstructionType instr_type)
 {
     const auto& instr = InstructionTable::get_instruction(instr_type, opcode);
