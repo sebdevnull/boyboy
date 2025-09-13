@@ -21,6 +21,7 @@ set_target_properties(gmock_main PROPERTIES CXX_CLANG_TIDY "")
 # ---- Test sources ----
 set(TEST_SOURCES
     test_main.cpp
+    test_cartridge.cpp
     test_mmu.cpp
     cpu/test_cpu.cpp
     cpu/test_registers.cpp
