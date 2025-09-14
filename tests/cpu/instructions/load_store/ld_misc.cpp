@@ -5,6 +5,7 @@
  * LD r16, n16
  * LD [n16], SP
  * LD HL, SP+e8
+ * LD SP, HL
  *
  * @license GPLv3 (see LICENSE file)
  */
@@ -30,6 +31,7 @@ using boyboy::test::cpu::OperandType;
 using LdR16N16Test  = InstrTest<InstrParam>;
 using LdAtN16SPTest = InstrTest<InstrParam>;
 using LdHLSPeTest   = InstrTest<InstrParam>;
+using LdSPHLTest    = InstrTest<InstrParam>;
 
 // -----------------------------
 // Test definitions
@@ -37,6 +39,7 @@ using LdHLSPeTest   = InstrTest<InstrParam>;
 TEST_P(LdR16N16Test, Works) { run_test(); }
 TEST_P(LdAtN16SPTest, Works) { run_test(); }
 TEST_P(LdHLSPeTest, Works) { run_test(); }
+TEST_P(LdSPHLTest, Works) { run_test(); }
 
 // -----------------------------
 // Parameter instantiations
@@ -158,5 +161,25 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .expect_h       = false,
                                  .expect_c       = true,
                                  .name           = "LD_HL_SP_E8_Negative",
+                             }),
+                         boyboy::test::cpu::param_name<InstrParam>);
+
+// LD SP, HL
+INSTANTIATE_TEST_SUITE_P(LdInstructions,
+                         LdSPHLTest,
+                         ::testing::Values(
+                             InstrParam{
+                                 .opcode         = Opcode::LD_SP_HL,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_hl     = uint16_t{0x1234},
+                                 .expected_value = uint16_t{0x1234},
+                                 .name           = "LD_SP_HL_1234",
+                             },
+                             InstrParam{
+                                 .opcode         = Opcode::LD_SP_HL,
+                                 .dst            = Reg16Name::SP,
+                                 .initial_hl     = uint16_t{0xABCD},
+                                 .expected_value = uint16_t{0xABCD},
+                                 .name           = "LD_SP_HL_ABCD",
                              }),
                          boyboy::test::cpu::param_name<InstrParam>);
