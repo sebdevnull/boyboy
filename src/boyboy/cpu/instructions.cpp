@@ -922,6 +922,65 @@ void Cpu::ccf()
     set_flag(Flag::HalfCarry, false);
 }
 
+// RLA
+void Cpu::rla()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    bool carry = get_flag(Flag::Carry);
+    bool new_carry = (a & 0x80) != 0;
+
+    a = (a << 1) | (carry ? 1 : 0);
+    set_register(Reg8Name::A, a);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RRA
+void Cpu::rra()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    bool carry = get_flag(Flag::Carry);
+    bool new_carry = (a & 0x01) != 0;
+
+    a = (a >> 1) | (carry ? 0x80 : 0);
+    set_register(Reg8Name::A, a);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RLCA
+void Cpu::rlca()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    bool new_carry = (a & 0x80) != 0;
+
+    a = (a << 1) | (new_carry ? 1 : 0);
+    set_register(Reg8Name::A, a);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RRCA
+void Cpu::rrca()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    bool new_carry = (a & 0x01) != 0;
+
+    a = (a >> 1) | (new_carry ? 0x80 : 0);
+    set_register(Reg8Name::A, a);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
 // TODO: implement properly when interrupts are handled
 // EI
 void Cpu::ei()

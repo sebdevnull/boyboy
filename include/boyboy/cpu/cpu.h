@@ -482,6 +482,15 @@ private:
 // SCF
 #define CPU_SCF
 
+// RLA
+#define CPU_RLA
+// RRA
+#define CPU_RRA
+// RLCA
+#define CPU_RLCA
+// RRCA
+#define CPU_RRCA
+
 // EI
 #define CPU_EI
 // DI
