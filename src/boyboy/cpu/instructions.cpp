@@ -124,6 +124,35 @@ void Cpu::push_r16(Reg16Name r16)
     set_sp(sp);
 }
 
+inline void Cpu::jp(uint16_t addr)
+{
+    set_pc(addr);
+}
+inline void Cpu::jp_z(uint16_t addr)
+{
+    if (get_flag(Flag::Zero)) {
+        jp(addr);
+    }
+}
+inline void Cpu::jp_nz(uint16_t addr)
+{
+    if (!get_flag(Flag::Zero)) {
+        jp(addr);
+    }
+}
+inline void Cpu::jp_c(uint16_t addr)
+{
+    if (get_flag(Flag::Carry)) {
+        jp(addr);
+    }
+}
+inline void Cpu::jp_nc(uint16_t addr)
+{
+    if (!get_flag(Flag::Carry)) {
+        jp(addr);
+    }
+}
+
 // Generic CPU instruction implementations (CB-prefixed)
 
 // Individual CPU instruction implementations (unprefixed)
@@ -480,9 +509,7 @@ void Cpu::ld_at_hl_n8()
 // LD A, [a16]
 void Cpu::ld_a_at_a16()
 {
-    uint8_t lsb = fetch();
-    uint8_t msb = fetch();
-    uint16_t addr = utils::to_u16(msb, lsb);
+    uint16_t addr = fetch_n16();
     uint8_t value = read_byte(addr);
     set_register(Reg8Name::A, value);
 }
@@ -490,9 +517,7 @@ void Cpu::ld_a_at_a16()
 // LD [a16], A
 void Cpu::ld_at_a16_a()
 {
-    uint8_t lsb = fetch();
-    uint8_t msb = fetch();
-    uint16_t addr = utils::to_u16(msb, lsb);
+    uint16_t addr = fetch_n16();
     uint8_t value = get_register(Reg8Name::A);
     write_byte(addr, value);
 }
@@ -613,9 +638,7 @@ void Cpu::ld_sp_n16() { ld_r16_n16(Reg16Name::SP); }
 // LD [a16], SP
 void Cpu::ld_at_a16_sp()
 {
-    uint8_t lsb = fetch();
-    uint8_t msb = fetch();
-    uint16_t addr = utils::to_u16(msb, lsb);
+    uint16_t addr = fetch_n16();
     uint16_t sp = get_sp();
     write_byte(addr, utils::lsb(sp));
     write_byte(addr + 1, utils::msb(sp));
@@ -648,6 +671,73 @@ void Cpu::push_de() { push_r16(Reg16Name::DE); }
 void Cpu::push_hl() { push_r16(Reg16Name::HL); }
 void Cpu::push_af() { push_r16(Reg16Name::AF); }
 // clang-format on
+
+// JP a16
+void Cpu::jp_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp(addr);
+}
+// JP Z, a16
+void Cpu::jp_z_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp_z(addr);
+}
+// JP NZ, a16
+void Cpu::jp_nz_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp_nz(addr);
+}
+// JP C, a16
+void Cpu::jp_c_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp_c(addr);
+}
+// JP NC, a16
+void Cpu::jp_nc_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp_nc(addr);
+}
+// JP HL
+void Cpu::jp_hl()
+{
+    uint16_t hl = get_register(Reg16Name::HL);
+    jp(hl);
+}
+// JR e8
+void Cpu::jr_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp(get_pc() + e8);
+}
+// JR Z, e8
+void Cpu::jr_z_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp_z(get_pc() + e8);
+}
+// JR NZ, e8
+void Cpu::jr_nz_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp_nz(get_pc() + e8);
+}
+// JR C, e8
+void Cpu::jr_c_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp_c(get_pc() + e8);
+}
+// JR NC, e8
+void Cpu::jr_nc_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp_nc(get_pc() + e8);
+}
 
 // Individual CPU instruction implementations (CB-prefixed)
 

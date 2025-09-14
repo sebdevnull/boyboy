@@ -11,6 +11,7 @@
 #include <memory>
 #include <string_view>
 
+#include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/cpu/instructions.h"
 #include "boyboy/cpu/opcodes.h"
@@ -92,6 +93,12 @@ private:
     uint64_t cycles_{};
 
     // Helper functions
+    uint16_t fetch_n16()
+    {
+        uint8_t lsb = fetch();
+        uint8_t msb = fetch();
+        return utils::to_u16(msb, lsb);
+    }
     void reset_flags() { registers_.f(0); }
 
     // ALU operations
@@ -128,6 +135,12 @@ private:
 
     void pop_r16(Reg16Name r16);
     void push_r16(Reg16Name r16);
+
+    void jp(uint16_t addr);
+    void jp_z(uint16_t addr);
+    void jp_nz(uint16_t addr);
+    void jp_c(uint16_t addr);
+    void jp_nc(uint16_t addr);
 
     // Generic CB-prefixed CPU instructions
     void rlc_r8(Reg8Name r8);
@@ -397,5 +410,22 @@ private:
 #define CPU_PUSH_DE
 #define CPU_PUSH_HL
 #define CPU_PUSH_AF
+
+// JP a16
+#define CPU_JP_A16
+// JP cc, a16
+#define CPU_JP_Z_A16
+#define CPU_JP_NZ_A16
+#define CPU_JP_C_A16
+#define CPU_JP_NC_A16
+// JP HL
+#define CPU_JP_HL
+// JR e8
+#define CPU_JR_E8
+// JR cc, e8
+#define CPU_JR_Z_E8
+#define CPU_JR_NZ_E8
+#define CPU_JR_C_E8
+#define CPU_JR_NC_E8
 
 } // namespace boyboy::cpu
