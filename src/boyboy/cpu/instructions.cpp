@@ -9,6 +9,7 @@
 
 #include <cstdint>
 
+#include "boyboy/common/errors.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/cpu_constants.h"
@@ -1005,6 +1006,29 @@ void Cpu::stop_n8()
     // We throw temporarily to see if we hit this instruction
     throw std::runtime_error("STOP instruction not implemented");
 }
+
+// Illegal opcodes
+void Cpu::illegal_opcode(uint8_t opcode)
+{
+    throw errors::IllegalOpcode(opcode);
+}
+
+// clang-format off
+// NOLINTBEGIN(readability-convert-member-functions-to-static)
+void Cpu::prefix() { illegal_opcode(0xCB); } // CB-prefixed opcodes should be handled separately
+void Cpu::illegal_d3() { illegal_opcode(0xD3); }
+void Cpu::illegal_db() { illegal_opcode(0xDB); }
+void Cpu::illegal_dd() { illegal_opcode(0xDD); }
+void Cpu::illegal_e3() { illegal_opcode(0xE3); }
+void Cpu::illegal_e4() { illegal_opcode(0xE4); }
+void Cpu::illegal_eb() { illegal_opcode(0xEB); }
+void Cpu::illegal_ec() { illegal_opcode(0xEC); }
+void Cpu::illegal_ed() { illegal_opcode(0xED); }
+void Cpu::illegal_f4() { illegal_opcode(0xF4); }
+void Cpu::illegal_fc() { illegal_opcode(0xFC); }
+void Cpu::illegal_fd() { illegal_opcode(0xFD); }
+// NOLINTEND(readability-convert-member-functions-to-static)
+// clang-format on
 
 // Individual CPU instruction implementations (CB-prefixed)
 

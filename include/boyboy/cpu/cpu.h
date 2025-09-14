@@ -158,6 +158,8 @@ private:
 
     void rst(uint8_t vector);
 
+    static void illegal_opcode(uint8_t opcode);
+
     // Generic CB-prefixed CPU instructions
     void rlc_r8(Reg8Name r8);
     void rrc_r8(Reg8Name r8);
@@ -499,5 +501,19 @@ private:
 #define CPU_HALT
 // STOP
 #define CPU_STOP_N8
+
+// Illegal opcodes
+#define CPU_PREFIX
+#define CPU_ILLEGAL_D3
+#define CPU_ILLEGAL_DB
+#define CPU_ILLEGAL_DD
+#define CPU_ILLEGAL_E3
+#define CPU_ILLEGAL_E4
+#define CPU_ILLEGAL_EB
+#define CPU_ILLEGAL_EC
+#define CPU_ILLEGAL_ED
+#define CPU_ILLEGAL_F4
+#define CPU_ILLEGAL_FC
+#define CPU_ILLEGAL_FD
 
 } // namespace boyboy::cpu
