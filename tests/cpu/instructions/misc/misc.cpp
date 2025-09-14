@@ -2,6 +2,8 @@
  * @file misc.cpp
  * @brief Unit tests for miscellaneous CPU instructions.
  *
+ * NOP
+ *
  * @license GPLv3 (see LICENSE file)
  */
 

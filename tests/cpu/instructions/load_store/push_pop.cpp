@@ -2,6 +2,9 @@
  * @file push_pop.cpp
  * @brief Unit tests for PUSH and POP CPU instructions.
  *
+ * PUSH r16
+ * POP r16
+ *
  * @license GPLv3 (see LICENSE file)
  */
 

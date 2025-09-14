@@ -2,6 +2,8 @@
  * @file ld_hl_n.cpp
  * @brief Unit tests for LD [HL], n8 CPU instruction.
  *
+ * LD [HL], n8
+ *
  * @license GPLv3 (see LICENSE file)
  */
 

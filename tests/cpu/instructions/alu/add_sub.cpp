@@ -2,6 +2,13 @@
  * @file add_sub.cpp
  * @brief Unit tests for ADD, ADC, SUB and SBC CPU instructions.
  *
+ * ADD A, r8; ADD A, n8; ADD A, [HL]
+ * ADC A, r8; ADC A, n8; ADC A, [HL]
+ * SUB A, r8; SUB A, n8; SUB A, [HL]
+ * SBC A, r8; SBC A, n8; SBC A, [HL]
+ * ADD HL, r16
+ * ADD SP, e8
+ *
  * @license GPLv3 (see LICENSE file)
  */
 

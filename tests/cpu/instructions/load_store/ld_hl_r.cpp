@@ -2,6 +2,8 @@
  * @file ld_hl_r.cpp
  * @brief Unit tests for LD [HL], r8 CPU instruction.
  *
+ * LD [HL], r8
+ *
  * @license GPLv3 (see LICENSE file)
  */
 

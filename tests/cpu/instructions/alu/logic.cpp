@@ -2,6 +2,11 @@
  * @file logic.cpp
  * @brief Unit tests for AND, OR, XOR and CP CPU instructions.
  *
+ * AND A, r8; AND A, n8; AND A, [HL]
+ * OR A, r8; OR A, n8; OR A, [HL]
+ * XOR A, r8; XOR A, n8; XOR A, [HL]
+ * CP A, r8; CP A, n8; CP A, [HL]
+ *
  * @license GPLv3 (see LICENSE file)
  */
 

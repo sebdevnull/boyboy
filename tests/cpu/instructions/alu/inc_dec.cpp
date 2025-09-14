@@ -2,6 +2,9 @@
  * @file inc_dec.cpp
  * @brief Unit tests for INC and DEC CPU instructions.
  *
+ * INC r8; INC [HL]; INC r16
+ * DEC r8; DEC [HL]; DEC r16
+ *
  * @license GPLv3 (see LICENSE file)
  */
 

@@ -2,6 +2,10 @@
  * @file ld_misc.cpp
  * @brief Unit tests for miscellaneous LD CPU instructions.
  *
+ * LD r16, n16
+ * LD [n16], SP
+ * LD HL, SP+e8
+ *
  * @license GPLv3 (see LICENSE file)
  */
 
