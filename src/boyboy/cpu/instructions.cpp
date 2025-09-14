@@ -665,6 +665,12 @@ void Cpu::ld_hl_sp_inc_e8()
     set_flag(Flag::Carry, ((sp & 0xFF) + (e8 & 0xFF)) > 0xFF);
 }
 
+// LD SP, HL
+void Cpu::ld_sp_hl()
+{
+    set_sp(get_register(Reg16Name::HL));
+}
+
 // clang-format off
 // POP r16
 void Cpu::pop_bc() { pop_r16(Reg16Name::BC); }

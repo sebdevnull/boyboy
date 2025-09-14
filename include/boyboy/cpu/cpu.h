@@ -416,6 +416,9 @@ private:
 // LD HL, SP+e8
 #define CPU_LD_HL_SP_INC_E8
 
+// LD SP, HL
+#define CPU_LD_SP_HL
+
 // POP r16
 #define CPU_POP_BC
 #define CPU_POP_DE
