@@ -41,8 +41,8 @@
 
 ## Step 5 – Stack & SP/HL ops
 
-- [ ] `PUSH rr` — Test: `03-op sp,hl.gb`
-- [ ] `POP rr` — Test: `03-op sp,hl.gb`
+- [x] `PUSH rr` — Test: `03-op sp,hl.gb`
+- [x] `POP rr` — Test: `03-op sp,hl.gb`
 - [x] `LD SP, nn` — Test: `03-op sp,hl.gb`
 - [x] `LD HL, SP+e` — Test: `03-op sp,hl.gb`
 - [x] `ADD SP, e` — Test: `03-op sp,hl.gb`

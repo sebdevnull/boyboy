@@ -106,8 +106,23 @@ void Cpu::or_a_r8(Reg8Name r8) { oor(get_register(r8)); }
 void Cpu::cp_a_r8(Reg8Name r8) { cp(get_register(r8)); }
 // clang-format on
 
-// void Cpu::pop_r16(Reg16Name r16) {}
-// void Cpu::push_r16(Reg16Name r16) {}
+void Cpu::pop_r16(Reg16Name r16)
+{
+    uint16_t sp = get_sp();
+    uint8_t lsb = read_byte(sp++);
+    uint8_t msb = read_byte(sp++);
+    set_register(r16, utils::to_u16(msb, lsb));
+    set_sp(sp);
+}
+
+void Cpu::push_r16(Reg16Name r16)
+{
+    uint16_t r16_val = get_register(r16);
+    uint16_t sp = get_sp();
+    write_byte(--sp, utils::msb(r16_val));
+    write_byte(--sp, utils::lsb(r16_val));
+    set_sp(sp);
+}
 
 // Generic CPU instruction implementations (CB-prefixed)
 
@@ -568,10 +583,10 @@ void Cpu::add_hl_sp() { add_hl_r16(Reg16Name::SP); }
 void Cpu::add_sp_e8()
 {
     auto e8 = static_cast<int8_t>(fetch());
-    uint16_t sp = registers_.sp;
+    uint16_t sp = get_sp();
     uint32_t sum = uint32_t(sp) + int32_t(e8);
 
-    registers_.sp = sum & 0xFFFF;
+    set_sp(sum & 0xFFFF);
 
     set_flag(Flag::Zero, false);
     set_flag(Flag::Substract, false);
@@ -593,7 +608,7 @@ void Cpu::ld_at_a16_sp()
     uint8_t lsb = fetch();
     uint8_t msb = fetch();
     uint16_t addr = utils::to_u16(msb, lsb);
-    uint16_t sp = registers_.sp;
+    uint16_t sp = get_sp();
     write_byte(addr, utils::lsb(sp));
     write_byte(addr + 1, utils::msb(sp));
 }
@@ -602,7 +617,7 @@ void Cpu::ld_at_a16_sp()
 void Cpu::ld_hl_sp_inc_e8()
 {
     auto e8 = static_cast<int8_t>(fetch());
-    uint16_t sp = registers_.sp;
+    uint16_t sp = get_sp();
     uint32_t sum = uint32_t(sp) + int32_t(e8);
 
     registers_.hl = sum & 0xFFFF;
@@ -612,6 +627,19 @@ void Cpu::ld_hl_sp_inc_e8()
     set_flag(Flag::HalfCarry, ((sp & 0x0F) + (e8 & 0x0F)) > 0x0F);
     set_flag(Flag::Carry, ((sp & 0xFF) + (e8 & 0xFF)) > 0xFF);
 }
+
+// clang-format off
+// POP r16
+void Cpu::pop_bc() { pop_r16(Reg16Name::BC); }
+void Cpu::pop_de() { pop_r16(Reg16Name::DE); }
+void Cpu::pop_hl() { pop_r16(Reg16Name::HL); }
+void Cpu::pop_af() { pop_r16(Reg16Name::AF); }
+// PUSH r16
+void Cpu::push_bc() { push_r16(Reg16Name::BC); }
+void Cpu::push_de() { push_r16(Reg16Name::DE); }
+void Cpu::push_hl() { push_r16(Reg16Name::HL); }
+void Cpu::push_af() { push_r16(Reg16Name::AF); }
+// clang-format on
 
 // Individual CPU instruction implementations (CB-prefixed)
 

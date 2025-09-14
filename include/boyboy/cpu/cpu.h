@@ -50,7 +50,10 @@ public:
     [[nodiscard]] uint16_t get_register(Reg16Name reg) const;
     void set_register(Reg8Name reg, uint8_t value);
     void set_register(Reg16Name reg, uint16_t value);
+    [[nodiscard]] uint16_t get_sp() const { return registers_.sp; }
     [[nodiscard]] uint16_t get_pc() const { return registers_.pc; }
+    void set_sp(uint16_t sp) { registers_.sp = sp; }
+    void set_pc(uint16_t pc) { registers_.pc = pc; }
 
     // Flag accessors
     [[nodiscard]] bool get_flag(uint8_t flag) const { return registers_.af.get_flag(flag); }
@@ -380,5 +383,16 @@ private:
 
 // LD HL, SP+e8
 #define CPU_LD_HL_SP_INC_E8
+
+// POP r16
+#define CPU_POP_BC
+#define CPU_POP_DE
+#define CPU_POP_HL
+#define CPU_POP_AF
+// PUSH r16
+#define CPU_PUSH_BC
+#define CPU_PUSH_DE
+#define CPU_PUSH_HL
+#define CPU_PUSH_AF
 
 } // namespace boyboy::cpu
