@@ -55,10 +55,11 @@
 - [x] `CPL` — Test: `01-special.gb`
 - [x] `SCF` — Test: `01-special.gb`
 - [x] `CCF` — Test: `01-special.gb`
-- [ ] `DI` — Test: `01-special.gb`
-- [ ] `EI` — Test: `01-special.gb`
-- [ ] `HALT` — Test: `01-special.gb`
-- [ ] `STOP` — Test: `01-special.gb`
+- [x] `DI` — Test: `01-special.gb`
+- [x] `EI` — Test: `01-special.gb`
+- [x] `HALT` — Test: `01-special.gb`
+- [x] `STOP` — Test: `01-special.gb`
+- [x] `RLCA`, `RLA`, `RRCA`, `RRA` — Test: `10-bit ops.gb`
 
 ## Step 7 – CB-prefix ops
 
