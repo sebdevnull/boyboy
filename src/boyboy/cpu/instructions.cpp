@@ -579,6 +579,40 @@ void Cpu::add_sp_e8()
     set_flag(Flag::Carry, ((sp & 0xFF) + (e8 & 0xFF)) > 0xFF);
 }
 
+// clang-format off
+// LD r16, n16
+void Cpu::ld_bc_n16() { ld_r16_n16(Reg16Name::BC); }
+void Cpu::ld_de_n16() { ld_r16_n16(Reg16Name::DE); }
+void Cpu::ld_hl_n16() { ld_r16_n16(Reg16Name::HL); }
+void Cpu::ld_sp_n16() { ld_r16_n16(Reg16Name::SP); }
+// clang-format on
+
+// LD [a16], SP
+void Cpu::ld_at_a16_sp()
+{
+    uint8_t lsb = fetch();
+    uint8_t msb = fetch();
+    uint16_t addr = utils::to_u16(msb, lsb);
+    uint16_t sp = registers_.sp;
+    write_byte(addr, utils::lsb(sp));
+    write_byte(addr + 1, utils::msb(sp));
+}
+
+// LD HL, SP+e8
+void Cpu::ld_hl_sp_inc_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    uint16_t sp = registers_.sp;
+    uint32_t sum = uint32_t(sp) + int32_t(e8);
+
+    registers_.hl = sum & 0xFFFF;
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, ((sp & 0x0F) + (e8 & 0x0F)) > 0x0F);
+    set_flag(Flag::Carry, ((sp & 0xFF) + (e8 & 0xFF)) > 0xFF);
+}
+
 // Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu

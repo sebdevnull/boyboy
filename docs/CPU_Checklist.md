@@ -26,7 +26,7 @@
 
 ## Step 3 – 16-bit basics
 
-- [ ] `LD rr, nn` — Test: `05-op rp.gb`
+- [x] `LD rr, nn` — Test: `05-op rp.gb`
 - [x] `INC rr` — Test: `05-op rp.gb`
 - [x] `DEC rr` — Test: `05-op rp.gb`
 - [x] `ADD HL, rr` — Test: `05-op rp.gb`
@@ -43,8 +43,8 @@
 
 - [ ] `PUSH rr` — Test: `03-op sp,hl.gb`
 - [ ] `POP rr` — Test: `03-op sp,hl.gb`
-- [ ] `LD SP, nn` — Test: `03-op sp,hl.gb`
-- [ ] `LD HL, SP+e` — Test: `03-op sp,hl.gb`
+- [x] `LD SP, nn` — Test: `03-op sp,hl.gb`
+- [x] `LD HL, SP+e` — Test: `03-op sp,hl.gb`
 - [x] `ADD SP, e` — Test: `03-op sp,hl.gb`
 
 ## Step 6 – Misc instructions

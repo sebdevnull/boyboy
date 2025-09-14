@@ -369,4 +369,16 @@ private:
 // ADD SP, e8
 #define CPU_ADD_SP_E8
 
+// LD r16, n16
+#define CPU_LD_BC_N16
+#define CPU_LD_DE_N16
+#define CPU_LD_HL_N16
+#define CPU_LD_SP_N16
+
+// LD [n16], SP
+#define CPU_LD_AT_A16_SP
+
+// LD HL, SP+e8
+#define CPU_LD_HL_SP_INC_E8
+
 } // namespace boyboy::cpu
