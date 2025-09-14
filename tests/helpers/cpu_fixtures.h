@@ -84,6 +84,11 @@ public:
         run_asserts(param);
     }
 
+    void set_flags(const FlagsParam& flags)
+    {
+        CpuTest::set_flags(flags.z, flags.n, flags.h, flags.c);
+    }
+
 private:
     void setup_source(const InstrParam& param)
     {
@@ -255,9 +260,8 @@ private:
 
     void setup_flags(const InstrParam& param)
     {
-        // Set carry if needed for ADC and SBC
-        if (param.carry_in) {
-            cpu.set_flag(boyboy::cpu::Flag::Carry, *param.carry_in);
+        if (param.initial_flags) {
+            set_flags(*param.initial_flags);
         }
     }
 

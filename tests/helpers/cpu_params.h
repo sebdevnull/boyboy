@@ -159,6 +159,13 @@ private:
     }
 };
 
+struct FlagsParam {
+    bool z = false;
+    bool n = false;
+    bool h = false;
+    bool c = false;
+};
+
 struct InstrParam {
     boyboy::cpu::Opcode opcode;
 
@@ -177,13 +184,16 @@ struct InstrParam {
     std::optional<uint16_t> initial_pc = std::nullopt;
     std::optional<uint16_t> initial_sp = std::nullopt;
 
-    std::optional<bool> carry_in = std::nullopt; // for ADC and SBC instructions
+    // Input flags before instruction execution
+    std::optional<FlagsParam> initial_flags = std::nullopt;
 
     std::optional<std::variant<uint8_t, uint16_t>> src_value = std::nullopt;
     std::optional<uint16_t> stack_value                      = std::nullopt;
 
     std::variant<uint8_t, uint16_t> expected_value;
 
+    // TODO: use FlagsParam
+    // Expected flags after instruction execution
     bool expect_z = false;
     bool expect_n = false;
     bool expect_h = false;
@@ -248,9 +258,14 @@ struct InstrParam {
         print_opt(p.initial_pc, "initial_pc");
         print_opt(p.initial_sp, "initial_sp");
 
-        if (p.carry_in)
+        if (p.initial_flags)
         {
-            os << ", carry_in=" << (*p.carry_in ? 1 : 0);
+            os << ", initial_flags={"
+               << "Z=" << (p.initial_flags->z ? 1 : 0)
+               << ", N=" << (p.initial_flags->n ? 1 : 0)
+               << ", H=" << (p.initial_flags->h ? 1 : 0)
+               << ", C=" << (p.initial_flags->c ? 1 : 0)
+               << "}";
         }
 
         print_opt(p.stack_value, "stack_value");
@@ -261,15 +276,14 @@ struct InstrParam {
                << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},*p.src_value);
         }
 
-        // os << ", src_value=" 
-        //    << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},p.src_value)
         os << ", expected_value="
            << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},p.expected_value)
-           << ", Z=" << (p.expect_z ? 1 : 0)
+           << ", expected_flags={"
+           << "Z=" << (p.expect_z ? 1 : 0)
            << ", N=" << (p.expect_n ? 1 : 0)
            << ", H=" << (p.expect_h ? 1 : 0)
            << ", C=" << (p.expect_c ? 1 : 0)
-           << "]";
+           << "}]";
         // clang-format on
 
         return os;
