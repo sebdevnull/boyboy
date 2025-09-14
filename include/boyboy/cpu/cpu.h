@@ -5,6 +5,8 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: implement interrupts
+
 #pragma once
 
 #include <cstdint>
@@ -42,8 +44,10 @@ public:
         registers_.sp = SPStartValue;
         registers_.pc = PCStartValue;
 
-        // Other states
+        // Reset flags and state
         ime_ = false;
+        ime_next_ = false;
+        halted_ = false;
         cycles_ = 0;
     }
 
@@ -64,6 +68,9 @@ public:
 
     // State accessors
     [[nodiscard]] bool get_ime() const { return ime_; }
+    void set_ime(bool ime) { ime_ = ime; }
+    [[nodiscard]] bool is_halted() const { return halted_; }
+    void set_halted(bool halted) { halted_ = halted; }
 
     // Execution functions
     void step();
@@ -96,6 +103,8 @@ private:
     Registers registers_;
     uint64_t cycles_{};
     bool ime_{false}; // Interrupt Master Enable flag
+    bool ime_next_{false};
+    bool halted_{false};
 
     // Helper functions
     uint16_t fetch_n16()
@@ -469,5 +478,14 @@ private:
 #define CPU_CCF
 // SCF
 #define CPU_SCF
+
+// EI
+#define CPU_EI
+// DI
+#define CPU_DI
+// HALT
+#define CPU_HALT
+// STOP
+#define CPU_STOP_N8
 
 } // namespace boyboy::cpu

@@ -916,6 +916,31 @@ void Cpu::ccf()
     set_flag(Flag::HalfCarry, false);
 }
 
+// TODO: implement properly when interrupts are handled
+// EI
+void Cpu::ei()
+{
+    ime_next_ = true;
+}
+// DI
+void Cpu::di()
+{
+    ime_ = false;
+}
+
+// HALT
+void Cpu::halt()
+{
+    halted_ = true;
+}
+// STOP
+void Cpu::stop_n8()
+{
+    (void)fetch(); // Discard the next byte (should be 0x00)
+    // We throw temporarily to see if we hit this instruction
+    throw std::runtime_error("STOP instruction not implemented");
+}
+
 // Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu
