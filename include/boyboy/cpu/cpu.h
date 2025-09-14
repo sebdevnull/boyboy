@@ -327,6 +327,9 @@ private:
 #define CPU_LD_AT_HL_H
 #define CPU_LD_AT_HL_L
 
+// LD [HL], n8
+#define CPU_LD_AT_HL_N8
+
 // LD A, [BC/DE] and LD [BC/DE], A
 #define CPU_LD_A_AT_BC
 #define CPU_LD_A_AT_DE

@@ -469,6 +469,14 @@ void Cpu::ld_at_bc_a() { ld_at_r16_r8(Reg16Name::BC, Reg8Name::A); }
 void Cpu::ld_at_de_a() { ld_at_r16_r8(Reg16Name::DE, Reg8Name::A); }
 // clang-format on
 
+// LD [HL], n8
+void Cpu::ld_at_hl_n8()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t n8 = fetch();
+    write_byte(addr, n8);
+}
+
 // LD A, [a16]
 void Cpu::ld_a_at_a16()
 {
