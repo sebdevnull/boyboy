@@ -51,10 +51,10 @@
 
 ## Step 6 – Misc instructions
 
-- [ ] `DAA` — Test: `01-special.gb`
-- [ ] `CPL` — Test: `01-special.gb`
-- [ ] `SCF` — Test: `01-special.gb`
-- [ ] `CCF` — Test: `01-special.gb`
+- [x] `DAA` — Test: `01-special.gb`
+- [x] `CPL` — Test: `01-special.gb`
+- [x] `SCF` — Test: `01-special.gb`
+- [x] `CCF` — Test: `01-special.gb`
 - [ ] `DI` — Test: `01-special.gb`
 - [ ] `EI` — Test: `01-special.gb`
 - [ ] `HALT` — Test: `01-special.gb`
