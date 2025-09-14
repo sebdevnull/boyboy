@@ -856,6 +856,66 @@ void Cpu::rst_30() { rst(0x30); }
 void Cpu::rst_38() { rst(0x38); }
 // clang-format on
 
+// DAA
+void Cpu::daa()
+{
+    uint8_t adjustment = 0;
+    bool carry = get_flag(Flag::Carry);
+    bool half_carry = get_flag(Flag::HalfCarry);
+    bool subtract = get_flag(Flag::Substract);
+    uint8_t a = get_register(Reg8Name::A);
+
+    if (subtract) {
+        if (half_carry) {
+            adjustment += 0x06;
+        }
+        if (carry) {
+            adjustment += 0x60;
+        }
+        a -= adjustment;
+    }
+    else {
+        if (half_carry || (a & 0x0F) > 0x09) {
+            adjustment += 0x06;
+        }
+        if (carry || a > 0x99) {
+            adjustment += 0x60;
+            carry = true;
+        }
+        a += adjustment;
+    }
+
+    set_register(Reg8Name::A, a);
+    set_flag(Flag::Zero, a == 0);
+    set_flag(Flag::Carry, carry);
+    set_flag(Flag::HalfCarry, false);
+}
+
+// CPL
+void Cpu::cpl()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    a = ~a;
+    set_register(Reg8Name::A, a);
+    set_flag(Flag::Substract, true);
+    set_flag(Flag::HalfCarry, true);
+}
+// SCF
+void Cpu::scf()
+{
+    set_flag(Flag::Carry, true);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+}
+// CCF
+void Cpu::ccf()
+{
+    bool carry = get_flag(Flag::Carry);
+    set_flag(Flag::Carry, !carry);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+}
+
 // Individual CPU instruction implementations (CB-prefixed)
 
 } // namespace boyboy::cpu

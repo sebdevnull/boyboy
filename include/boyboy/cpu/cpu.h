@@ -461,4 +461,13 @@ private:
 #define CPU_RST_30
 #define CPU_RST_38
 
+// DAA
+#define CPU_DAA
+// CPL
+#define CPU_CPL
+// CCF
+#define CPU_CCF
+// SCF
+#define CPU_SCF
+
 } // namespace boyboy::cpu
