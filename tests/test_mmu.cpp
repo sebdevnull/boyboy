@@ -1,0 +1,46 @@
+/**
+ * @file test_mmu.cpp
+ * @brief Unit tests for MMU functionality.
+ *
+ * @license GPLv3 (see LICENSE file)
+ */
+
+// TODO: write tests for read-only, mirrored, etc.
+
+#include <gtest/gtest.h>
+
+#include "boyboy/mmu.h"
+
+using namespace boyboy::mmu;
+
+TEST(MmuTest, ReadWriteByte)
+{
+    Mmu mmu;
+    uint16_t address = 0x1234;
+    uint8_t value = 0xAB;
+
+    mmu.write_byte(address, value);
+    EXPECT_EQ(mmu.read_byte(address), value);
+}
+
+TEST(MmuTest, ReadWriteWord)
+{
+    Mmu mmu;
+    uint16_t address = 0x1234;
+    uint16_t value = 0xABCD;
+
+    mmu.write_word(address, value);
+    EXPECT_EQ(mmu.read_word(address), value);
+}
+
+TEST(MmuTest, Copy)
+{
+    Mmu mmu;
+    uint16_t address = 0x2000;
+    std::array<uint8_t, 4> data = {0xDE, 0xAD, 0xBE, 0xEF};
+
+    mmu.copy(address, data);
+    for (size_t i = 0; i < data.size(); i++) {
+        EXPECT_EQ(mmu.read_byte(address + i), data.at(i));
+    }
+}

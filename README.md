@@ -2,10 +2,6 @@
 
 **boyboy** is a work-in-progress **Game Boy emulator** written in C++.
 
-## 🚧 Project status
-
-Currently **paused**. Development may resume in the future, but for now no active work is being done.
-
 ## ✨ Vision
 
 The long-term goal of **BoyBoy** was to:
@@ -53,6 +49,24 @@ Make sure you have **CMake 3.27+** and a C++23 compiler.
     ctest --preset debug
     ```
 
-## 📂 Repository
+## 🧪 Test ROMs
 
-This repository is mainly for reference and archival.
+This project includes several ROMs for emulator testing and verification:
+
+- **blargg’s Game Boy test ROMs** – stored under `tests/roms/blargg/`, widely used for CPU, PPU, and other hardware verification  
+  - [GitHub repository](https://github.com/retrio/gb-test-roms)  
+
+- **GameBoyLife ROM** – stored under `tests/roms/gameboylife/` by NovaSquirrel (zlib license)  
+  - [GitHub repository](https://github.com/NovaSquirrel/GameBoyLife)
+  - [Itch.io page](https://novasquirrel.itch.io/conways-life-for-game-boy)
+
+- **Custom ROMs** – stored under `tests/roms/custom/`  
+  - `invalid.gb` – created to test invalid or malformed data handling  
+
+See [LICENSE-THIRD-PARTY.md](LICENSE-THIRD-PARTY.md) for detailed attribution, licenses, and legal notices.
+
+## ⚖️ Legal notice
+
+- **BoyBoy** is an independent project and is **not affiliated with or endorsed by Nintendo**.  
+- The Game Boy name, logo, and related trademarks are property of **Nintendo Co., Ltd.**  
+- See [LICENSE-THIRD-PARTY.md](LICENSE-THIRD-PARTY.md) for third-party attributions and disclaimers.  

@@ -1,4 +1,8 @@
 .vscode/.*
-bin
-build
-roms
+bin/
+build/
+lib/
+/roms/
+logs/
+notes/
+reference/

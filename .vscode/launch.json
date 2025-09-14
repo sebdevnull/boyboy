@@ -2,19 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Debug boyboy",
+            "name": "Debug boyboy",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/debug/${workspaceFolderBasename}",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "GTK_PATH",
-                    "value": ""
-                }
+            "args": [
+                "${input:romPath}"
             ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
@@ -27,8 +23,40 @@
                     "description": "Set Disassembly Flavor to Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
-                }
+                },
+                { "text": "set output-radix 16" }
             ]
+        },
+        {
+            "name": "Debug BoyBoy Tests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/tests/debug/boyboy_tests",
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb",
+            "externalConsole": false,
+            "args": [],
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                { "text": "set output-radix 16" }
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "romPath",
+            "type": "promptString",
+            "description": "Enter ROM path",
+            "default": "roms/dummy.gb"
         }
     ]
 }

@@ -1,0 +1,22 @@
+/**
+ * @file display.h
+ * @brief Display handling for the BoyBoy emulator.
+ *
+ * @license GPLv3 (see LICENSE file)
+ */
+
+#pragma once
+
+namespace boyboy::display {
+
+class Display {
+public:
+    static void init();
+    void update() {};
+
+private:
+    static constexpr int Width = 160;
+    static constexpr int Height = 144;
+};
+
+} // namespace boyboy::display

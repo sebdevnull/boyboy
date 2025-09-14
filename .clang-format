@@ -4,7 +4,7 @@ Language: Cpp
 Standard: c++20
 
 # --- Bracing Style ---
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Stroustrup
 
 # --- Indentation ---
 IndentWidth: 4
@@ -56,6 +56,7 @@ AccessModifierOffset: -4
 
 # --- Templates ---
 IndentRequiresClause: true
+BreakTemplateDeclarations: Yes
 
 # --- Includes ---
 SortIncludes: true
