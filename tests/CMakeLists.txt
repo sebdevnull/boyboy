@@ -30,6 +30,7 @@ set(TEST_SOURCES
     cpu/instructions/alu/inc_dec.cpp
     cpu/instructions/alu/add_sub.cpp
     cpu/instructions/alu/logic.cpp
+    cpu/instructions/alu/misc.cpp
     cpu/instructions/load_store/ld_accumulator.cpp
     cpu/instructions/load_store/ld_r_r.cpp
     cpu/instructions/load_store/ld_r_n.cpp
