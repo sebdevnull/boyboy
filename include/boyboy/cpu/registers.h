@@ -77,9 +77,9 @@ inline const char* to_string(Reg16Name r)
     case Reg16Name::HL:
         return "HL";
     case Reg16Name::SP:
-        return "PC";
-    case Reg16Name::PC:
         return "SP";
+    case Reg16Name::PC:
+        return "PC";
     default:
         return "Unknown";
     }
