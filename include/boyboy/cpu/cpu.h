@@ -43,6 +43,7 @@ public:
         registers_.pc = PCStartValue;
 
         // Other states
+        ime_ = false;
         cycles_ = 0;
     }
 
@@ -60,6 +61,9 @@ public:
     [[nodiscard]] bool get_flag(uint8_t flag) const { return registers_.af.get_flag(flag); }
     void set_flag(uint8_t flag, bool value) { registers_.af.set_flag(flag, value); }
     [[nodiscard]] uint8_t get_flags() const { return registers_.f(); }
+
+    // State accessors
+    [[nodiscard]] bool get_ime() const { return ime_; }
 
     // Execution functions
     void step();
@@ -91,6 +95,7 @@ private:
     std::shared_ptr<mmu::Mmu> mmu_;
     Registers registers_;
     uint64_t cycles_{};
+    bool ime_{false}; // Interrupt Master Enable flag
 
     // Helper functions
     uint16_t fetch_n16()
@@ -141,6 +146,8 @@ private:
     void jp_nz(uint16_t addr);
     void jp_c(uint16_t addr);
     void jp_nc(uint16_t addr);
+
+    void rst(uint8_t vector);
 
     // Generic CB-prefixed CPU instructions
     void rlc_r8(Reg8Name r8);
@@ -427,5 +434,31 @@ private:
 #define CPU_JR_NZ_E8
 #define CPU_JR_C_E8
 #define CPU_JR_NC_E8
+
+// CALL a16
+#define CPU_CALL_A16
+// CALL cc, a16
+#define CPU_CALL_Z_A16
+#define CPU_CALL_NZ_A16
+#define CPU_CALL_C_A16
+#define CPU_CALL_NC_A16
+// RET
+#define CPU_RET
+// RET cc
+#define CPU_RET_Z
+#define CPU_RET_NZ
+#define CPU_RET_C
+#define CPU_RET_NC
+// RETI
+#define CPU_RETI
+// RST n
+#define CPU_RST_00
+#define CPU_RST_08
+#define CPU_RST_10
+#define CPU_RST_18
+#define CPU_RST_20
+#define CPU_RST_28
+#define CPU_RST_30
+#define CPU_RST_38
 
 } // namespace boyboy::cpu

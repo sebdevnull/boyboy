@@ -37,9 +37,9 @@
 - [x] **`JP nn`, `JP cc,nn`** — Test: `07-jr,jp,call,ret,rst.gb`
 - [x] **`JP HL`** — Test: `07-jr,jp,call,ret,rst.gb`
 - [x] **`JR e`, `JR cc,e`** — Test: `07-jr,jp,call,ret,rst.gb`
-- [ ] `CALL nn`, `CALL cc,nn` — Test: `07-jr,jp,call,ret,rst.gb`
-- [ ] `RET`, `RET cc`, `RETI` — Test: `07-jr,jp,call,ret,rst.gb`
-- [ ] `RST n` — Test: `07-jr,jp,call,ret,rst.gb`
+- [x] `CALL nn`, `CALL cc,nn` — Test: `07-jr,jp,call,ret,rst.gb`
+- [x] `RET`, `RET cc`, `RETI` — Test: `07-jr,jp,call,ret,rst.gb`
+- [x] `RST n` — Test: `07-jr,jp,call,ret,rst.gb`
 
 ## Step 5 – Stack & SP/HL ops
 

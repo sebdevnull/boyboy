@@ -153,6 +153,12 @@ inline void Cpu::jp_nc(uint16_t addr)
     }
 }
 
+void Cpu::rst(uint8_t vector)
+{
+    push_r16(Reg16Name::PC);
+    set_pc(vector);
+}
+
 // Generic CPU instruction implementations (CB-prefixed)
 
 // Individual CPU instruction implementations (unprefixed)
@@ -738,6 +744,117 @@ void Cpu::jr_nc_e8()
     auto e8 = static_cast<int8_t>(fetch());
     jp_nc(get_pc() + e8);
 }
+
+// CALL
+void Cpu::call_a16()
+{
+    uint16_t addr = fetch_n16();
+    uint16_t pc = get_pc();
+    uint16_t sp = get_sp();
+    write_byte(--sp, utils::msb(pc));
+    write_byte(--sp, utils::lsb(pc));
+    set_sp(sp);
+    set_pc(addr);
+}
+// CALL Z, a16
+void Cpu::call_z_a16()
+{
+    if (get_flag(Flag::Zero)) {
+        call_a16();
+    }
+    else {
+        // If not taken, need to discard the fetched address
+        fetch_n16();
+    }
+}
+// CALL NZ, a16
+void Cpu::call_nz_a16()
+{
+    if (!get_flag(Flag::Zero)) {
+        call_a16();
+    }
+    else {
+        // If not taken, need to discard the fetched address
+        fetch_n16();
+    }
+}
+// CALL C, a16
+void Cpu::call_c_a16()
+{
+    if (get_flag(Flag::Carry)) {
+        call_a16();
+    }
+    else {
+        // If not taken, need to discard the fetched address
+        fetch_n16();
+    }
+}
+// CALL NC, a16
+void Cpu::call_nc_a16()
+{
+    if (!get_flag(Flag::Carry)) {
+        call_a16();
+    }
+    else {
+        // If not taken, need to discard the fetched address
+        fetch_n16();
+    }
+}
+
+// RET
+void Cpu::ret()
+{
+    uint16_t sp = get_sp();
+    uint8_t lsb = read_byte(sp++);
+    uint8_t msb = read_byte(sp++);
+    set_pc(utils::to_u16(msb, lsb));
+    set_sp(sp);
+}
+// RET Z
+void Cpu::ret_z()
+{
+    if (get_flag(Flag::Zero)) {
+        ret();
+    }
+}
+// RET NZ
+void Cpu::ret_nz()
+{
+    if (!get_flag(Flag::Zero)) {
+        ret();
+    }
+}
+// RET C
+void Cpu::ret_c()
+{
+    if (get_flag(Flag::Carry)) {
+        ret();
+    }
+}
+// RET NC
+void Cpu::ret_nc()
+{
+    if (!get_flag(Flag::Carry)) {
+        ret();
+    }
+}
+// RETI
+void Cpu::reti()
+{
+    ret();
+    ime_ = true;
+}
+// RST n
+// clang-format off
+void Cpu::rst_00() { rst(0x00); }
+void Cpu::rst_08() { rst(0x08); }
+void Cpu::rst_10() { rst(0x10); }
+void Cpu::rst_18() { rst(0x18); }
+void Cpu::rst_20() { rst(0x20); }
+void Cpu::rst_28() { rst(0x28); }
+void Cpu::rst_30() { rst(0x30); }
+void Cpu::rst_38() { rst(0x38); }
+// clang-format on
 
 // Individual CPU instruction implementations (CB-prefixed)
 
