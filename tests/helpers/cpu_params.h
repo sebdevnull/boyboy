@@ -188,7 +188,9 @@ struct InstrParam {
     std::optional<FlagsParam> initial_flags = std::nullopt;
 
     std::optional<std::variant<uint8_t, uint16_t>> src_value = std::nullopt;
-    std::optional<uint16_t> stack_value                      = std::nullopt;
+
+    std::optional<uint16_t> stack_init   = std::nullopt; // initial stack value
+    std::optional<uint16_t> stack_expect = std::nullopt; // expected after exec
 
     std::variant<uint8_t, uint16_t> expected_value;
 
@@ -268,13 +270,15 @@ struct InstrParam {
                << "}";
         }
 
-        print_opt(p.stack_value, "stack_value");
+        print_opt(p.stack_init, "stack_init");
 
         if (p.src_value)
         {
             os << ", src_value=" 
                << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},*p.src_value);
         }
+
+        print_opt(p.stack_expect, "stack_expect");
 
         os << ", expected_value="
            << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},p.expected_value)

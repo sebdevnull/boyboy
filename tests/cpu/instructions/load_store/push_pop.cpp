@@ -20,8 +20,8 @@
 using boyboy::cpu::Opcode;
 using boyboy::cpu::Reg16Name;
 
-using boyboy::test::cpu::expect_sp_pop;
-using boyboy::test::cpu::expect_sp_push;
+using boyboy::test::cpu::expect_pop;
+using boyboy::test::cpu::expect_push;
 using boyboy::test::cpu::InstrParam;
 using boyboy::test::cpu::InstrTest;
 
@@ -55,7 +55,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .src_value      = uint16_t{0x1234},
                                  .expected_value = uint16_t{0x1234},
                                  .name           = "PUSH_BC",
-                                 .validators     = {expect_sp_push},
+                                 .validators     = {expect_push},
                              },
                              InstrParam{
                                  .opcode         = Opcode::PUSH_DE,
@@ -64,7 +64,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .src_value      = uint16_t{0x5678},
                                  .expected_value = uint16_t{0x5678},
                                  .name           = "PUSH_DE",
-                                 .validators     = {expect_sp_push},
+                                 .validators     = {expect_push},
                              },
                              InstrParam{
                                  .opcode         = Opcode::PUSH_HL,
@@ -73,7 +73,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .src_value      = uint16_t{0x9ABC},
                                  .expected_value = uint16_t{0x9ABC},
                                  .name           = "PUSH_HL",
-                                 .validators     = {expect_sp_push},
+                                 .validators     = {expect_push},
                              }),
                          boyboy::test::cpu::param_name<InstrParam>);
 // PUSH AF
@@ -92,7 +92,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .expect_h       = false,
                                  .expect_c       = false,
                                  .name           = "PUSH_AF_Flags_Clear",
-                                 .validators     = {expect_sp_push},
+                                 .validators     = {expect_push},
                              },
                              InstrParam{
                                  // lsb 0x30 = {z=0, n=0, h=1, c=1}
@@ -106,7 +106,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .expect_h       = true,
                                  .expect_c       = true,
                                  .name           = "PUSH_AF_Flags_Low",
-                                 .validators     = {expect_sp_push},
+                                 .validators     = {expect_push},
                              },
                              InstrParam{
                                  // lsb 0xC0 = {z=1, n=1, h=0, c=0}
@@ -120,7 +120,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .expect_h       = false,
                                  .expect_c       = false,
                                  .name           = "PUSH_AF_Flags_High",
-                                 .validators     = {expect_sp_push},
+                                 .validators     = {expect_push},
                              },
                              InstrParam{
                                  // lsb 0xF0 = {z=1, n=1, h=1, c=1}
@@ -134,7 +134,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .expect_h       = true,
                                  .expect_c       = true,
                                  .name           = "PUSH_AF_Flags_Set",
-                                 .validators     = {expect_sp_push},
+                                 .validators     = {expect_push},
                              }),
                          boyboy::test::cpu::param_name<InstrParam>);
 // POP r16
@@ -145,28 +145,28 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .opcode         = Opcode::POP_BC,
                                  .dst            = Reg16Name::BC,
                                  .initial_sp     = uint16_t{0xFFFC},
-                                 .stack_value    = uint16_t{0x1234},
+                                 .stack_init     = uint16_t{0x1234},
                                  .expected_value = uint16_t{0x1234},
                                  .name           = "POP_BC",
-                                 .validators     = {expect_sp_pop},
+                                 .validators     = {expect_pop},
                              },
                              InstrParam{
                                  .opcode         = Opcode::POP_DE,
                                  .dst            = Reg16Name::DE,
                                  .initial_sp     = uint16_t{0xFFFC},
-                                 .stack_value    = uint16_t{0x5678},
+                                 .stack_init     = uint16_t{0x5678},
                                  .expected_value = uint16_t{0x5678},
                                  .name           = "POP_DE",
-                                 .validators     = {expect_sp_pop},
+                                 .validators     = {expect_pop},
                              },
                              InstrParam{
                                  .opcode         = Opcode::POP_HL,
                                  .dst            = Reg16Name::HL,
                                  .initial_sp     = uint16_t{0xFFFC},
-                                 .stack_value    = uint16_t{0x9ABC},
+                                 .stack_init     = uint16_t{0x9ABC},
                                  .expected_value = uint16_t{0x9ABC},
                                  .name           = "POP_HL",
-                                 .validators     = {expect_sp_pop},
+                                 .validators     = {expect_pop},
                              }),
                          boyboy::test::cpu::param_name<InstrParam>);
 
@@ -180,69 +180,69 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::POP_AF,
             .dst            = Reg16Name::AF,
             .initial_sp     = uint16_t{0xFFFC},
-            .stack_value    = uint16_t{0x1200},
+            .stack_init     = uint16_t{0x1200},
             .expected_value = uint16_t{0x1200},
             .expect_z       = false,
             .expect_n       = false,
             .expect_h       = false,
             .expect_c       = false,
             .name           = "POP_AF_Flags_Clear",
-            .validators     = {expect_sp_pop},
+            .validators     = {expect_pop},
         },
         InstrParam{
             // lsb 0x30 = {z=0, n=0, h=1, c=1}
             .opcode         = Opcode::POP_AF,
             .dst            = Reg16Name::AF,
             .initial_sp     = uint16_t{0xFFFC},
-            .stack_value    = uint16_t{0x3430},
+            .stack_init     = uint16_t{0x3430},
             .expected_value = uint16_t{0x3430},
             .expect_z       = false,
             .expect_n       = false,
             .expect_h       = true,
             .expect_c       = true,
             .name           = "POP_AF_Flags_Low",
-            .validators     = {expect_sp_pop},
+            .validators     = {expect_pop},
         },
         InstrParam{
             // lsb 0xC0 = {z=1, n=1, h=0, c=0}
             .opcode         = Opcode::POP_AF,
             .dst            = Reg16Name::AF,
             .initial_sp     = uint16_t{0xFFFC},
-            .stack_value    = uint16_t{0x56C0},
+            .stack_init     = uint16_t{0x56C0},
             .expected_value = uint16_t{0x56C0},
             .expect_z       = true,
             .expect_n       = true,
             .expect_h       = false,
             .expect_c       = false,
             .name           = "POP_AF_Flags_High",
-            .validators     = {expect_sp_pop},
+            .validators     = {expect_pop},
         },
         InstrParam{
             // lsb 0xF0 = {z=1, n=1, h=1, c=1}
             .opcode         = Opcode::POP_AF,
             .dst            = Reg16Name::AF,
             .initial_sp     = uint16_t{0xFFFC},
-            .stack_value    = uint16_t{0xABF0},
+            .stack_init     = uint16_t{0xABF0},
             .expected_value = uint16_t{0xABF0},
             .expect_z       = true,
             .expect_n       = true,
             .expect_h       = true,
             .expect_c       = true,
             .name           = "POP_AF_Flags_Set",
-            .validators     = {expect_sp_pop},
+            .validators     = {expect_pop},
         },
         InstrParam{
             // lsb 0xF0 = {z=1, n=1, h=1, c=1}
             .opcode         = Opcode::POP_AF,
             .dst            = Reg16Name::AF,
             .initial_sp     = uint16_t{0xFFFC},
-            .stack_value    = uint16_t{0xABFF},
+            .stack_init     = uint16_t{0xABFF},
             .expected_value = uint16_t{0xABF0}, // lower nibble should always be zero
             .expect_z       = true,
             .expect_n       = true,
             .expect_h       = true,
             .expect_c       = true,
             .name           = "POP_AF_Flags_Invalid",
-            .validators     = {expect_sp_pop},
+            .validators     = {expect_pop},
         }),
     boyboy::test::cpu::param_name<InstrParam>);

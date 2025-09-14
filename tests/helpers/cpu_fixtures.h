@@ -108,9 +108,9 @@ private:
         if (param.initial_sp) {
             uint16_t sp = *param.initial_sp;
             cpu.set_sp(sp);
-            if (param.stack_value) {
-                cpu.write_byte(sp, utils::lsb(*param.stack_value));
-                cpu.write_byte(sp + 1, utils::msb(*param.stack_value));
+            if (param.stack_init) {
+                cpu.write_byte(sp, utils::lsb(*param.stack_init));
+                cpu.write_byte(sp + 1, utils::msb(*param.stack_init));
             }
         }
 

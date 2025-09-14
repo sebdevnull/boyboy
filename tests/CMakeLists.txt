@@ -39,6 +39,7 @@ set(TEST_SOURCES
     cpu/instructions/load_store/push_pop.cpp
     cpu/instructions/load_store/ld_misc.cpp
     cpu/instructions/control_flow/jump.cpp
+    cpu/instructions/control_flow/call_ret.cpp
     cpu/instructions/misc/misc.cpp
     cpu/instructions/instructions_8bit.cpp
     cpu/instructions/instructions_16bit.cpp
