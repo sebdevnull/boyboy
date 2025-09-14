@@ -9,6 +9,7 @@
 
 #include <cstdint>
 
+#include "boyboy/common/errors.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/cpu_constants.h"
@@ -55,9 +56,27 @@ void Cpu::ld_r16_n16(Reg16Name r16)
     set_register(r16, n16);
 }
 
-// void Cpu::inc_r16(Reg16Name r16) {}
-// void Cpu::dec_r16(Reg16Name r16) {}
-// void Cpu::add_hl_r16(Reg16Name r16) {}
+void Cpu::inc_r16(Reg16Name r16)
+{
+    set_register(r16, get_register(r16) + 1);
+}
+
+void Cpu::dec_r16(Reg16Name r16)
+{
+    set_register(r16, get_register(r16) - 1);
+}
+
+void Cpu::add_hl_r16(Reg16Name r16)
+{
+    uint16_t r16_val = get_register(r16);
+    uint16_t hl = registers_.hl;
+    uint32_t sum = uint32_t(hl) + uint32_t(r16_val);
+    registers_.hl = sum & 0xFFFF;
+
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, ((hl & 0x0FFF) + (r16_val & 0x0FFF)) > 0x0FFF);
+    set_flag(Flag::Carry, sum > 0xFFFF);
+}
 
 void Cpu::inc_r8(Reg8Name r8)
 {
@@ -88,8 +107,58 @@ void Cpu::or_a_r8(Reg8Name r8) { oor(get_register(r8)); }
 void Cpu::cp_a_r8(Reg8Name r8) { cp(get_register(r8)); }
 // clang-format on
 
-// void Cpu::pop_r16(Reg16Name r16) {}
-// void Cpu::push_r16(Reg16Name r16) {}
+void Cpu::pop_r16(Reg16Name r16)
+{
+    uint16_t sp = get_sp();
+    uint8_t lsb = read_byte(sp++);
+    uint8_t msb = read_byte(sp++);
+    set_register(r16, utils::to_u16(msb, lsb));
+    set_sp(sp);
+}
+
+void Cpu::push_r16(Reg16Name r16)
+{
+    uint16_t r16_val = get_register(r16);
+    uint16_t sp = get_sp();
+    write_byte(--sp, utils::msb(r16_val));
+    write_byte(--sp, utils::lsb(r16_val));
+    set_sp(sp);
+}
+
+inline void Cpu::jp(uint16_t addr)
+{
+    set_pc(addr);
+}
+inline void Cpu::jp_z(uint16_t addr)
+{
+    if (get_flag(Flag::Zero)) {
+        jp(addr);
+    }
+}
+inline void Cpu::jp_nz(uint16_t addr)
+{
+    if (!get_flag(Flag::Zero)) {
+        jp(addr);
+    }
+}
+inline void Cpu::jp_c(uint16_t addr)
+{
+    if (get_flag(Flag::Carry)) {
+        jp(addr);
+    }
+}
+inline void Cpu::jp_nc(uint16_t addr)
+{
+    if (!get_flag(Flag::Carry)) {
+        jp(addr);
+    }
+}
+
+void Cpu::rst(uint8_t vector)
+{
+    push_r16(Reg16Name::PC);
+    set_pc(vector);
+}
 
 // Generic CPU instruction implementations (CB-prefixed)
 
@@ -436,12 +505,18 @@ void Cpu::ld_at_bc_a() { ld_at_r16_r8(Reg16Name::BC, Reg8Name::A); }
 void Cpu::ld_at_de_a() { ld_at_r16_r8(Reg16Name::DE, Reg8Name::A); }
 // clang-format on
 
+// LD [HL], n8
+void Cpu::ld_at_hl_n8()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t n8 = fetch();
+    write_byte(addr, n8);
+}
+
 // LD A, [a16]
 void Cpu::ld_a_at_a16()
 {
-    uint8_t lsb = fetch();
-    uint8_t msb = fetch();
-    uint16_t addr = utils::to_u16(msb, lsb);
+    uint16_t addr = fetch_n16();
     uint8_t value = read_byte(addr);
     set_register(Reg8Name::A, value);
 }
@@ -449,9 +524,7 @@ void Cpu::ld_a_at_a16()
 // LD [a16], A
 void Cpu::ld_at_a16_a()
 {
-    uint8_t lsb = fetch();
-    uint8_t msb = fetch();
-    uint16_t addr = utils::to_u16(msb, lsb);
+    uint16_t addr = fetch_n16();
     uint8_t value = get_register(Reg8Name::A);
     write_byte(addr, value);
 }
@@ -527,6 +600,435 @@ void Cpu::ldh_at_a8_a()
     uint8_t value = get_register(Reg8Name::A);
     write_byte(addr, value);
 }
+
+// clang-format off
+// INC r16
+void Cpu::inc_bc() { inc_r16(Reg16Name::BC); }
+void Cpu::inc_de() { inc_r16(Reg16Name::DE); }
+void Cpu::inc_hl() { inc_r16(Reg16Name::HL); }
+void Cpu::inc_sp() { inc_r16(Reg16Name::SP); }
+// DEC r6
+void Cpu::dec_bc() { dec_r16(Reg16Name::BC); }
+void Cpu::dec_de() { dec_r16(Reg16Name::DE); }
+void Cpu::dec_hl() { dec_r16(Reg16Name::HL); }
+void Cpu::dec_sp() { dec_r16(Reg16Name::SP); }
+// ADD HL, r16
+void Cpu::add_hl_bc() { add_hl_r16(Reg16Name::BC); }
+void Cpu::add_hl_de() { add_hl_r16(Reg16Name::DE); }
+void Cpu::add_hl_hl() { add_hl_r16(Reg16Name::HL); }
+void Cpu::add_hl_sp() { add_hl_r16(Reg16Name::SP); }
+// clang-format on
+
+// ADD SP, e8
+void Cpu::add_sp_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    uint16_t sp = get_sp();
+    uint32_t sum = uint32_t(sp) + int32_t(e8);
+
+    set_sp(sum & 0xFFFF);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, ((sp & 0x0F) + (e8 & 0x0F)) > 0x0F);
+    set_flag(Flag::Carry, ((sp & 0xFF) + (e8 & 0xFF)) > 0xFF);
+}
+
+// clang-format off
+// LD r16, n16
+void Cpu::ld_bc_n16() { ld_r16_n16(Reg16Name::BC); }
+void Cpu::ld_de_n16() { ld_r16_n16(Reg16Name::DE); }
+void Cpu::ld_hl_n16() { ld_r16_n16(Reg16Name::HL); }
+void Cpu::ld_sp_n16() { ld_r16_n16(Reg16Name::SP); }
+// clang-format on
+
+// LD [a16], SP
+void Cpu::ld_at_a16_sp()
+{
+    uint16_t addr = fetch_n16();
+    uint16_t sp = get_sp();
+    write_byte(addr, utils::lsb(sp));
+    write_byte(addr + 1, utils::msb(sp));
+}
+
+// LD HL, SP+e8
+void Cpu::ld_hl_sp_inc_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    uint16_t sp = get_sp();
+    uint32_t sum = uint32_t(sp) + int32_t(e8);
+
+    registers_.hl = sum & 0xFFFF;
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, ((sp & 0x0F) + (e8 & 0x0F)) > 0x0F);
+    set_flag(Flag::Carry, ((sp & 0xFF) + (e8 & 0xFF)) > 0xFF);
+}
+
+// LD SP, HL
+void Cpu::ld_sp_hl()
+{
+    set_sp(get_register(Reg16Name::HL));
+}
+
+// clang-format off
+// POP r16
+void Cpu::pop_bc() { pop_r16(Reg16Name::BC); }
+void Cpu::pop_de() { pop_r16(Reg16Name::DE); }
+void Cpu::pop_hl() { pop_r16(Reg16Name::HL); }
+void Cpu::pop_af() { pop_r16(Reg16Name::AF); }
+// PUSH r16
+void Cpu::push_bc() { push_r16(Reg16Name::BC); }
+void Cpu::push_de() { push_r16(Reg16Name::DE); }
+void Cpu::push_hl() { push_r16(Reg16Name::HL); }
+void Cpu::push_af() { push_r16(Reg16Name::AF); }
+// clang-format on
+
+// JP a16
+void Cpu::jp_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp(addr);
+}
+// JP Z, a16
+void Cpu::jp_z_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp_z(addr);
+}
+// JP NZ, a16
+void Cpu::jp_nz_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp_nz(addr);
+}
+// JP C, a16
+void Cpu::jp_c_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp_c(addr);
+}
+// JP NC, a16
+void Cpu::jp_nc_a16()
+{
+    uint16_t addr = fetch_n16();
+    jp_nc(addr);
+}
+// JP HL
+void Cpu::jp_hl()
+{
+    uint16_t hl = get_register(Reg16Name::HL);
+    jp(hl);
+}
+// JR e8
+void Cpu::jr_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp(get_pc() + e8);
+}
+// JR Z, e8
+void Cpu::jr_z_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp_z(get_pc() + e8);
+}
+// JR NZ, e8
+void Cpu::jr_nz_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp_nz(get_pc() + e8);
+}
+// JR C, e8
+void Cpu::jr_c_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp_c(get_pc() + e8);
+}
+// JR NC, e8
+void Cpu::jr_nc_e8()
+{
+    auto e8 = static_cast<int8_t>(fetch());
+    jp_nc(get_pc() + e8);
+}
+
+// CALL
+void Cpu::call_a16()
+{
+    uint16_t addr = fetch_n16();
+    uint16_t pc = get_pc();
+    uint16_t sp = get_sp();
+    write_byte(--sp, utils::msb(pc));
+    write_byte(--sp, utils::lsb(pc));
+    set_sp(sp);
+    set_pc(addr);
+}
+// CALL Z, a16
+void Cpu::call_z_a16()
+{
+    if (get_flag(Flag::Zero)) {
+        call_a16();
+    }
+    else {
+        // If not taken, need to discard the fetched address
+        fetch_n16();
+    }
+}
+// CALL NZ, a16
+void Cpu::call_nz_a16()
+{
+    if (!get_flag(Flag::Zero)) {
+        call_a16();
+    }
+    else {
+        // If not taken, need to discard the fetched address
+        fetch_n16();
+    }
+}
+// CALL C, a16
+void Cpu::call_c_a16()
+{
+    if (get_flag(Flag::Carry)) {
+        call_a16();
+    }
+    else {
+        // If not taken, need to discard the fetched address
+        fetch_n16();
+    }
+}
+// CALL NC, a16
+void Cpu::call_nc_a16()
+{
+    if (!get_flag(Flag::Carry)) {
+        call_a16();
+    }
+    else {
+        // If not taken, need to discard the fetched address
+        fetch_n16();
+    }
+}
+
+// RET
+void Cpu::ret()
+{
+    uint16_t sp = get_sp();
+    uint8_t lsb = read_byte(sp++);
+    uint8_t msb = read_byte(sp++);
+    set_pc(utils::to_u16(msb, lsb));
+    set_sp(sp);
+}
+// RET Z
+void Cpu::ret_z()
+{
+    if (get_flag(Flag::Zero)) {
+        ret();
+    }
+}
+// RET NZ
+void Cpu::ret_nz()
+{
+    if (!get_flag(Flag::Zero)) {
+        ret();
+    }
+}
+// RET C
+void Cpu::ret_c()
+{
+    if (get_flag(Flag::Carry)) {
+        ret();
+    }
+}
+// RET NC
+void Cpu::ret_nc()
+{
+    if (!get_flag(Flag::Carry)) {
+        ret();
+    }
+}
+// RETI
+void Cpu::reti()
+{
+    ret();
+    ime_ = true;
+}
+// RST n
+// clang-format off
+void Cpu::rst_00() { rst(0x00); }
+void Cpu::rst_08() { rst(0x08); }
+void Cpu::rst_10() { rst(0x10); }
+void Cpu::rst_18() { rst(0x18); }
+void Cpu::rst_20() { rst(0x20); }
+void Cpu::rst_28() { rst(0x28); }
+void Cpu::rst_30() { rst(0x30); }
+void Cpu::rst_38() { rst(0x38); }
+// clang-format on
+
+// DAA
+void Cpu::daa()
+{
+    uint8_t adjustment = 0;
+    bool carry = get_flag(Flag::Carry);
+    bool half_carry = get_flag(Flag::HalfCarry);
+    bool subtract = get_flag(Flag::Substract);
+    uint8_t a = get_register(Reg8Name::A);
+
+    if (subtract) {
+        if (half_carry) {
+            adjustment += 0x06;
+        }
+        if (carry) {
+            adjustment += 0x60;
+        }
+        a -= adjustment;
+    }
+    else {
+        if (half_carry || (a & 0x0F) > 0x09) {
+            adjustment += 0x06;
+        }
+        if (carry || a > 0x99) {
+            adjustment += 0x60;
+            carry = true;
+        }
+        a += adjustment;
+    }
+
+    set_register(Reg8Name::A, a);
+    set_flag(Flag::Zero, a == 0);
+    set_flag(Flag::Carry, carry);
+    set_flag(Flag::HalfCarry, false);
+}
+
+// CPL
+void Cpu::cpl()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    a = ~a;
+    set_register(Reg8Name::A, a);
+    set_flag(Flag::Substract, true);
+    set_flag(Flag::HalfCarry, true);
+}
+// SCF
+void Cpu::scf()
+{
+    set_flag(Flag::Carry, true);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+}
+// CCF
+void Cpu::ccf()
+{
+    bool carry = get_flag(Flag::Carry);
+    set_flag(Flag::Carry, !carry);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+}
+
+// RLA
+void Cpu::rla()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    bool carry = get_flag(Flag::Carry);
+    bool new_carry = (a & 0x80) != 0;
+
+    a = (a << 1) | (carry ? 1 : 0);
+    set_register(Reg8Name::A, a);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RRA
+void Cpu::rra()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    bool carry = get_flag(Flag::Carry);
+    bool new_carry = (a & 0x01) != 0;
+
+    a = (a >> 1) | (carry ? 0x80 : 0);
+    set_register(Reg8Name::A, a);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RLCA
+void Cpu::rlca()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    bool new_carry = (a & 0x80) != 0;
+
+    a = (a << 1) | (new_carry ? 1 : 0);
+    set_register(Reg8Name::A, a);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RRCA
+void Cpu::rrca()
+{
+    uint8_t a = get_register(Reg8Name::A);
+    bool new_carry = (a & 0x01) != 0;
+
+    a = (a >> 1) | (new_carry ? 0x80 : 0);
+    set_register(Reg8Name::A, a);
+
+    set_flag(Flag::Zero, false);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+// TODO: implement properly when interrupts are handled
+// EI
+void Cpu::ei()
+{
+    ime_next_ = true;
+}
+// DI
+void Cpu::di()
+{
+    ime_ = false;
+}
+
+// HALT
+void Cpu::halt()
+{
+    halted_ = true;
+}
+// STOP
+void Cpu::stop_n8()
+{
+    (void)fetch(); // Discard the next byte (should be 0x00)
+    // We throw temporarily to see if we hit this instruction
+    throw std::runtime_error("STOP instruction not implemented");
+}
+
+// Illegal opcodes
+void Cpu::illegal_opcode(uint8_t opcode)
+{
+    throw errors::IllegalOpcode(opcode);
+}
+
+// clang-format off
+// NOLINTBEGIN(readability-convert-member-functions-to-static)
+void Cpu::prefix() { illegal_opcode(0xCB); } // CB-prefixed opcodes should be handled separately
+void Cpu::illegal_d3() { illegal_opcode(0xD3); }
+void Cpu::illegal_db() { illegal_opcode(0xDB); }
+void Cpu::illegal_dd() { illegal_opcode(0xDD); }
+void Cpu::illegal_e3() { illegal_opcode(0xE3); }
+void Cpu::illegal_e4() { illegal_opcode(0xE4); }
+void Cpu::illegal_eb() { illegal_opcode(0xEB); }
+void Cpu::illegal_ec() { illegal_opcode(0xEC); }
+void Cpu::illegal_ed() { illegal_opcode(0xED); }
+void Cpu::illegal_f4() { illegal_opcode(0xF4); }
+void Cpu::illegal_fc() { illegal_opcode(0xFC); }
+void Cpu::illegal_fd() { illegal_opcode(0xFD); }
+// NOLINTEND(readability-convert-member-functions-to-static)
+// clang-format on
 
 // Individual CPU instruction implementations (CB-prefixed)
 

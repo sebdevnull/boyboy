@@ -22,10 +22,11 @@ inline void init(const std::string& log_file = "logs/boyboy.log", bool async = t
 {
     try {
         std::shared_ptr<spdlog::logger> logger;
+        bool truncate = true;
 
         // Create sinks: console + file
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file, false);
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file, truncate);
 
         if (async) {
             // Thread pool: queue size 8192, 1 background thread
@@ -44,6 +45,11 @@ inline void init(const std::string& log_file = "logs/boyboy.log", bool async = t
         spdlog::set_default_logger(logger);
         spdlog::set_level(spdlog::level::trace);
         spdlog::flush_on(spdlog::level::info);
+
+        // --- CPU logger (file only) ---
+        static auto cpu_logger = std::make_shared<spdlog::logger>("cpu_file_only", file_sink);
+        cpu_logger->set_level(spdlog::level::trace);
+        spdlog::register_logger(cpu_logger); // optional: register by name
     }
     catch (const spdlog::spdlog_ex& ex) {
         std::cerr << "Logging initialization failed: " << ex.what() << "\n";
@@ -95,6 +101,24 @@ inline void error(const char* fmt, Args&&... args)
 inline void shutdown()
 {
     spdlog::shutdown();
+}
+
+// Get CPU logger (file only)
+inline std::shared_ptr<spdlog::logger> cpu_logger()
+{
+    return spdlog::get("cpu_file_only");
+}
+
+// --- CPU-only trace (file only) ---
+template <typename... Args>
+inline void cpu_trace(const char* fmt, Args&&... args)
+{
+#ifdef BOYBOY_DEBUG
+    cpu_logger()->trace(fmt::runtime(fmt), std::forward<Args>(args)...);
+#else
+    (void)fmt;
+    (void)sizeof...(args);
+#endif
 }
 
 } // namespace boyboy::log

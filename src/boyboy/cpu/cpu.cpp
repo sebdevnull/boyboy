@@ -11,6 +11,7 @@
 
 #include "boyboy/cpu/instructions.h"
 #include "boyboy/cpu/instructions_table.h"
+#include "boyboy/log/logging.h"
 
 namespace boyboy::cpu {
 
@@ -118,6 +119,16 @@ void Cpu::set_register(Reg16Name reg, uint16_t value)
 
 void Cpu::step()
 {
+    // If EI was just executed, enable IME now
+    if (ime_next_) {
+        ime_ = true;
+        ime_next_ = false;
+    }
+
+#ifdef DEBUG
+    log::cpu_trace("{}", disassemble(registers_.pc));
+#endif
+
     uint8_t opcode = fetch();
     InstructionType instr_type = InstructionType::Unprefixed;
 

@@ -5,12 +5,15 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: implement interrupts
+
 #pragma once
 
 #include <cstdint>
 #include <memory>
 #include <string_view>
 
+#include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/cpu/instructions.h"
 #include "boyboy/cpu/opcodes.h"
@@ -41,7 +44,10 @@ public:
         registers_.sp = SPStartValue;
         registers_.pc = PCStartValue;
 
-        // Other states
+        // Reset flags and state
+        ime_ = false;
+        ime_next_ = false;
+        halted_ = false;
         cycles_ = 0;
     }
 
@@ -50,12 +56,21 @@ public:
     [[nodiscard]] uint16_t get_register(Reg16Name reg) const;
     void set_register(Reg8Name reg, uint8_t value);
     void set_register(Reg16Name reg, uint16_t value);
+    [[nodiscard]] uint16_t get_sp() const { return registers_.sp; }
     [[nodiscard]] uint16_t get_pc() const { return registers_.pc; }
+    void set_sp(uint16_t sp) { registers_.sp = sp; }
+    void set_pc(uint16_t pc) { registers_.pc = pc; }
 
     // Flag accessors
     [[nodiscard]] bool get_flag(uint8_t flag) const { return registers_.af.get_flag(flag); }
     void set_flag(uint8_t flag, bool value) { registers_.af.set_flag(flag, value); }
     [[nodiscard]] uint8_t get_flags() const { return registers_.f(); }
+
+    // State accessors
+    [[nodiscard]] bool get_ime() const { return ime_; }
+    void set_ime(bool ime) { ime_ = ime; }
+    [[nodiscard]] bool is_halted() const { return halted_; }
+    void set_halted(bool halted) { halted_ = halted; }
 
     // Execution functions
     void step();
@@ -87,8 +102,17 @@ private:
     std::shared_ptr<mmu::Mmu> mmu_;
     Registers registers_;
     uint64_t cycles_{};
+    bool ime_{false}; // Interrupt Master Enable flag
+    bool ime_next_{false};
+    bool halted_{false};
 
     // Helper functions
+    uint16_t fetch_n16()
+    {
+        uint8_t lsb = fetch();
+        uint8_t msb = fetch();
+        return utils::to_u16(msb, lsb);
+    }
     void reset_flags() { registers_.f(0); }
 
     // ALU operations
@@ -125,6 +149,16 @@ private:
 
     void pop_r16(Reg16Name r16);
     void push_r16(Reg16Name r16);
+
+    void jp(uint16_t addr);
+    void jp_z(uint16_t addr);
+    void jp_nz(uint16_t addr);
+    void jp_c(uint16_t addr);
+    void jp_nc(uint16_t addr);
+
+    void rst(uint8_t vector);
+
+    static void illegal_opcode(uint8_t opcode);
 
     // Generic CB-prefixed CPU instructions
     void rlc_r8(Reg8Name r8);
@@ -324,6 +358,9 @@ private:
 #define CPU_LD_AT_HL_H
 #define CPU_LD_AT_HL_L
 
+// LD [HL], n8
+#define CPU_LD_AT_HL_N8
+
 // LD A, [BC/DE] and LD [BC/DE], A
 #define CPU_LD_A_AT_BC
 #define CPU_LD_A_AT_DE
@@ -347,5 +384,136 @@ private:
 #define CPU_LDH_A_AT_A8
 #define CPU_LDH_AT_C_A
 #define CPU_LDH_AT_A8_A
+
+// INC r16
+#define CPU_INC_BC
+#define CPU_INC_DE
+#define CPU_INC_HL
+#define CPU_INC_SP
+
+// DEC r16
+#define CPU_DEC_BC
+#define CPU_DEC_DE
+#define CPU_DEC_HL
+#define CPU_DEC_SP
+
+// ADD HL, r16
+#define CPU_ADD_HL_BC
+#define CPU_ADD_HL_DE
+#define CPU_ADD_HL_HL
+#define CPU_ADD_HL_SP
+
+// ADD SP, e8
+#define CPU_ADD_SP_E8
+
+// LD r16, n16
+#define CPU_LD_BC_N16
+#define CPU_LD_DE_N16
+#define CPU_LD_HL_N16
+#define CPU_LD_SP_N16
+
+// LD [n16], SP
+#define CPU_LD_AT_A16_SP
+
+// LD HL, SP+e8
+#define CPU_LD_HL_SP_INC_E8
+
+// LD SP, HL
+#define CPU_LD_SP_HL
+
+// POP r16
+#define CPU_POP_BC
+#define CPU_POP_DE
+#define CPU_POP_HL
+#define CPU_POP_AF
+// PUSH r16
+#define CPU_PUSH_BC
+#define CPU_PUSH_DE
+#define CPU_PUSH_HL
+#define CPU_PUSH_AF
+
+// JP a16
+#define CPU_JP_A16
+// JP cc, a16
+#define CPU_JP_Z_A16
+#define CPU_JP_NZ_A16
+#define CPU_JP_C_A16
+#define CPU_JP_NC_A16
+// JP HL
+#define CPU_JP_HL
+// JR e8
+#define CPU_JR_E8
+// JR cc, e8
+#define CPU_JR_Z_E8
+#define CPU_JR_NZ_E8
+#define CPU_JR_C_E8
+#define CPU_JR_NC_E8
+
+// CALL a16
+#define CPU_CALL_A16
+// CALL cc, a16
+#define CPU_CALL_Z_A16
+#define CPU_CALL_NZ_A16
+#define CPU_CALL_C_A16
+#define CPU_CALL_NC_A16
+// RET
+#define CPU_RET
+// RET cc
+#define CPU_RET_Z
+#define CPU_RET_NZ
+#define CPU_RET_C
+#define CPU_RET_NC
+// RETI
+#define CPU_RETI
+// RST n
+#define CPU_RST_00
+#define CPU_RST_08
+#define CPU_RST_10
+#define CPU_RST_18
+#define CPU_RST_20
+#define CPU_RST_28
+#define CPU_RST_30
+#define CPU_RST_38
+
+// DAA
+#define CPU_DAA
+// CPL
+#define CPU_CPL
+// CCF
+#define CPU_CCF
+// SCF
+#define CPU_SCF
+
+// RLA
+#define CPU_RLA
+// RRA
+#define CPU_RRA
+// RLCA
+#define CPU_RLCA
+// RRCA
+#define CPU_RRCA
+
+// EI
+#define CPU_EI
+// DI
+#define CPU_DI
+// HALT
+#define CPU_HALT
+// STOP
+#define CPU_STOP_N8
+
+// Illegal opcodes
+#define CPU_PREFIX
+#define CPU_ILLEGAL_D3
+#define CPU_ILLEGAL_DB
+#define CPU_ILLEGAL_DD
+#define CPU_ILLEGAL_E3
+#define CPU_ILLEGAL_E4
+#define CPU_ILLEGAL_EB
+#define CPU_ILLEGAL_EC
+#define CPU_ILLEGAL_ED
+#define CPU_ILLEGAL_F4
+#define CPU_ILLEGAL_FC
+#define CPU_ILLEGAL_FD
 
 } // namespace boyboy::cpu
