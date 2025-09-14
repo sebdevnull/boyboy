@@ -35,6 +35,7 @@ set(TEST_SOURCES
     cpu/instructions/load_store/ld_r_n.cpp
     cpu/instructions/load_store/ld_r_hl.cpp
     cpu/instructions/load_store/ld_hl_r.cpp
+    cpu/instructions/load_store/ld_hl_n.cpp
     cpu/instructions/load_store/push_pop.cpp
     cpu/instructions/load_store/ld_misc.cpp
     cpu/instructions/misc/misc.cpp
