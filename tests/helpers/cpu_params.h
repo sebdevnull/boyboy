@@ -15,6 +15,7 @@
 #include <optional>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <variant>
 
 #include "boyboy/common/utils.h"
@@ -161,7 +162,7 @@ private:
 struct InstrParam {
     boyboy::cpu::Opcode opcode;
 
-    OperandType src_op_type                = OperandType::Register;
+    std::optional<OperandType> src_op_type = OperandType::Register;
     std::optional<OperandType> dst_op_type = OperandType::Register;
 
     std::optional<RegParam> src = std::nullopt;
@@ -176,11 +177,11 @@ struct InstrParam {
     std::optional<uint16_t> initial_pc = std::nullopt;
     std::optional<uint16_t> initial_sp = std::nullopt;
 
-    std::optional<uint16_t> stack_value = std::nullopt;
-
     std::optional<bool> carry_in = std::nullopt; // for ADC and SBC instructions
 
-    std::variant<uint8_t, uint16_t> src_value;
+    std::optional<std::variant<uint8_t, uint16_t>> src_value = std::nullopt;
+    std::optional<uint16_t> stack_value                      = std::nullopt;
+
     std::variant<uint8_t, uint16_t> expected_value;
 
     bool expect_z = false;
@@ -201,27 +202,36 @@ struct InstrParam {
     // Return the target register of the test
     [[nodiscard]] RegParam target() const { return dst.value_or(*src); }
     [[nodiscard]] uint16_t target_addr() const { return dst_addr.value_or(*src_addr); }
-    [[nodiscard]] OperandType target_operand() const { return dst_op_type.value_or(src_op_type); }
+    [[nodiscard]] OperandType target_operand() const { return dst_op_type.value_or(*src_op_type); }
 
     // Accessors
-    [[nodiscard]] uint8_t src_value8() const { return std::get<uint8_t>(src_value); }
-    [[nodiscard]] uint16_t src_value16() const { return std::get<uint16_t>(src_value); }
+    [[nodiscard]] uint8_t src_value8() const { return std::get<uint8_t>(*src_value); }
+    [[nodiscard]] uint16_t src_value16() const { return std::get<uint16_t>(*src_value); }
     [[nodiscard]] uint8_t expected_value8() const { return std::get<uint8_t>(expected_value); }
     [[nodiscard]] uint16_t expected_value16() const { return std::get<uint16_t>(expected_value); }
 
     // For better test case naming in GTest output
     friend std::ostream& operator<<(std::ostream& os, const InstrParam& p)
     {
+        auto print_opt = [&](auto&& opt, const char* name) {
+            if (opt) {
+                os << ", " << name << "=";
+                if constexpr (std::is_integral_v<std::decay_t<decltype(*opt)>>) {
+                    os << boyboy::utils::PrettyHex{*opt};
+                }
+                else {
+                    os << *opt;
+                }
+            }
+        };
+
         // clang-format off
         os << p.name
-           << " [opcode=" << boyboy::utils::PrettyHex{static_cast<uint8_t>(p.opcode)}
-           << ", src_type=" << p.src_op_type;
+           << " [opcode=" << boyboy::utils::PrettyHex{static_cast<uint8_t>(p.opcode)};
            
-        if (p.dst_op_type)
-        {
-            os << ", dst_type=" << *p.dst_op_type;
-        }
-
+        print_opt(p.src_op_type, "src_type");
+        print_opt(p.dst_op_type, "dst_type");
+        
         if (p.src)
         {
             std::visit([&](auto r){ os << ", src=" << r; }, p.src->get_value());
@@ -231,28 +241,29 @@ struct InstrParam {
             std::visit([&](auto r){ os << ", dst=" << r; }, p.dst->get_value());
         }
 
-        auto print_opt = [&](auto&& opt, const char* name) {
-            if (opt) {
-                os << ", " << name << "=" << boyboy::utils::PrettyHex{*opt};
-            }
-        };
-
         print_opt(p.src_addr, "src_addr");
         print_opt(p.dst_addr, "dst_addr");
         print_opt(p.initial_a, "initial_a");
         print_opt(p.initial_hl, "initial_hl");
         print_opt(p.initial_pc, "initial_pc");
         print_opt(p.initial_sp, "initial_sp");
-        print_opt(p.stack_value, "stack_value");
 
         if (p.carry_in)
         {
             os << ", carry_in=" << (*p.carry_in ? 1 : 0);
         }
 
-        os << ", src_value=" 
-           << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},p.src_value)
-           << ", expected_value="
+        print_opt(p.stack_value, "stack_value");
+
+        if (p.src_value)
+        {
+            os << ", src_value=" 
+               << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},*p.src_value);
+        }
+
+        // os << ", src_value=" 
+        //    << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},p.src_value)
+        os << ", expected_value="
            << std::visit([](auto&& val){return boyboy::utils::PrettyHex{val};},p.expected_value)
            << ", Z=" << (p.expect_z ? 1 : 0)
            << ", N=" << (p.expect_n ? 1 : 0)

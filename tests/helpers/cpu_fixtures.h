@@ -61,7 +61,7 @@ struct CpuTest : public ::testing::Test {
         for (uint8_t b : bytes) {
             cpu.write_byte(pc++, b);
         }
-        cpu.set_register(boyboy::cpu::Reg16Name::PC, addr);
+        cpu.set_pc(addr);
     }
 };
 
@@ -97,35 +97,37 @@ private:
         }
         // Set initial PC if provided
         if (param.initial_pc) {
-            cpu.set_register(boyboy::cpu::Reg16Name::PC, *param.initial_pc);
+            cpu.set_pc(*param.initial_pc);
         }
         // Set SP and preload stack if needed
         if (param.initial_sp) {
             uint16_t sp = *param.initial_sp;
-            cpu.set_register(boyboy::cpu::Reg16Name::SP, sp);
+            cpu.set_sp(sp);
             if (param.stack_value) {
-                cpu.write_byte(sp - 1, utils::msb(*param.stack_value));
-                cpu.write_byte(sp - 2, utils::lsb(*param.stack_value));
+                cpu.write_byte(sp, utils::lsb(*param.stack_value));
+                cpu.write_byte(sp + 1, utils::msb(*param.stack_value));
             }
         }
 
         // Setup source depending on operand type
-        switch (param.src_op_type) {
-        case OperandType::Register:
-            setup_register_source(param);
-            break;
-        case OperandType::Immediate:
-            setup_immediate_source(param);
-            break;
-        case OperandType::Indirect:
-            setup_indirect_source(param);
-            break;
-        case OperandType::Memory:
-            setup_memory_source(param);
-            break;
-        case OperandType::HighRAM:
-            setup_high_ram_source(param);
-            break;
+        if (param.src_op_type && param.src_value) {
+            switch (*param.src_op_type) {
+            case OperandType::Register:
+                setup_register_source(param);
+                break;
+            case OperandType::Immediate:
+                setup_immediate_source(param);
+                break;
+            case OperandType::Indirect:
+                setup_indirect_source(param);
+                break;
+            case OperandType::Memory:
+                setup_memory_source(param);
+                break;
+            case OperandType::HighRAM:
+                setup_high_ram_source(param);
+                break;
+            }
         }
     }
 
@@ -163,7 +165,7 @@ private:
                     cpu.write_byte(pc + 2, boyboy::utils::msb(val));
                 }
             },
-            param.src_value);
+            *param.src_value);
     }
 
     void setup_indirect_source(const InstrParam& param)
@@ -201,7 +203,7 @@ private:
                     cpu.write_byte(*param.src_addr + 1, boyboy::utils::msb(val));
                 }
             },
-            param.src_value);
+            *param.src_value);
     }
 
     void setup_high_ram_source(const InstrParam& param)

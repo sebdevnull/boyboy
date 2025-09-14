@@ -80,4 +80,20 @@ inline void expect_hl_dec(const boyboy::cpu::Cpu& cpu, const InstrParam& p)
         << "HL increment mismatch: " << p.name;
 }
 
+inline void expect_sp_push(const boyboy::cpu::Cpu& cpu, const InstrParam& p)
+{
+    uint16_t expected_sp = *p.initial_sp - 2;
+    uint16_t mem_val = utils::to_u16(cpu.read_byte(expected_sp + 1), cpu.read_byte(expected_sp));
+
+    EXPECT_EQ(mem_val, p.src_value16()) << "Stack memory mismatch: " << p.name;
+    EXPECT_EQ(cpu.get_sp(), expected_sp) << "SP push mismatch: " << p.name;
+}
+
+inline void expect_sp_pop(const boyboy::cpu::Cpu& cpu, const InstrParam& p)
+{
+    EXPECT_EQ(cpu.get_register(p.dst->get_r16()), p.expected_value16())
+        << "POP target register mismatch: " << p.name;
+    EXPECT_EQ(cpu.get_sp(), *p.initial_sp + 2) << "SP mismatch after POP: " << p.name;
+}
+
 } // namespace boyboy::test::cpu
