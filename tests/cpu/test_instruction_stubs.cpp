@@ -21,18 +21,16 @@
 #include "helpers/cpu_fixtures.h"
 
 using boyboy::cpu::CBOpcode;
-using boyboy::cpu::Opcode;
 using boyboy::errors::UnimplementedOpcode;
 
 using boyboy::test::cpu::CpuTest;
 
-class InstructionStubTest : public CpuTest, public ::testing::WithParamInterface<uint8_t> {};
 class CBInstructionStubTest : public CpuTest, public ::testing::WithParamInterface<uint8_t> {};
 
-TEST_P(InstructionStubTest, ThrowsOnUnimplementedOpcode)
+TEST(UnprefixedStubOpcodes, AllOpcodesCovered)
 {
-    auto opcode = static_cast<Opcode>(GetParam());
-    EXPECT_THROW(cpu.execute(opcode), UnimplementedOpcode);
+    EXPECT_EQ(UnprefixedStubOpcodes.size(), 0)
+        << "There are unimplemented unprefixed opcodes not covered by stubs";
 }
 
 TEST_P(CBInstructionStubTest, ThrowsOnUnimplementedOpcode)
@@ -47,12 +45,6 @@ std::string opcode_name(const ::testing::TestParamInfo<uint8_t>& info)
     return std::format("Opcode0x{:02X}", info.param);
 }
 } // namespace
-
-// We are testing not only that it throws but that stubs are correctly disabled
-INSTANTIATE_TEST_SUITE_P(UnprefixedStubOpcodes,
-                         InstructionStubTest,
-                         ::testing::ValuesIn(UnprefixedStubOpcodes),
-                         opcode_name);
 
 INSTANTIATE_TEST_SUITE_P(CBPrefixedStubOpcodes,
                          CBInstructionStubTest,

@@ -8,9 +8,11 @@
  */
 
 #include <gtest/gtest.h>
+
 #include <cstdint>
 
 // boyboy
+#include "boyboy/common/errors.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/opcodes.h"
 
@@ -20,6 +22,7 @@
 using boyboy::test::cpu::CpuTest;
 
 using boyboy::cpu::Opcode;
+using boyboy::errors::IllegalOpcode;
 
 // -----------------------------
 // Test types
@@ -29,6 +32,7 @@ class EiTest : public CpuTest {};
 class DiTest : public CpuTest {};
 class HaltTest : public CpuTest {};
 class StopTest : public CpuTest {};
+class IllegalOpcodeTest : public CpuTest {};
 
 // -----------------------------
 // Test definitions
@@ -86,4 +90,21 @@ TEST_F(StopTest, Works)
 {
     // We don't implement STOP yet, so we just check that we hit the instruction
     EXPECT_THROW(run(Opcode::STOP_N8), std::runtime_error);
+}
+
+// Illegal opcodes
+TEST_F(IllegalOpcodeTest, Throws)
+{
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_D3), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_DB), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_DD), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_E3), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_E4), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_EB), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_EC), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_ED), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_F4), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_FC), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_FD), IllegalOpcode);
+    EXPECT_THROW(cpu.execute(Opcode::PREFIX), IllegalOpcode);
 }
