@@ -297,7 +297,23 @@ void Cpu::bit_b_at_hl(uint8_t bit)
     set_flag(Flag::HalfCarry, true);
 }
 
-// void Cpu::res_b_r8(uint8_t bit, Reg8Name r8);
+void Cpu::res_b_r8(uint8_t bit, Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    uint8_t result = val & ~(1 << bit);
+
+    set_register(r8, result);
+}
+
+void Cpu::res_b_at_hl(uint8_t bit)
+{
+    uint16_t addr = registers_.hl;
+    uint8_t val = read_byte(addr);
+    uint8_t result = val & ~(1 << bit);
+
+    write_byte(addr, result);
+}
+
 // void Cpu::set_b_r8(uint8_t bit, Reg8Name r8);
 
 // ---------- Individual CPU instruction implementations (unprefixed) ----------
@@ -1434,6 +1450,73 @@ void Cpu::bit_4_at_hl() { bit_b_at_hl(4); }
 void Cpu::bit_5_at_hl() { bit_b_at_hl(5); }
 void Cpu::bit_6_at_hl() { bit_b_at_hl(6); }
 void Cpu::bit_7_at_hl() { bit_b_at_hl(7); }
+// RES b, r8
+void Cpu::res_0_a() { res_b_r8(0, Reg8Name::A); }
+void Cpu::res_0_b() { res_b_r8(0, Reg8Name::B); }
+void Cpu::res_0_c() { res_b_r8(0, Reg8Name::C); }
+void Cpu::res_0_d() { res_b_r8(0, Reg8Name::D); }
+void Cpu::res_0_e() { res_b_r8(0, Reg8Name::E); }
+void Cpu::res_0_h() { res_b_r8(0, Reg8Name::H); }
+void Cpu::res_0_l() { res_b_r8(0, Reg8Name::L); }
+void Cpu::res_1_a() { res_b_r8(1, Reg8Name::A); }
+void Cpu::res_1_b() { res_b_r8(1, Reg8Name::B); }
+void Cpu::res_1_c() { res_b_r8(1, Reg8Name::C); }
+void Cpu::res_1_d() { res_b_r8(1, Reg8Name::D); }
+void Cpu::res_1_e() { res_b_r8(1, Reg8Name::E); }
+void Cpu::res_1_h() { res_b_r8(1, Reg8Name::H); }
+void Cpu::res_1_l() { res_b_r8(1, Reg8Name::L); }
+void Cpu::res_2_a() { res_b_r8(2, Reg8Name::A); }
+void Cpu::res_2_b() { res_b_r8(2, Reg8Name::B); }
+void Cpu::res_2_c() { res_b_r8(2, Reg8Name::C); }
+void Cpu::res_2_d() { res_b_r8(2, Reg8Name::D); }
+void Cpu::res_2_e() { res_b_r8(2, Reg8Name::E); }
+void Cpu::res_2_h() { res_b_r8(2, Reg8Name::H); }
+void Cpu::res_2_l() { res_b_r8(2, Reg8Name::L); }
+void Cpu::res_3_a() { res_b_r8(3, Reg8Name::A); }
+void Cpu::res_3_b() { res_b_r8(3, Reg8Name::B); }
+void Cpu::res_3_c() { res_b_r8(3, Reg8Name::C); }
+void Cpu::res_3_d() { res_b_r8(3, Reg8Name::D); }
+void Cpu::res_3_e() { res_b_r8(3, Reg8Name::E); }
+void Cpu::res_3_h() { res_b_r8(3, Reg8Name::H); }   
+void Cpu::res_3_l() { res_b_r8(3, Reg8Name::L); }
+void Cpu::res_4_a() { res_b_r8(4, Reg8Name::A); }
+void Cpu::res_4_b() { res_b_r8(4, Reg8Name::B); }
+void Cpu::res_4_c() { res_b_r8(4, Reg8Name::C); }
+void Cpu::res_4_d() { res_b_r8(4, Reg8Name::D); }
+void Cpu::res_4_e() { res_b_r8(4, Reg8Name::E); }
+void Cpu::res_4_h() { res_b_r8(4, Reg8Name::H); }
+void Cpu::res_4_l() { res_b_r8(4, Reg8Name::L); }
+void Cpu::res_5_a() { res_b_r8(5, Reg8Name::A); }
+void Cpu::res_5_b() { res_b_r8(5, Reg8Name::B); }
+void Cpu::res_5_c() { res_b_r8(5, Reg8Name::C); }
+void Cpu::res_5_d() { res_b_r8(5, Reg8Name::D); }
+void Cpu::res_5_e() { res_b_r8(5, Reg8Name::E); }
+void Cpu::res_5_h() { res_b_r8(5, Reg8Name::H); }   
+void Cpu::res_5_l() { res_b_r8(5, Reg8Name::L); }
+void Cpu::res_6_a() { res_b_r8(6, Reg8Name::A); }
+void Cpu::res_6_b() { res_b_r8(6, Reg8Name::B); }
+void Cpu::res_6_c() { res_b_r8(6, Reg8Name::C); }
+void Cpu::res_6_d() { res_b_r8(6, Reg8Name::D); }
+void Cpu::res_6_e() { res_b_r8(6, Reg8Name::E); }
+void Cpu::res_6_h() { res_b_r8(6, Reg8Name::H); }
+void Cpu::res_6_l() { res_b_r8(6, Reg8Name::L); }
+void Cpu::res_7_a() { res_b_r8(7, Reg8Name::A); }
+void Cpu::res_7_b() { res_b_r8(7, Reg8Name::B); }
+void Cpu::res_7_c() { res_b_r8(7, Reg8Name::C); }
+void Cpu::res_7_d() { res_b_r8(7, Reg8Name::D); }
+void Cpu::res_7_e() { res_b_r8(7, Reg8Name::E); }
+void Cpu::res_7_h() { res_b_r8(7, Reg8Name::H); }
+void Cpu::res_7_l() { res_b_r8(7, Reg8Name::L); }
+// RES b, [HL]
+void Cpu::res_0_at_hl() { res_b_at_hl(0); }
+void Cpu::res_1_at_hl() { res_b_at_hl(1); }
+void Cpu::res_2_at_hl() { res_b_at_hl(2); }
+void Cpu::res_3_at_hl() { res_b_at_hl(3); }
+void Cpu::res_4_at_hl() { res_b_at_hl(4); }
+void Cpu::res_5_at_hl() { res_b_at_hl(5); }
+void Cpu::res_6_at_hl() { res_b_at_hl(6); }
+void Cpu::res_7_at_hl() { res_b_at_hl(7); }
+
 // clang-format on
 
 } // namespace boyboy::cpu
