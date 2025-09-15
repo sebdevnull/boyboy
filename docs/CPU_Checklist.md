@@ -63,8 +63,8 @@
 
 ## Step 7 – CB-prefix ops
 
-- [ ] Rotates/shifts (`RLC`, `RL`, `RRC`, `RR`, `SLA`, `SRA`, `SRL`, `SWAP`) — Test: `10-bit ops.gb`
-- [ ] Bit ops (`BIT b,r`, `RES b,r`, `SET b,r`) — Test: `10-bit ops.gb` / `11-op a,(hl).gb`
+- [x] Rotates/shifts (`RLC`, `RL`, `RRC`, `RR`, `SLA`, `SRA`, `SRL`, `SWAP`) — Test: `10-bit ops.gb`
+- [x] Bit ops (`BIT b,r`, `RES b,r`, `SET b,r`) — Test: `10-bit ops.gb` / `11-op a,(hl).gb`
 
 ---
 

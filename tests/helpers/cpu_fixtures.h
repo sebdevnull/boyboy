@@ -45,6 +45,13 @@ struct CpuTest : public ::testing::Test {
         cpu.execute(opcode);
     }
 
+    void run(boyboy::cpu::CBOpcode opcode)
+    {
+        cpu.fetch(); // simulate 0xCB prefix fetch
+        cpu.fetch(); // simulate opcode fetch
+        cpu.execute(opcode);
+    }
+
     void set_flags(bool z, bool n, bool h, bool c)
     {
         cpu.set_flag(boyboy::cpu::Flag::Zero, z);
@@ -78,7 +85,7 @@ public:
         setup_flags(param);
 
         // Execute opcode
-        run(param.opcode);
+        std::visit([&](auto&& op) { run(op); }, param.opcode);
 
         // Run asserts
         run_asserts(param);
@@ -142,10 +149,7 @@ private:
             throw std::runtime_error("Source register must be specified");
         }
         if (param.src->is_r8()) {
-            // Only write src_value if src != dst
-            if (!param.dst || !param.src->overlaps(*param.dst)) {
-                cpu.set_register(param.src->get_r8(), param.src_value8());
-            }
+            cpu.set_register(param.src->get_r8(), param.src_value8());
         }
         else if (param.src->is_r16()) {
             cpu.set_register(param.src->get_r16(), param.src_value16());
@@ -232,8 +236,10 @@ private:
         if (param.dst_op_type) {
             switch (*param.dst_op_type) {
             case OperandType::Indirect:
-                // We don't check anything. If it fails, it fails
-                cpu.set_register(param.dst->get_r16(), *param.dst_addr);
+                // Setup only if we have a dst address
+                if (param.dst && param.dst->is_r16() && param.dst_addr) {
+                    cpu.set_register(param.dst->get_r16(), *param.dst_addr);
+                }
                 break;
             case OperandType::Memory: {
                 // Set the imm 16-bit dst address
