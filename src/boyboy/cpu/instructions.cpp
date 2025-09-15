@@ -5,6 +5,8 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: repeated code for some instructions (e.g. rotate), refactor
+
 #include "boyboy/cpu/instructions.h"
 
 #include <cstdint>
@@ -17,7 +19,7 @@
 
 namespace boyboy::cpu {
 
-// Generic CPU instruction implementations (unprefixed)
+// ---------- Generic CPU instruction implementations (unprefixed) ----------
 void Cpu::ld_r8_n8(Reg8Name r8)
 {
     uint8_t n8 = fetch();
@@ -160,9 +162,74 @@ void Cpu::rst(uint8_t vector)
     set_pc(vector);
 }
 
-// Generic CPU instruction implementations (CB-prefixed)
+// ---------- Generic CPU instruction implementations (CB-prefixed) ----------
+void Cpu::rlc_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x80) != 0;
+    uint8_t result = (val << 1) | (new_carry ? 1 : 0);
 
-// Individual CPU instruction implementations (unprefixed)
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::rrc_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x01) != 0;
+    uint8_t result = (val >> 1) | (new_carry ? 0x80 : 0);
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::rl_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool old_carry = get_flag(Flag::Carry);
+    bool new_carry = (val & 0x80) != 0;
+    uint8_t result = (val << 1) | (old_carry ? 1 : 0);
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::rr_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool old_carry = get_flag(Flag::Carry);
+    bool new_carry = (val & 0x01) != 0;
+    uint8_t result = (val >> 1) | (old_carry ? 0x80 : 0);
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+// void Cpu::sla_r8(Reg8Name r8);
+// void Cpu::sra_r8(Reg8Name r8);
+// void Cpu::swap_r8(Reg8Name r8);
+// void Cpu::srl_r8(Reg8Name r8);
+// void Cpu::bit_b3_r8(uint8_t bit, Reg8Name r8);
+// void Cpu::res_b3_r8(uint8_t bit, Reg8Name r8);
+// void Cpu::set_b3_r8(uint8_t bit, Reg8Name r8);
+
+// ---------- Individual CPU instruction implementations (unprefixed) ----------
 // clang-format off
 void Cpu::nop() { (void)*this; }
 
@@ -1030,7 +1097,104 @@ void Cpu::illegal_fd() { illegal_opcode(0xFD); }
 // NOLINTEND(readability-convert-member-functions-to-static)
 // clang-format on
 
-// Individual CPU instruction implementations (CB-prefixed)
+// ---------- Individual CPU instruction implementations (CB-prefixed) ----------
+// clang-format off
+// RLC r8
+void Cpu::rlc_a() { rlc_r8(Reg8Name::A); }
+void Cpu::rlc_b() { rlc_r8(Reg8Name::B); }
+void Cpu::rlc_c() { rlc_r8(Reg8Name::C); }
+void Cpu::rlc_d() { rlc_r8(Reg8Name::D); }
+void Cpu::rlc_e() { rlc_r8(Reg8Name::E); }
+void Cpu::rlc_h() { rlc_r8(Reg8Name::H); }
+void Cpu::rlc_l() { rlc_r8(Reg8Name::L); }
+// RRC r8
+void Cpu::rrc_a() { rrc_r8(Reg8Name::A); }
+void Cpu::rrc_b() { rrc_r8(Reg8Name::B); }
+void Cpu::rrc_c() { rrc_r8(Reg8Name::C); }
+void Cpu::rrc_d() { rrc_r8(Reg8Name::D); }
+void Cpu::rrc_e() { rrc_r8(Reg8Name::E); }
+void Cpu::rrc_h() { rrc_r8(Reg8Name::H); }
+void Cpu::rrc_l() { rrc_r8(Reg8Name::L); }
+// RL r8
+void Cpu::rl_a() { rl_r8(Reg8Name::A); }
+void Cpu::rl_b() { rl_r8(Reg8Name::B); }
+void Cpu::rl_c() { rl_r8(Reg8Name::C); }
+void Cpu::rl_d() { rl_r8(Reg8Name::D); }
+void Cpu::rl_e() { rl_r8(Reg8Name::E); }
+void Cpu::rl_h() { rl_r8(Reg8Name::H); }
+void Cpu::rl_l() { rl_r8(Reg8Name::L); }
+// RR r8
+void Cpu::rr_a() { rr_r8(Reg8Name::A); }
+void Cpu::rr_b() { rr_r8(Reg8Name::B); }
+void Cpu::rr_c() { rr_r8(Reg8Name::C); }
+void Cpu::rr_d() { rr_r8(Reg8Name::D); }
+void Cpu::rr_e() { rr_r8(Reg8Name::E); }
+void Cpu::rr_h() { rr_r8(Reg8Name::H); }
+void Cpu::rr_l() { rr_r8(Reg8Name::L); }
+// clang-format on
+
+// RLC [HL]
+void Cpu::rlc_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x80) != 0;
+
+    value = (value << 1) | (new_carry ? 1 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RRC [HL]
+void Cpu::rrc_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x01) != 0;
+
+    value = (value >> 1) | (new_carry ? 0x80 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RL [HL]
+void Cpu::rl_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool carry = get_flag(Flag::Carry);
+    bool new_carry = (value & 0x80) != 0;
+
+    value = (value << 1) | (carry ? 1 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RR [HL]
+void Cpu::rr_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool carry = get_flag(Flag::Carry);
+    bool new_carry = (value & 0x01) != 0;
+
+    value = (value >> 1) | (carry ? 0x80 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
 
 } // namespace boyboy::cpu
 

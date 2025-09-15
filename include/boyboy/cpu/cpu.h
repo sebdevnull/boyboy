@@ -183,6 +183,8 @@ private:
 };
 
 // ----- Stub disabling macros for implemented opcodes -----
+
+// ----------- Unprefixed instructions macros ----------
 #define CPU_NOP
 #define CPU_INC_A
 #define CPU_INC_B
@@ -515,5 +517,47 @@ private:
 #define CPU_ILLEGAL_F4
 #define CPU_ILLEGAL_FC
 #define CPU_ILLEGAL_FD
+
+// ----------- CB-prefixed instructions macros ----------
+// RLC r8
+#define CPU_RLC_A
+#define CPU_RLC_B
+#define CPU_RLC_C
+#define CPU_RLC_D   
+#define CPU_RLC_E
+#define CPU_RLC_H
+#define CPU_RLC_L
+// RRC r8
+#define CPU_RRC_A
+#define CPU_RRC_B
+#define CPU_RRC_C
+#define CPU_RRC_D
+#define CPU_RRC_E
+#define CPU_RRC_H
+#define CPU_RRC_L
+// RL r8
+#define CPU_RL_A
+#define CPU_RL_B
+#define CPU_RL_C
+#define CPU_RL_D
+#define CPU_RL_E
+#define CPU_RL_H
+#define CPU_RL_L
+// RR r8
+#define CPU_RR_A
+#define CPU_RR_B
+#define CPU_RR_C
+#define CPU_RR_D
+#define CPU_RR_E
+#define CPU_RR_H
+#define CPU_RR_L
+// RLC [HL]
+#define CPU_RLC_AT_HL
+// RRC [HL]
+#define CPU_RRC_AT_HL
+// RL [HL]
+#define CPU_RL_AT_HL
+// RR [HL]
+#define CPU_RR_AT_HL
 
 } // namespace boyboy::cpu
