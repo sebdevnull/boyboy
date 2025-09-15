@@ -42,6 +42,12 @@ set(TEST_SOURCES
     cpu/instructions/control_flow/jump.cpp
     cpu/instructions/control_flow/call_ret.cpp
     cpu/instructions/bit_ops/rotate_accumulator.cpp
+    cpu/instructions/bit_ops/rotate.cpp
+    cpu/instructions/bit_ops/shift.cpp
+    cpu/instructions/bit_ops/swap.cpp
+    cpu/instructions/bit_ops/bit.cpp
+    cpu/instructions/bit_ops/res.cpp
+    cpu/instructions/bit_ops/set.cpp
     cpu/instructions/misc/misc.cpp
     cpu/instructions/instructions_8bit.cpp
     cpu/instructions/instructions_16bit.cpp

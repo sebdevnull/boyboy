@@ -5,6 +5,8 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: repeated code for some instructions (e.g. rotate), refactor
+
 #include "boyboy/cpu/instructions.h"
 
 #include <cstdint>
@@ -17,7 +19,7 @@
 
 namespace boyboy::cpu {
 
-// Generic CPU instruction implementations (unprefixed)
+// ---------- Generic CPU instruction implementations (unprefixed) ----------
 void Cpu::ld_r8_n8(Reg8Name r8)
 {
     uint8_t n8 = fetch();
@@ -160,9 +162,176 @@ void Cpu::rst(uint8_t vector)
     set_pc(vector);
 }
 
-// Generic CPU instruction implementations (CB-prefixed)
+// ---------- Generic CPU instruction implementations (CB-prefixed) ----------
+void Cpu::rlc_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x80) != 0;
+    uint8_t result = (val << 1) | (new_carry ? 1 : 0);
 
-// Individual CPU instruction implementations (unprefixed)
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::rrc_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x01) != 0;
+    uint8_t result = (val >> 1) | (new_carry ? 0x80 : 0);
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::rl_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool old_carry = get_flag(Flag::Carry);
+    bool new_carry = (val & 0x80) != 0;
+    uint8_t result = (val << 1) | (old_carry ? 1 : 0);
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::rr_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool old_carry = get_flag(Flag::Carry);
+    bool new_carry = (val & 0x01) != 0;
+    uint8_t result = (val >> 1) | (old_carry ? 0x80 : 0);
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::sla_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x80) != 0;
+    uint8_t result = (val << 1) & 0xFE; // LSB is always 0
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::sra_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x01) != 0;
+    uint8_t result = (val >> 1) | (val & 0x80); // MSB stays the same
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::srl_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x01) != 0;
+    uint8_t result = (val >> 1) & 0x7F; // MSB is always 0
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::swap_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    uint8_t result = (val << 4) | (val >> 4);
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, false);
+}
+
+void Cpu::bit_b_r8(uint8_t bit, Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool bit_set = (val & (1 << bit)) != 0;
+
+    set_flag(Flag::Zero, !bit_set);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, true);
+}
+
+void Cpu::bit_b_at_hl(uint8_t bit)
+{
+    uint16_t addr = registers_.hl;
+    uint8_t val = read_byte(addr);
+    bool bit_set = (val & (1 << bit)) != 0;
+
+    set_flag(Flag::Zero, !bit_set);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, true);
+}
+
+void Cpu::res_b_r8(uint8_t bit, Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    uint8_t result = val & ~(1 << bit);
+
+    set_register(r8, result);
+}
+
+void Cpu::res_b_at_hl(uint8_t bit)
+{
+    uint16_t addr = registers_.hl;
+    uint8_t val = read_byte(addr);
+    uint8_t result = val & ~(1 << bit);
+
+    write_byte(addr, result);
+}
+
+void Cpu::set_b_r8(uint8_t bit, Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    uint8_t result = val | (1 << bit);
+
+    set_register(r8, result);
+}
+
+void Cpu::set_b_at_hl(uint8_t bit)
+{
+    uint16_t addr = registers_.hl;
+    uint8_t val = read_byte(addr);
+    uint8_t result = val | (1 << bit);
+
+    write_byte(addr, result);
+}
+
+// ---------- Individual CPU instruction implementations (unprefixed) ----------
 // clang-format off
 void Cpu::nop() { (void)*this; }
 
@@ -1030,7 +1199,405 @@ void Cpu::illegal_fd() { illegal_opcode(0xFD); }
 // NOLINTEND(readability-convert-member-functions-to-static)
 // clang-format on
 
-// Individual CPU instruction implementations (CB-prefixed)
+// ---------- Individual CPU instruction implementations (CB-prefixed) ----------
+// clang-format off
+// RLC r8
+void Cpu::rlc_a() { rlc_r8(Reg8Name::A); }
+void Cpu::rlc_b() { rlc_r8(Reg8Name::B); }
+void Cpu::rlc_c() { rlc_r8(Reg8Name::C); }
+void Cpu::rlc_d() { rlc_r8(Reg8Name::D); }
+void Cpu::rlc_e() { rlc_r8(Reg8Name::E); }
+void Cpu::rlc_h() { rlc_r8(Reg8Name::H); }
+void Cpu::rlc_l() { rlc_r8(Reg8Name::L); }
+// RRC r8
+void Cpu::rrc_a() { rrc_r8(Reg8Name::A); }
+void Cpu::rrc_b() { rrc_r8(Reg8Name::B); }
+void Cpu::rrc_c() { rrc_r8(Reg8Name::C); }
+void Cpu::rrc_d() { rrc_r8(Reg8Name::D); }
+void Cpu::rrc_e() { rrc_r8(Reg8Name::E); }
+void Cpu::rrc_h() { rrc_r8(Reg8Name::H); }
+void Cpu::rrc_l() { rrc_r8(Reg8Name::L); }
+// RL r8
+void Cpu::rl_a() { rl_r8(Reg8Name::A); }
+void Cpu::rl_b() { rl_r8(Reg8Name::B); }
+void Cpu::rl_c() { rl_r8(Reg8Name::C); }
+void Cpu::rl_d() { rl_r8(Reg8Name::D); }
+void Cpu::rl_e() { rl_r8(Reg8Name::E); }
+void Cpu::rl_h() { rl_r8(Reg8Name::H); }
+void Cpu::rl_l() { rl_r8(Reg8Name::L); }
+// RR r8
+void Cpu::rr_a() { rr_r8(Reg8Name::A); }
+void Cpu::rr_b() { rr_r8(Reg8Name::B); }
+void Cpu::rr_c() { rr_r8(Reg8Name::C); }
+void Cpu::rr_d() { rr_r8(Reg8Name::D); }
+void Cpu::rr_e() { rr_r8(Reg8Name::E); }
+void Cpu::rr_h() { rr_r8(Reg8Name::H); }
+void Cpu::rr_l() { rr_r8(Reg8Name::L); }
+// clang-format on
+
+// RLC [HL]
+void Cpu::rlc_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x80) != 0;
+
+    value = (value << 1) | (new_carry ? 1 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RRC [HL]
+void Cpu::rrc_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x01) != 0;
+
+    value = (value >> 1) | (new_carry ? 0x80 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RL [HL]
+void Cpu::rl_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool carry = get_flag(Flag::Carry);
+    bool new_carry = (value & 0x80) != 0;
+
+    value = (value << 1) | (carry ? 1 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// RR [HL]
+void Cpu::rr_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool carry = get_flag(Flag::Carry);
+    bool new_carry = (value & 0x01) != 0;
+
+    value = (value >> 1) | (carry ? 0x80 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+// clang-format off
+// SLA r8
+void Cpu::sla_a() { sla_r8(Reg8Name::A); }
+void Cpu::sla_b() { sla_r8(Reg8Name::B); }
+void Cpu::sla_c() { sla_r8(Reg8Name::C); }
+void Cpu::sla_d() { sla_r8(Reg8Name::D); }
+void Cpu::sla_e() { sla_r8(Reg8Name::E); }
+void Cpu::sla_h() { sla_r8(Reg8Name::H); }
+void Cpu::sla_l() { sla_r8(Reg8Name::L); }
+// SRA r8
+void Cpu::sra_a() { sra_r8(Reg8Name::A); }
+void Cpu::sra_b() { sra_r8(Reg8Name::B); }
+void Cpu::sra_c() { sra_r8(Reg8Name::C); }
+void Cpu::sra_d() { sra_r8(Reg8Name::D); }
+void Cpu::sra_e() { sra_r8(Reg8Name::E); }
+void Cpu::sra_h() { sra_r8(Reg8Name::H); }
+void Cpu::sra_l() { sra_r8(Reg8Name::L); }
+// SRL r8
+void Cpu::srl_a() { srl_r8(Reg8Name::A); }
+void Cpu::srl_b() { srl_r8(Reg8Name::B); }
+void Cpu::srl_c() { srl_r8(Reg8Name::C); }
+void Cpu::srl_d() { srl_r8(Reg8Name::D); }
+void Cpu::srl_e() { srl_r8(Reg8Name::E); }
+void Cpu::srl_h() { srl_r8(Reg8Name::H); }
+void Cpu::srl_l() { srl_r8(Reg8Name::L); }
+// clang-format on
+
+// SLA [HL]
+void Cpu::sla_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x80) != 0;
+
+    value = (value << 1) & 0xFE; // LSB is set to 0
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// SRA [HL]
+void Cpu::sra_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x01) != 0;
+    bool msb = (value & 0x80) != 0;
+
+    value = (value >> 1) | (msb ? 0x80 : 0); // MSB does not change
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// SRL [HL]
+void Cpu::srl_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x01) != 0;
+
+    value = (value >> 1) & 0x7F; // MSB is set to 0
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+// clang-format off
+// SWAP r8
+void Cpu::swap_a() { swap_r8(Reg8Name::A); }
+void Cpu::swap_b() { swap_r8(Reg8Name::B); }
+void Cpu::swap_c() { swap_r8(Reg8Name::C); }
+void Cpu::swap_d() { swap_r8(Reg8Name::D); }    
+void Cpu::swap_e() { swap_r8(Reg8Name::E); }
+void Cpu::swap_h() { swap_r8(Reg8Name::H); }
+void Cpu::swap_l() { swap_r8(Reg8Name::L); }
+// clang-format on
+
+// SWAP [HL]
+void Cpu::swap_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    value = (value << 4) | (value >> 4);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, false);
+}
+
+// clang-format off
+// BIT b, r8
+void Cpu::bit_0_a() { bit_b_r8(0, Reg8Name::A); }
+void Cpu::bit_0_b() { bit_b_r8(0, Reg8Name::B); }
+void Cpu::bit_0_c() { bit_b_r8(0, Reg8Name::C); }
+void Cpu::bit_0_d() { bit_b_r8(0, Reg8Name::D); }
+void Cpu::bit_0_e() { bit_b_r8(0, Reg8Name::E); }
+void Cpu::bit_0_h() { bit_b_r8(0, Reg8Name::H); }
+void Cpu::bit_0_l() { bit_b_r8(0, Reg8Name::L); }
+void Cpu::bit_1_a() { bit_b_r8(1, Reg8Name::A); }
+void Cpu::bit_1_b() { bit_b_r8(1, Reg8Name::B); }
+void Cpu::bit_1_c() { bit_b_r8(1, Reg8Name::C); }
+void Cpu::bit_1_d() { bit_b_r8(1, Reg8Name::D); }
+void Cpu::bit_1_e() { bit_b_r8(1, Reg8Name::E); }
+void Cpu::bit_1_h() { bit_b_r8(1, Reg8Name::H); }
+void Cpu::bit_1_l() { bit_b_r8(1, Reg8Name::L); }
+void Cpu::bit_2_a() { bit_b_r8(2, Reg8Name::A); }
+void Cpu::bit_2_b() { bit_b_r8(2, Reg8Name::B); }
+void Cpu::bit_2_c() { bit_b_r8(2, Reg8Name::C); }
+void Cpu::bit_2_d() { bit_b_r8(2, Reg8Name::D); }
+void Cpu::bit_2_e() { bit_b_r8(2, Reg8Name::E); }
+void Cpu::bit_2_h() { bit_b_r8(2, Reg8Name::H); }
+void Cpu::bit_2_l() { bit_b_r8(2, Reg8Name::L); }
+void Cpu::bit_3_a() { bit_b_r8(3, Reg8Name::A); }
+void Cpu::bit_3_b() { bit_b_r8(3, Reg8Name::B); }
+void Cpu::bit_3_c() { bit_b_r8(3, Reg8Name::C); }
+void Cpu::bit_3_d() { bit_b_r8(3, Reg8Name::D); }
+void Cpu::bit_3_e() { bit_b_r8(3, Reg8Name::E); }
+void Cpu::bit_3_h() { bit_b_r8(3, Reg8Name::H); }
+void Cpu::bit_3_l() { bit_b_r8(3, Reg8Name::L); }
+void Cpu::bit_4_a() { bit_b_r8(4, Reg8Name::A); }
+void Cpu::bit_4_b() { bit_b_r8(4, Reg8Name::B); }
+void Cpu::bit_4_c() { bit_b_r8(4, Reg8Name::C); }
+void Cpu::bit_4_d() { bit_b_r8(4, Reg8Name::D); }
+void Cpu::bit_4_e() { bit_b_r8(4, Reg8Name::E); }
+void Cpu::bit_4_h() { bit_b_r8(4, Reg8Name::H); }
+void Cpu::bit_4_l() { bit_b_r8(4, Reg8Name::L); }
+void Cpu::bit_5_a() { bit_b_r8(5, Reg8Name::A); }
+void Cpu::bit_5_b() { bit_b_r8(5, Reg8Name::B); }
+void Cpu::bit_5_c() { bit_b_r8(5, Reg8Name::C); }
+void Cpu::bit_5_d() { bit_b_r8(5, Reg8Name::D); }
+void Cpu::bit_5_e() { bit_b_r8(5, Reg8Name::E); }
+void Cpu::bit_5_h() { bit_b_r8(5, Reg8Name::H); }
+void Cpu::bit_5_l() { bit_b_r8(5, Reg8Name::L); }
+void Cpu::bit_6_a() { bit_b_r8(6, Reg8Name::A); }
+void Cpu::bit_6_b() { bit_b_r8(6, Reg8Name::B); }
+void Cpu::bit_6_c() { bit_b_r8(6, Reg8Name::C); }
+void Cpu::bit_6_d() { bit_b_r8(6, Reg8Name::D); }
+void Cpu::bit_6_e() { bit_b_r8(6, Reg8Name::E); }
+void Cpu::bit_6_h() { bit_b_r8(6, Reg8Name::H); }
+void Cpu::bit_6_l() { bit_b_r8(6, Reg8Name::L); }
+void Cpu::bit_7_a() { bit_b_r8(7, Reg8Name::A); }
+void Cpu::bit_7_b() { bit_b_r8(7, Reg8Name::B); }
+void Cpu::bit_7_c() { bit_b_r8(7, Reg8Name::C); }
+void Cpu::bit_7_d() { bit_b_r8(7, Reg8Name::D); }
+void Cpu::bit_7_e() { bit_b_r8(7, Reg8Name::E); }
+void Cpu::bit_7_h() { bit_b_r8(7, Reg8Name::H); }
+void Cpu::bit_7_l() { bit_b_r8(7, Reg8Name::L); }
+// BIT b, [HL]
+void Cpu::bit_0_at_hl() { bit_b_at_hl(0); }
+void Cpu::bit_1_at_hl() { bit_b_at_hl(1); }
+void Cpu::bit_2_at_hl() { bit_b_at_hl(2); }
+void Cpu::bit_3_at_hl() { bit_b_at_hl(3); }
+void Cpu::bit_4_at_hl() { bit_b_at_hl(4); }
+void Cpu::bit_5_at_hl() { bit_b_at_hl(5); }
+void Cpu::bit_6_at_hl() { bit_b_at_hl(6); }
+void Cpu::bit_7_at_hl() { bit_b_at_hl(7); }
+// RES b, r8
+void Cpu::res_0_a() { res_b_r8(0, Reg8Name::A); }
+void Cpu::res_0_b() { res_b_r8(0, Reg8Name::B); }
+void Cpu::res_0_c() { res_b_r8(0, Reg8Name::C); }
+void Cpu::res_0_d() { res_b_r8(0, Reg8Name::D); }
+void Cpu::res_0_e() { res_b_r8(0, Reg8Name::E); }
+void Cpu::res_0_h() { res_b_r8(0, Reg8Name::H); }
+void Cpu::res_0_l() { res_b_r8(0, Reg8Name::L); }
+void Cpu::res_1_a() { res_b_r8(1, Reg8Name::A); }
+void Cpu::res_1_b() { res_b_r8(1, Reg8Name::B); }
+void Cpu::res_1_c() { res_b_r8(1, Reg8Name::C); }
+void Cpu::res_1_d() { res_b_r8(1, Reg8Name::D); }
+void Cpu::res_1_e() { res_b_r8(1, Reg8Name::E); }
+void Cpu::res_1_h() { res_b_r8(1, Reg8Name::H); }
+void Cpu::res_1_l() { res_b_r8(1, Reg8Name::L); }
+void Cpu::res_2_a() { res_b_r8(2, Reg8Name::A); }
+void Cpu::res_2_b() { res_b_r8(2, Reg8Name::B); }
+void Cpu::res_2_c() { res_b_r8(2, Reg8Name::C); }
+void Cpu::res_2_d() { res_b_r8(2, Reg8Name::D); }
+void Cpu::res_2_e() { res_b_r8(2, Reg8Name::E); }
+void Cpu::res_2_h() { res_b_r8(2, Reg8Name::H); }
+void Cpu::res_2_l() { res_b_r8(2, Reg8Name::L); }
+void Cpu::res_3_a() { res_b_r8(3, Reg8Name::A); }
+void Cpu::res_3_b() { res_b_r8(3, Reg8Name::B); }
+void Cpu::res_3_c() { res_b_r8(3, Reg8Name::C); }
+void Cpu::res_3_d() { res_b_r8(3, Reg8Name::D); }
+void Cpu::res_3_e() { res_b_r8(3, Reg8Name::E); }
+void Cpu::res_3_h() { res_b_r8(3, Reg8Name::H); }   
+void Cpu::res_3_l() { res_b_r8(3, Reg8Name::L); }
+void Cpu::res_4_a() { res_b_r8(4, Reg8Name::A); }
+void Cpu::res_4_b() { res_b_r8(4, Reg8Name::B); }
+void Cpu::res_4_c() { res_b_r8(4, Reg8Name::C); }
+void Cpu::res_4_d() { res_b_r8(4, Reg8Name::D); }
+void Cpu::res_4_e() { res_b_r8(4, Reg8Name::E); }
+void Cpu::res_4_h() { res_b_r8(4, Reg8Name::H); }
+void Cpu::res_4_l() { res_b_r8(4, Reg8Name::L); }
+void Cpu::res_5_a() { res_b_r8(5, Reg8Name::A); }
+void Cpu::res_5_b() { res_b_r8(5, Reg8Name::B); }
+void Cpu::res_5_c() { res_b_r8(5, Reg8Name::C); }
+void Cpu::res_5_d() { res_b_r8(5, Reg8Name::D); }
+void Cpu::res_5_e() { res_b_r8(5, Reg8Name::E); }
+void Cpu::res_5_h() { res_b_r8(5, Reg8Name::H); }   
+void Cpu::res_5_l() { res_b_r8(5, Reg8Name::L); }
+void Cpu::res_6_a() { res_b_r8(6, Reg8Name::A); }
+void Cpu::res_6_b() { res_b_r8(6, Reg8Name::B); }
+void Cpu::res_6_c() { res_b_r8(6, Reg8Name::C); }
+void Cpu::res_6_d() { res_b_r8(6, Reg8Name::D); }
+void Cpu::res_6_e() { res_b_r8(6, Reg8Name::E); }
+void Cpu::res_6_h() { res_b_r8(6, Reg8Name::H); }
+void Cpu::res_6_l() { res_b_r8(6, Reg8Name::L); }
+void Cpu::res_7_a() { res_b_r8(7, Reg8Name::A); }
+void Cpu::res_7_b() { res_b_r8(7, Reg8Name::B); }
+void Cpu::res_7_c() { res_b_r8(7, Reg8Name::C); }
+void Cpu::res_7_d() { res_b_r8(7, Reg8Name::D); }
+void Cpu::res_7_e() { res_b_r8(7, Reg8Name::E); }
+void Cpu::res_7_h() { res_b_r8(7, Reg8Name::H); }
+void Cpu::res_7_l() { res_b_r8(7, Reg8Name::L); }
+// RES b, [HL]
+void Cpu::res_0_at_hl() { res_b_at_hl(0); }
+void Cpu::res_1_at_hl() { res_b_at_hl(1); }
+void Cpu::res_2_at_hl() { res_b_at_hl(2); }
+void Cpu::res_3_at_hl() { res_b_at_hl(3); }
+void Cpu::res_4_at_hl() { res_b_at_hl(4); }
+void Cpu::res_5_at_hl() { res_b_at_hl(5); }
+void Cpu::res_6_at_hl() { res_b_at_hl(6); }
+void Cpu::res_7_at_hl() { res_b_at_hl(7); }
+// SET b, r8
+void Cpu::set_0_a() { set_b_r8(0, Reg8Name::A); }
+void Cpu::set_0_b() { set_b_r8(0, Reg8Name::B); }
+void Cpu::set_0_c() { set_b_r8(0, Reg8Name::C); }
+void Cpu::set_0_d() { set_b_r8(0, Reg8Name::D); }
+void Cpu::set_0_e() { set_b_r8(0, Reg8Name::E); }
+void Cpu::set_0_h() { set_b_r8(0, Reg8Name::H); }
+void Cpu::set_0_l() { set_b_r8(0, Reg8Name::L); }
+void Cpu::set_1_a() { set_b_r8(1, Reg8Name::A); }
+void Cpu::set_1_b() { set_b_r8(1, Reg8Name::B); }
+void Cpu::set_1_c() { set_b_r8(1, Reg8Name::C); }
+void Cpu::set_1_d() { set_b_r8(1, Reg8Name::D); }
+void Cpu::set_1_e() { set_b_r8(1, Reg8Name::E); }
+void Cpu::set_1_h() { set_b_r8(1, Reg8Name::H); }
+void Cpu::set_1_l() { set_b_r8(1, Reg8Name::L); }
+void Cpu::set_2_a() { set_b_r8(2, Reg8Name::A); }
+void Cpu::set_2_b() { set_b_r8(2, Reg8Name::B); }
+void Cpu::set_2_c() { set_b_r8(2, Reg8Name::C); }
+void Cpu::set_2_d() { set_b_r8(2, Reg8Name::D); }
+void Cpu::set_2_e() { set_b_r8(2, Reg8Name::E); }
+void Cpu::set_2_h() { set_b_r8(2, Reg8Name::H); }
+void Cpu::set_2_l() { set_b_r8(2, Reg8Name::L); }
+void Cpu::set_3_a() { set_b_r8(3, Reg8Name::A); }
+void Cpu::set_3_b() { set_b_r8(3, Reg8Name::B); }
+void Cpu::set_3_c() { set_b_r8(3, Reg8Name::C); }
+void Cpu::set_3_d() { set_b_r8(3, Reg8Name::D); }
+void Cpu::set_3_e() { set_b_r8(3, Reg8Name::E); }
+void Cpu::set_3_h() { set_b_r8(3, Reg8Name::H); }   
+void Cpu::set_3_l() { set_b_r8(3, Reg8Name::L); }
+void Cpu::set_4_a() { set_b_r8(4, Reg8Name::A); }
+void Cpu::set_4_b() { set_b_r8(4, Reg8Name::B); }
+void Cpu::set_4_c() { set_b_r8(4, Reg8Name::C); }
+void Cpu::set_4_d() { set_b_r8(4, Reg8Name::D); }
+void Cpu::set_4_e() { set_b_r8(4, Reg8Name::E); }
+void Cpu::set_4_h() { set_b_r8(4, Reg8Name::H); }
+void Cpu::set_4_l() { set_b_r8(4, Reg8Name::L); }
+void Cpu::set_5_a() { set_b_r8(5, Reg8Name::A); }
+void Cpu::set_5_b() { set_b_r8(5, Reg8Name::B); }
+void Cpu::set_5_c() { set_b_r8(5, Reg8Name::C); }
+void Cpu::set_5_d() { set_b_r8(5, Reg8Name::D); }
+void Cpu::set_5_e() { set_b_r8(5, Reg8Name::E); }
+void Cpu::set_5_h() { set_b_r8(5, Reg8Name::H); }   
+void Cpu::set_5_l() { set_b_r8(5, Reg8Name::L); }
+void Cpu::set_6_a() { set_b_r8(6, Reg8Name::A); }
+void Cpu::set_6_b() { set_b_r8(6, Reg8Name::B); }
+void Cpu::set_6_c() { set_b_r8(6, Reg8Name::C); }
+void Cpu::set_6_d() { set_b_r8(6, Reg8Name::D); }
+void Cpu::set_6_e() { set_b_r8(6, Reg8Name::E); }
+void Cpu::set_6_h() { set_b_r8(6, Reg8Name::H); }   
+void Cpu::set_6_l() { set_b_r8(6, Reg8Name::L); }
+void Cpu::set_7_a() { set_b_r8(7, Reg8Name::A); }
+void Cpu::set_7_b() { set_b_r8(7, Reg8Name::B); }
+void Cpu::set_7_c() { set_b_r8(7, Reg8Name::C); }
+void Cpu::set_7_d() { set_b_r8(7, Reg8Name::D); }
+void Cpu::set_7_e() { set_b_r8(7, Reg8Name::E); }
+void Cpu::set_7_h() { set_b_r8(7, Reg8Name::H); }   
+void Cpu::set_7_l() { set_b_r8(7, Reg8Name::L); }
+// SET b, [HL]
+void Cpu::set_0_at_hl() { set_b_at_hl(0); }
+void Cpu::set_1_at_hl() { set_b_at_hl(1); }
+void Cpu::set_2_at_hl() { set_b_at_hl(2); }
+void Cpu::set_3_at_hl() { set_b_at_hl(3); }
+void Cpu::set_4_at_hl() { set_b_at_hl(4); }
+void Cpu::set_5_at_hl() { set_b_at_hl(5); }
+void Cpu::set_6_at_hl() { set_b_at_hl(6); }
+void Cpu::set_7_at_hl() { set_b_at_hl(7); }
+// clang-format on
 
 } // namespace boyboy::cpu
 
