@@ -44,6 +44,7 @@ set(TEST_SOURCES
     cpu/instructions/bit_ops/rotate_accumulator.cpp
     cpu/instructions/bit_ops/rotate.cpp
     cpu/instructions/bit_ops/shift.cpp
+    cpu/instructions/bit_ops/swap.cpp
     cpu/instructions/misc/misc.cpp
     cpu/instructions/instructions_8bit.cpp
     cpu/instructions/instructions_16bit.cpp
