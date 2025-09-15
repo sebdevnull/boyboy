@@ -167,7 +167,7 @@ struct FlagsParam {
 };
 
 struct InstrParam {
-    boyboy::cpu::Opcode opcode;
+    std::variant<boyboy::cpu::Opcode, boyboy::cpu::CBOpcode> opcode;
 
     std::optional<OperandType> src_op_type = OperandType::Register;
     std::optional<OperandType> dst_op_type = OperandType::Register;
@@ -221,6 +221,10 @@ struct InstrParam {
     [[nodiscard]] uint16_t src_value16() const { return std::get<uint16_t>(*src_value); }
     [[nodiscard]] uint8_t expected_value8() const { return std::get<uint8_t>(expected_value); }
     [[nodiscard]] uint16_t expected_value16() const { return std::get<uint16_t>(expected_value); }
+    [[nodiscard]] uint8_t get_opcode8() const
+    {
+        return std::visit([](auto&& op) { return static_cast<uint8_t>(op); }, opcode);
+    }
 
     // For better test case naming in GTest output
     friend std::ostream& operator<<(std::ostream& os, const InstrParam& p)
@@ -239,8 +243,15 @@ struct InstrParam {
 
         // clang-format off
         os << p.name
-           << " [opcode=" << boyboy::utils::PrettyHex{static_cast<uint8_t>(p.opcode)};
-           
+           << " [opcode="; 
+        
+        if (std::holds_alternative<boyboy::cpu::CBOpcode>(p.opcode))
+        {
+            os << "(CB)";
+        }
+
+        os << boyboy::utils::PrettyHex{p.get_opcode8()};
+
         print_opt(p.src_op_type, "src_type");
         print_opt(p.dst_op_type, "dst_type");
         
