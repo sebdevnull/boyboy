@@ -167,8 +167,8 @@ private:
     void rr_r8(Reg8Name r8);
     void sla_r8(Reg8Name r8);
     void sra_r8(Reg8Name r8);
-    void swap_r8(Reg8Name r8);
     void srl_r8(Reg8Name r8);
+    void swap_r8(Reg8Name r8);
     void bit_b3_r8(uint8_t bit, Reg8Name r8);
     void res_b3_r8(uint8_t bit, Reg8Name r8);
     void set_b3_r8(uint8_t bit, Reg8Name r8);
@@ -559,5 +559,36 @@ private:
 #define CPU_RL_AT_HL
 // RR [HL]
 #define CPU_RR_AT_HL
+
+// SLA r8
+#define CPU_SLA_A
+#define CPU_SLA_B
+#define CPU_SLA_C
+#define CPU_SLA_D
+#define CPU_SLA_E
+#define CPU_SLA_H
+#define CPU_SLA_L
+// SRA r8
+#define CPU_SRA_A
+#define CPU_SRA_B
+#define CPU_SRA_C
+#define CPU_SRA_D
+#define CPU_SRA_E   
+#define CPU_SRA_H
+#define CPU_SRA_L
+// SRL r8
+#define CPU_SRL_A
+#define CPU_SRL_B
+#define CPU_SRL_C
+#define CPU_SRL_D
+#define CPU_SRL_E
+#define CPU_SRL_H
+#define CPU_SRL_L
+// SLA [HL]
+#define CPU_SLA_AT_HL
+// SRA [HL]
+#define CPU_SRA_AT_HL
+// SRL [HL]
+#define CPU_SRL_AT_HL
 
 } // namespace boyboy::cpu

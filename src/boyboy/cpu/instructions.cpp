@@ -221,10 +221,49 @@ void Cpu::rr_r8(Reg8Name r8)
     set_flag(Flag::Carry, new_carry);
 }
 
-// void Cpu::sla_r8(Reg8Name r8);
-// void Cpu::sra_r8(Reg8Name r8);
+void Cpu::sla_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x80) != 0;
+    uint8_t result = (val << 1) & 0xFE; // LSB is always 0
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::sra_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x01) != 0;
+    uint8_t result = (val >> 1) | (val & 0x80); // MSB stays the same
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+void Cpu::srl_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool new_carry = (val & 0x01) != 0;
+    uint8_t result = (val >> 1) & 0x7F; // MSB is always 0
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
 // void Cpu::swap_r8(Reg8Name r8);
-// void Cpu::srl_r8(Reg8Name r8);
 // void Cpu::bit_b3_r8(uint8_t bit, Reg8Name r8);
 // void Cpu::res_b3_r8(uint8_t bit, Reg8Name r8);
 // void Cpu::set_b3_r8(uint8_t bit, Reg8Name r8);
@@ -1188,6 +1227,80 @@ void Cpu::rr_at_hl()
     bool new_carry = (value & 0x01) != 0;
 
     value = (value >> 1) | (carry ? 0x80 : 0);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+
+// clang-format off
+// SLA r8
+void Cpu::sla_a() { sla_r8(Reg8Name::A); }
+void Cpu::sla_b() { sla_r8(Reg8Name::B); }
+void Cpu::sla_c() { sla_r8(Reg8Name::C); }
+void Cpu::sla_d() { sla_r8(Reg8Name::D); }
+void Cpu::sla_e() { sla_r8(Reg8Name::E); }
+void Cpu::sla_h() { sla_r8(Reg8Name::H); }
+void Cpu::sla_l() { sla_r8(Reg8Name::L); }
+// SRA r8
+void Cpu::sra_a() { sra_r8(Reg8Name::A); }
+void Cpu::sra_b() { sra_r8(Reg8Name::B); }
+void Cpu::sra_c() { sra_r8(Reg8Name::C); }
+void Cpu::sra_d() { sra_r8(Reg8Name::D); }
+void Cpu::sra_e() { sra_r8(Reg8Name::E); }
+void Cpu::sra_h() { sra_r8(Reg8Name::H); }
+void Cpu::sra_l() { sra_r8(Reg8Name::L); }
+// SRL r8
+void Cpu::srl_a() { srl_r8(Reg8Name::A); }
+void Cpu::srl_b() { srl_r8(Reg8Name::B); }
+void Cpu::srl_c() { srl_r8(Reg8Name::C); }
+void Cpu::srl_d() { srl_r8(Reg8Name::D); }
+void Cpu::srl_e() { srl_r8(Reg8Name::E); }
+void Cpu::srl_h() { srl_r8(Reg8Name::H); }
+void Cpu::srl_l() { srl_r8(Reg8Name::L); }
+// clang-format on
+
+// SLA [HL]
+void Cpu::sla_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x80) != 0;
+
+    value = (value << 1) & 0xFE; // LSB is set to 0
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// SRA [HL]
+void Cpu::sra_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x01) != 0;
+    bool msb = (value & 0x80) != 0;
+
+    value = (value >> 1) | (msb ? 0x80 : 0); // MSB does not change
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, new_carry);
+}
+// SRL [HL]
+void Cpu::srl_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+    bool new_carry = (value & 0x01) != 0;
+
+    value = (value >> 1) & 0x7F; // MSB is set to 0
     write_byte(addr, value);
 
     set_flag(Flag::Zero, value == 0);
