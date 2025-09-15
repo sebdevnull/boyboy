@@ -263,7 +263,19 @@ void Cpu::srl_r8(Reg8Name r8)
     set_flag(Flag::Carry, new_carry);
 }
 
-// void Cpu::swap_r8(Reg8Name r8);
+void Cpu::swap_r8(Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    uint8_t result = (val << 4) | (val >> 4);
+
+    set_register(r8, result);
+
+    set_flag(Flag::Zero, result == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, false);
+}
+
 // void Cpu::bit_b3_r8(uint8_t bit, Reg8Name r8);
 // void Cpu::res_b3_r8(uint8_t bit, Reg8Name r8);
 // void Cpu::set_b3_r8(uint8_t bit, Reg8Name r8);
@@ -1307,6 +1319,32 @@ void Cpu::srl_at_hl()
     set_flag(Flag::Substract, false);
     set_flag(Flag::HalfCarry, false);
     set_flag(Flag::Carry, new_carry);
+}
+
+// clang-format off
+// SWAP r8
+void Cpu::swap_a() { swap_r8(Reg8Name::A); }
+void Cpu::swap_b() { swap_r8(Reg8Name::B); }
+void Cpu::swap_c() { swap_r8(Reg8Name::C); }
+void Cpu::swap_d() { swap_r8(Reg8Name::D); }    
+void Cpu::swap_e() { swap_r8(Reg8Name::E); }
+void Cpu::swap_h() { swap_r8(Reg8Name::H); }
+void Cpu::swap_l() { swap_r8(Reg8Name::L); }
+// clang-format on
+
+// SWAP [HL]
+void Cpu::swap_at_hl()
+{
+    uint16_t addr = get_register(Reg16Name::HL);
+    uint8_t value = read_byte(addr);
+
+    value = (value << 4) | (value >> 4);
+    write_byte(addr, value);
+
+    set_flag(Flag::Zero, value == 0);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, false);
+    set_flag(Flag::Carry, false);
 }
 
 } // namespace boyboy::cpu

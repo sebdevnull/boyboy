@@ -591,4 +591,15 @@ private:
 // SRL [HL]
 #define CPU_SRL_AT_HL
 
+// SWAP r8
+#define CPU_SWAP_A
+#define CPU_SWAP_B
+#define CPU_SWAP_C
+#define CPU_SWAP_D
+#define CPU_SWAP_E
+#define CPU_SWAP_H
+#define CPU_SWAP_L
+// SWAP [HL]
+#define CPU_SWAP_AT_HL
+
 } // namespace boyboy::cpu
