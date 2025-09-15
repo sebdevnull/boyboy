@@ -276,9 +276,29 @@ void Cpu::swap_r8(Reg8Name r8)
     set_flag(Flag::Carry, false);
 }
 
-// void Cpu::bit_b3_r8(uint8_t bit, Reg8Name r8);
-// void Cpu::res_b3_r8(uint8_t bit, Reg8Name r8);
-// void Cpu::set_b3_r8(uint8_t bit, Reg8Name r8);
+void Cpu::bit_b_r8(uint8_t bit, Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    bool bit_set = (val & (1 << bit)) != 0;
+
+    set_flag(Flag::Zero, !bit_set);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, true);
+}
+
+void Cpu::bit_b_at_hl(uint8_t bit)
+{
+    uint16_t addr = registers_.hl;
+    uint8_t val = read_byte(addr);
+    bool bit_set = (val & (1 << bit)) != 0;
+
+    set_flag(Flag::Zero, !bit_set);
+    set_flag(Flag::Substract, false);
+    set_flag(Flag::HalfCarry, true);
+}
+
+// void Cpu::res_b_r8(uint8_t bit, Reg8Name r8);
+// void Cpu::set_b_r8(uint8_t bit, Reg8Name r8);
 
 // ---------- Individual CPU instruction implementations (unprefixed) ----------
 // clang-format off
@@ -1346,6 +1366,75 @@ void Cpu::swap_at_hl()
     set_flag(Flag::HalfCarry, false);
     set_flag(Flag::Carry, false);
 }
+
+// clang-format off
+// BIT b, r8
+void Cpu::bit_0_a() { bit_b_r8(0, Reg8Name::A); }
+void Cpu::bit_0_b() { bit_b_r8(0, Reg8Name::B); }
+void Cpu::bit_0_c() { bit_b_r8(0, Reg8Name::C); }
+void Cpu::bit_0_d() { bit_b_r8(0, Reg8Name::D); }
+void Cpu::bit_0_e() { bit_b_r8(0, Reg8Name::E); }
+void Cpu::bit_0_h() { bit_b_r8(0, Reg8Name::H); }
+void Cpu::bit_0_l() { bit_b_r8(0, Reg8Name::L); }
+void Cpu::bit_1_a() { bit_b_r8(1, Reg8Name::A); }
+void Cpu::bit_1_b() { bit_b_r8(1, Reg8Name::B); }
+void Cpu::bit_1_c() { bit_b_r8(1, Reg8Name::C); }
+void Cpu::bit_1_d() { bit_b_r8(1, Reg8Name::D); }
+void Cpu::bit_1_e() { bit_b_r8(1, Reg8Name::E); }
+void Cpu::bit_1_h() { bit_b_r8(1, Reg8Name::H); }
+void Cpu::bit_1_l() { bit_b_r8(1, Reg8Name::L); }
+void Cpu::bit_2_a() { bit_b_r8(2, Reg8Name::A); }
+void Cpu::bit_2_b() { bit_b_r8(2, Reg8Name::B); }
+void Cpu::bit_2_c() { bit_b_r8(2, Reg8Name::C); }
+void Cpu::bit_2_d() { bit_b_r8(2, Reg8Name::D); }
+void Cpu::bit_2_e() { bit_b_r8(2, Reg8Name::E); }
+void Cpu::bit_2_h() { bit_b_r8(2, Reg8Name::H); }
+void Cpu::bit_2_l() { bit_b_r8(2, Reg8Name::L); }
+void Cpu::bit_3_a() { bit_b_r8(3, Reg8Name::A); }
+void Cpu::bit_3_b() { bit_b_r8(3, Reg8Name::B); }
+void Cpu::bit_3_c() { bit_b_r8(3, Reg8Name::C); }
+void Cpu::bit_3_d() { bit_b_r8(3, Reg8Name::D); }
+void Cpu::bit_3_e() { bit_b_r8(3, Reg8Name::E); }
+void Cpu::bit_3_h() { bit_b_r8(3, Reg8Name::H); }
+void Cpu::bit_3_l() { bit_b_r8(3, Reg8Name::L); }
+void Cpu::bit_4_a() { bit_b_r8(4, Reg8Name::A); }
+void Cpu::bit_4_b() { bit_b_r8(4, Reg8Name::B); }
+void Cpu::bit_4_c() { bit_b_r8(4, Reg8Name::C); }
+void Cpu::bit_4_d() { bit_b_r8(4, Reg8Name::D); }
+void Cpu::bit_4_e() { bit_b_r8(4, Reg8Name::E); }
+void Cpu::bit_4_h() { bit_b_r8(4, Reg8Name::H); }
+void Cpu::bit_4_l() { bit_b_r8(4, Reg8Name::L); }
+void Cpu::bit_5_a() { bit_b_r8(5, Reg8Name::A); }
+void Cpu::bit_5_b() { bit_b_r8(5, Reg8Name::B); }
+void Cpu::bit_5_c() { bit_b_r8(5, Reg8Name::C); }
+void Cpu::bit_5_d() { bit_b_r8(5, Reg8Name::D); }
+void Cpu::bit_5_e() { bit_b_r8(5, Reg8Name::E); }
+void Cpu::bit_5_h() { bit_b_r8(5, Reg8Name::H); }
+void Cpu::bit_5_l() { bit_b_r8(5, Reg8Name::L); }
+void Cpu::bit_6_a() { bit_b_r8(6, Reg8Name::A); }
+void Cpu::bit_6_b() { bit_b_r8(6, Reg8Name::B); }
+void Cpu::bit_6_c() { bit_b_r8(6, Reg8Name::C); }
+void Cpu::bit_6_d() { bit_b_r8(6, Reg8Name::D); }
+void Cpu::bit_6_e() { bit_b_r8(6, Reg8Name::E); }
+void Cpu::bit_6_h() { bit_b_r8(6, Reg8Name::H); }
+void Cpu::bit_6_l() { bit_b_r8(6, Reg8Name::L); }
+void Cpu::bit_7_a() { bit_b_r8(7, Reg8Name::A); }
+void Cpu::bit_7_b() { bit_b_r8(7, Reg8Name::B); }
+void Cpu::bit_7_c() { bit_b_r8(7, Reg8Name::C); }
+void Cpu::bit_7_d() { bit_b_r8(7, Reg8Name::D); }
+void Cpu::bit_7_e() { bit_b_r8(7, Reg8Name::E); }
+void Cpu::bit_7_h() { bit_b_r8(7, Reg8Name::H); }
+void Cpu::bit_7_l() { bit_b_r8(7, Reg8Name::L); }
+// BIT b, [HL]
+void Cpu::bit_0_at_hl() { bit_b_at_hl(0); }
+void Cpu::bit_1_at_hl() { bit_b_at_hl(1); }
+void Cpu::bit_2_at_hl() { bit_b_at_hl(2); }
+void Cpu::bit_3_at_hl() { bit_b_at_hl(3); }
+void Cpu::bit_4_at_hl() { bit_b_at_hl(4); }
+void Cpu::bit_5_at_hl() { bit_b_at_hl(5); }
+void Cpu::bit_6_at_hl() { bit_b_at_hl(6); }
+void Cpu::bit_7_at_hl() { bit_b_at_hl(7); }
+// clang-format on
 
 } // namespace boyboy::cpu
 
