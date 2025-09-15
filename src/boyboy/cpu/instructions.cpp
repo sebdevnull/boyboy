@@ -314,7 +314,22 @@ void Cpu::res_b_at_hl(uint8_t bit)
     write_byte(addr, result);
 }
 
-// void Cpu::set_b_r8(uint8_t bit, Reg8Name r8);
+void Cpu::set_b_r8(uint8_t bit, Reg8Name r8)
+{
+    uint8_t val = get_register(r8);
+    uint8_t result = val | (1 << bit);
+
+    set_register(r8, result);
+}
+
+void Cpu::set_b_at_hl(uint8_t bit)
+{
+    uint16_t addr = registers_.hl;
+    uint8_t val = read_byte(addr);
+    uint8_t result = val | (1 << bit);
+
+    write_byte(addr, result);
+}
 
 // ---------- Individual CPU instruction implementations (unprefixed) ----------
 // clang-format off
@@ -1516,7 +1531,72 @@ void Cpu::res_4_at_hl() { res_b_at_hl(4); }
 void Cpu::res_5_at_hl() { res_b_at_hl(5); }
 void Cpu::res_6_at_hl() { res_b_at_hl(6); }
 void Cpu::res_7_at_hl() { res_b_at_hl(7); }
-
+// SET b, r8
+void Cpu::set_0_a() { set_b_r8(0, Reg8Name::A); }
+void Cpu::set_0_b() { set_b_r8(0, Reg8Name::B); }
+void Cpu::set_0_c() { set_b_r8(0, Reg8Name::C); }
+void Cpu::set_0_d() { set_b_r8(0, Reg8Name::D); }
+void Cpu::set_0_e() { set_b_r8(0, Reg8Name::E); }
+void Cpu::set_0_h() { set_b_r8(0, Reg8Name::H); }
+void Cpu::set_0_l() { set_b_r8(0, Reg8Name::L); }
+void Cpu::set_1_a() { set_b_r8(1, Reg8Name::A); }
+void Cpu::set_1_b() { set_b_r8(1, Reg8Name::B); }
+void Cpu::set_1_c() { set_b_r8(1, Reg8Name::C); }
+void Cpu::set_1_d() { set_b_r8(1, Reg8Name::D); }
+void Cpu::set_1_e() { set_b_r8(1, Reg8Name::E); }
+void Cpu::set_1_h() { set_b_r8(1, Reg8Name::H); }
+void Cpu::set_1_l() { set_b_r8(1, Reg8Name::L); }
+void Cpu::set_2_a() { set_b_r8(2, Reg8Name::A); }
+void Cpu::set_2_b() { set_b_r8(2, Reg8Name::B); }
+void Cpu::set_2_c() { set_b_r8(2, Reg8Name::C); }
+void Cpu::set_2_d() { set_b_r8(2, Reg8Name::D); }
+void Cpu::set_2_e() { set_b_r8(2, Reg8Name::E); }
+void Cpu::set_2_h() { set_b_r8(2, Reg8Name::H); }
+void Cpu::set_2_l() { set_b_r8(2, Reg8Name::L); }
+void Cpu::set_3_a() { set_b_r8(3, Reg8Name::A); }
+void Cpu::set_3_b() { set_b_r8(3, Reg8Name::B); }
+void Cpu::set_3_c() { set_b_r8(3, Reg8Name::C); }
+void Cpu::set_3_d() { set_b_r8(3, Reg8Name::D); }
+void Cpu::set_3_e() { set_b_r8(3, Reg8Name::E); }
+void Cpu::set_3_h() { set_b_r8(3, Reg8Name::H); }   
+void Cpu::set_3_l() { set_b_r8(3, Reg8Name::L); }
+void Cpu::set_4_a() { set_b_r8(4, Reg8Name::A); }
+void Cpu::set_4_b() { set_b_r8(4, Reg8Name::B); }
+void Cpu::set_4_c() { set_b_r8(4, Reg8Name::C); }
+void Cpu::set_4_d() { set_b_r8(4, Reg8Name::D); }
+void Cpu::set_4_e() { set_b_r8(4, Reg8Name::E); }
+void Cpu::set_4_h() { set_b_r8(4, Reg8Name::H); }
+void Cpu::set_4_l() { set_b_r8(4, Reg8Name::L); }
+void Cpu::set_5_a() { set_b_r8(5, Reg8Name::A); }
+void Cpu::set_5_b() { set_b_r8(5, Reg8Name::B); }
+void Cpu::set_5_c() { set_b_r8(5, Reg8Name::C); }
+void Cpu::set_5_d() { set_b_r8(5, Reg8Name::D); }
+void Cpu::set_5_e() { set_b_r8(5, Reg8Name::E); }
+void Cpu::set_5_h() { set_b_r8(5, Reg8Name::H); }   
+void Cpu::set_5_l() { set_b_r8(5, Reg8Name::L); }
+void Cpu::set_6_a() { set_b_r8(6, Reg8Name::A); }
+void Cpu::set_6_b() { set_b_r8(6, Reg8Name::B); }
+void Cpu::set_6_c() { set_b_r8(6, Reg8Name::C); }
+void Cpu::set_6_d() { set_b_r8(6, Reg8Name::D); }
+void Cpu::set_6_e() { set_b_r8(6, Reg8Name::E); }
+void Cpu::set_6_h() { set_b_r8(6, Reg8Name::H); }   
+void Cpu::set_6_l() { set_b_r8(6, Reg8Name::L); }
+void Cpu::set_7_a() { set_b_r8(7, Reg8Name::A); }
+void Cpu::set_7_b() { set_b_r8(7, Reg8Name::B); }
+void Cpu::set_7_c() { set_b_r8(7, Reg8Name::C); }
+void Cpu::set_7_d() { set_b_r8(7, Reg8Name::D); }
+void Cpu::set_7_e() { set_b_r8(7, Reg8Name::E); }
+void Cpu::set_7_h() { set_b_r8(7, Reg8Name::H); }   
+void Cpu::set_7_l() { set_b_r8(7, Reg8Name::L); }
+// SET b, [HL]
+void Cpu::set_0_at_hl() { set_b_at_hl(0); }
+void Cpu::set_1_at_hl() { set_b_at_hl(1); }
+void Cpu::set_2_at_hl() { set_b_at_hl(2); }
+void Cpu::set_3_at_hl() { set_b_at_hl(3); }
+void Cpu::set_4_at_hl() { set_b_at_hl(4); }
+void Cpu::set_5_at_hl() { set_b_at_hl(5); }
+void Cpu::set_6_at_hl() { set_b_at_hl(6); }
+void Cpu::set_7_at_hl() { set_b_at_hl(7); }
 // clang-format on
 
 } // namespace boyboy::cpu
