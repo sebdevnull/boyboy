@@ -16,9 +16,11 @@
                 "CMAKE_CXX_STANDARD": "23",
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
                 "CMAKE_CXX_EXTENSIONS": "OFF",
+                "CMAKE_COLOR_DIAGNOSTICS": "ON",
                 "BUILD_TESTING": "ON",
                 "ENABLE_CLANG_TIDY": "OFF",
-                "CMAKE_COLOR_DIAGNOSTICS": "ON"
+                "LOG_LEVEL": "INFO",
+                "DISASSEMBLY_LOG": "OFF"
             }
         },
         {
@@ -26,12 +28,14 @@
             "inherits": "default",
             "description": "Debug Configuration",
             "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_SANITIZERS": "ON",
+                "CMAKE_CXX_FLAGS_DEBUG": "-g -O0 -Wall -Wextra -Wpedantic -fsanitize=address,undefined -DDEBUG",
                 "CPU_STUBS": "ON",
                 "TEST_CPU_STUBS": "ON",
                 "BOYBOY_DEBUG": "ON",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "ENABLE_SANITIZERS": "ON",
-                "CMAKE_CXX_FLAGS_DEBUG": "-g -O0 -Wall -Wextra -Wpedantic -fsanitize=address,undefined -DDEBUG"
+                "LOG_LEVEL": "DEBUG",
+                "DISASSEMBLY_LOG": "OFF"
             }
         },
         {
