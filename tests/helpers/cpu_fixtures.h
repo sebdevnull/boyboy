@@ -52,6 +52,19 @@ struct CpuTest : public ::testing::Test {
         cpu.execute(opcode);
     }
 
+    void set_next_instruction(boyboy::cpu::Opcode opcode)
+    {
+        uint16_t pc = cpu.get_pc();
+        cpu.write_byte(pc, static_cast<uint8_t>(opcode));
+    }
+
+    void set_next_instruction(boyboy::cpu::CBOpcode opcode)
+    {
+        uint16_t pc = cpu.get_pc();
+        cpu.write_byte(pc, boyboy::cpu::CBInstructionPrefix);
+        cpu.write_byte(pc + 1, static_cast<uint8_t>(opcode));
+    }
+
     void set_flags(bool z, bool n, bool h, bool c)
     {
         cpu.set_flag(boyboy::cpu::Flag::Zero, z);
