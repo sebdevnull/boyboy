@@ -125,7 +125,7 @@ void Cpu::step()
         ime_next_ = false;
     }
 
-#ifdef DEBUG
+#ifdef DISASSEMBLY_LOG
     log::cpu_trace("{}", disassemble(registers_.pc));
 #endif
 
