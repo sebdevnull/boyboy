@@ -119,11 +119,7 @@ void Cpu::set_register(Reg16Name reg, uint16_t value)
 
 void Cpu::step()
 {
-    // If EI was just executed, enable IME now
-    if (ime_next_) {
-        ime_ = true;
-        ime_next_ = false;
-    }
+    interrupt_handler_.service();
 
 #ifdef DISASSEMBLY_LOG
     log::cpu_trace("{}", disassemble(registers_.pc));
@@ -138,6 +134,13 @@ void Cpu::step()
     }
 
     execute(opcode, instr_type);
+
+    // IME is enabled after the instruction following EI
+    if (ime_scheduled_ &&
+        (opcode != static_cast<uint8_t>(Opcode::EI) || instr_type != InstructionType::Unprefixed)) {
+        ime_scheduled_ = false;
+        ime_ = true;
+    }
 }
 
 uint8_t Cpu::fetch()

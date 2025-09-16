@@ -1018,7 +1018,7 @@ void Cpu::ret_nc()
 void Cpu::reti()
 {
     ret();
-    ime_ = true;
+    set_ime(true);
 }
 // RST n
 // clang-format off
@@ -1151,22 +1151,21 @@ void Cpu::rrca()
     set_flag(Flag::Carry, new_carry);
 }
 
-// TODO: implement properly when interrupts are handled
 // EI
 void Cpu::ei()
 {
-    ime_next_ = true;
+    schedule_ime();
 }
 // DI
 void Cpu::di()
 {
-    ime_ = false;
+    set_ime(false);
 }
 
 // HALT
 void Cpu::halt()
 {
-    halted_ = true;
+    set_halted(true);
 }
 // STOP
 void Cpu::stop_n8()
