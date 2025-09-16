@@ -222,6 +222,16 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
     }
 }
 
+void Mmu::set_io_write_callback(IoWriteCallback callback)
+{
+    io_write_callback_ = std::move(callback);
+}
+
+void Mmu::set_io_read_callback(IoReadCallback callback)
+{
+    io_read_callback_ = std::move(callback);
+}
+
 // NOLINTEND(misc-no-recursion)
 
 void Mmu::init_memory_map()
@@ -286,8 +296,8 @@ void Mmu::init_memory_map()
         .end = IOEnd,
         .data = ior_,
         .io_register = true,
-        .write_handler = nullptr, // TODO: implement
-        .read_handler = nullptr,  // TODO: implement
+        .write_handler = [&](uint16_t addr, uint8_t value) { io_write(addr, value); },
+        .read_handler = [&](uint16_t addr) -> uint8_t { return io_read(addr); },
     };
     map(MemoryRegionID::HRAM) = {
         .id = MemoryRegionID::HRAM,
@@ -329,6 +339,23 @@ const Mmu::MemoryRegion& Mmu::find_region(uint16_t addr) const
 {
     size_t idx = find_region_index(addr);
     return (idx == size_t(-1)) ? dummy_open_bus_ : memory_map_.at(idx);
+}
+
+void Mmu::io_write(uint16_t addr, uint8_t value)
+{
+    io_.write(addr, value);
+    if (io_write_callback_) {
+        io_write_callback_(addr, value);
+    }
+}
+
+[[nodiscard]] uint8_t Mmu::io_read(uint16_t addr) const
+{
+    uint8_t value = io_.read(addr);
+    if (io_read_callback_) {
+        io_read_callback_(addr, value);
+    }
+    return value;
 }
 
 } // namespace boyboy::mmu
