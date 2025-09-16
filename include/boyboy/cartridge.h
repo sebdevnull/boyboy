@@ -103,8 +103,8 @@ private:
     void load(std::string_view path);
     void unload();
     void parse_header();
-    bool header_checksum();
-    bool checksum();
+    uint8_t header_checksum();
+    uint16_t checksum();
 };
 
 } // namespace boyboy::cartridge
