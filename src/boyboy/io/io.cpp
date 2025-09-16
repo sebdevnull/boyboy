@@ -7,7 +7,7 @@
 
 // TODO: for now we only handle serial output, the rest we read/write as it is without checking
 
-#include "boyboy/io.h"
+#include "boyboy/io/io.h"
 
 #include <iostream>
 

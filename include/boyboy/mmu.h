@@ -31,7 +31,7 @@
 #include <span>
 
 #include "boyboy/cartridge.h"
-#include "boyboy/io.h"
+#include "boyboy/io/io.h"
 #include "boyboy/mmu_constants.h"
 
 namespace boyboy::mmu {
