@@ -80,6 +80,7 @@ endif()
 # --- Library target ---
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE
+    src/boyboy/common/utils.cpp
     src/boyboy/cpu/cpu.cpp
     src/boyboy/cpu/instructions.cpp
     src/boyboy/cpu/instructions_table.cpp
