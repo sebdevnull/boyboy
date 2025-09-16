@@ -11,9 +11,12 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <iostream>
 #include <ostream>
+
+#include "boyboy/mmu_constants.h"
 
 namespace boyboy::io {
 
@@ -97,7 +100,13 @@ public:
     [[nodiscard]] const std::ostream& get_serial_stream() const { return serial_out_; }
 
 private:
+    std::array<uint8_t, mmu::IOSize> registers_{};
     std::ostream& serial_out_;
+
+    [[nodiscard]] static uint8_t io_addr(uint16_t addr)
+    {
+        return static_cast<uint8_t>(addr - mmu::IOStart);
+    }
 };
 
 } // namespace boyboy::io

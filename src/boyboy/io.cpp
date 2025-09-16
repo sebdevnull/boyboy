@@ -5,6 +5,8 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: for now we only handle serial output, the rest we read/write as it is without checking
+
 #include "boyboy/io.h"
 
 #include <iostream>
@@ -17,9 +19,7 @@ namespace boyboy::io {
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 [[nodiscard]] uint8_t Io::read(uint16_t addr) const
 {
-    // TODO: implement I/O register reads
-    log::trace("[IO] Read from unimplemented I/O register: 0x{:04X}", addr);
-    return 0xFF;
+    return registers_.at(io_addr(addr));
 }
 
 void Io::write(uint16_t addr, uint8_t value)
@@ -31,9 +31,8 @@ void Io::write(uint16_t addr, uint8_t value)
         // Output to the serial stream
         serial_out_ << static_cast<char>(value) << std::flush;
     }
-    else {
-        log::trace("[IO] Write to unimplemented I/O register: 0x{:04X} = 0x{:02X}", addr, value);
-    }
+
+    registers_.at(io_addr(addr)) = value;
 }
 
 } // namespace boyboy::io
