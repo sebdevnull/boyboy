@@ -21,12 +21,12 @@
 #include "boyboy/cartridge.h"
 #include "boyboy/common/errors.h"
 #include "boyboy/common/utils.h"
+#include "boyboy/io/io.h"
 #include "boyboy/log/logging.h"
 
 namespace boyboy::test::rom {
 
 class SerialTestCapturer {
-
 public:
     [[nodiscard]] bool has_new_data() const { return has_new_data_; }
 
@@ -71,6 +71,7 @@ protected:
     const int LoopThreshold = 10000; // Arbitrary large number to prevent infinite loops
 
     boyboy::cartridge::Cartridge cart;
+    boyboy::io::Io* io;
 
     SerialTestCapturer serial_capturer;
     std::string serial_output;
@@ -82,6 +83,7 @@ protected:
     void SetUp() override
     {
         cpu::CpuTest::SetUp();
+        io = &mmu->get_io();
         cart.unload_rom();
         serial_capturer.clear();
         serial_output.clear();
@@ -131,6 +133,7 @@ protected:
 
         uint16_t last_pc = 0;
         int repeat_count = 0;
+        uint8_t cycles   = 0;
 
         // Run until finished or potential infinite loop detected
         while (!finished) {
@@ -149,7 +152,9 @@ protected:
             }
 
             last_pc = current_pc;
-            cpu.step();
+
+            cycles = cpu.step();
+            io->tick(cycles);
         }
 
         if (serial_output.empty() && serial_capturer.has_new_data()) {
