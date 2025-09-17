@@ -10,25 +10,23 @@
 #include <array>
 #include <cstdint>
 
-#include "boyboy/cpu/interrupts.h"
+#include "boyboy/io/iocomponent.h"
 
 namespace boyboy::io {
 
-class Timer {
+class Timer : public IoComponent {
 public:
-    void tick(uint16_t cycles);
-
-    [[nodiscard]] uint8_t read(uint16_t addr) const;
-    void write(uint16_t addr, uint8_t value);
+    void tick(uint16_t cycles) override;
+    [[nodiscard]] uint8_t read(uint16_t addr) const override;
+    void write(uint16_t addr, uint8_t value) override;
+    void set_interrupt_cb(cpu::InterruptRequestCallback callback) override
+    {
+        request_interrupt_ = std::move(callback);
+    }
 
     void start();
     void stop(); // Used by STOP instruction
     [[nodiscard]] bool is_stopped() const { return stopped_; }
-
-    void set_request_interrupt_callback(cpu::InterruptRequestCallback callback)
-    {
-        request_interrupt_ = std::move(callback);
-    }
 
 private:
     struct Flags {
