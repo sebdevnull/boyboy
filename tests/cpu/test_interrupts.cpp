@@ -11,6 +11,7 @@
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/cpu/interrupt_handler.h"
+#include "boyboy/cpu/interrupts.h"
 
 // Helpers
 #include "helpers/cpu_fixtures.h"

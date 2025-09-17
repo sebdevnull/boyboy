@@ -11,6 +11,7 @@
 
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/io/io.h"
+#include "boyboy/cpu/interrupts.h"
 
 namespace boyboy::cpu {
 
@@ -35,7 +36,7 @@ void InterruptHandler::service()
     cpu_.set_ime(false);
     cpu_.set_halted(false);
 
-    for (size_t i = 0; i < InterruptVectors::VectorsCount; ++i) {
+    for (size_t i = 0; i < InterruptVectors::Vectors.size(); ++i) {
         uint8_t mask = (1 << i);
         if ((pending & mask) != 0) {
             // Clear IF flag
