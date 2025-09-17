@@ -16,16 +16,16 @@ void Timer::tick(uint16_t cycles)
     // Update DIV register (if not stopped)
     if (!stopped_) {
         div_counter_ += cycles;
-        if (div_counter_ >= 256) { // DIV increments every 256 cycles
-            div_counter_ -= 256;
-            div_ = static_cast<uint8_t>(div_ + 1);
+        if (div_counter_ >= Frequency::DivIncrement) {
+            div_ += div_counter_ / Frequency::DivIncrement;
+            div_counter_ %= Frequency::DivIncrement;
         }
     }
 
     // Check if timer is enabled
     if ((tac_ & Flags::TimerEnable) != 0) {
         // Determine the frequency
-        uint16_t freq = Flags::ClockFrequencies.at(tac_ & Flags::ClockSelectMask);
+        uint16_t freq = get_frequency();
 
         // Update TIMA register
         tima_counter_ += cycles;
