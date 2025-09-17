@@ -35,6 +35,7 @@ public:
     void enable(uint8_t interrupt);
     [[nodiscard]] bool is_requested(uint8_t interrupt) const;
     [[nodiscard]] bool is_enabled(uint8_t interrupt) const;
+    [[nodiscard]] uint8_t pending() const;
 
 private:
     Cpu& cpu_;

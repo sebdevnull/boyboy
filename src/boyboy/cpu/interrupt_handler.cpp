@@ -79,6 +79,13 @@ bool InterruptHandler::is_enabled(uint8_t interrupt) const
     return (ie & interrupt) != 0;
 }
 
+uint8_t InterruptHandler::pending() const
+{
+    uint8_t ie = get_ie();
+    uint8_t ifr = get_if();
+    return ie & ifr;
+}
+
 void InterruptHandler::clear_interrupt(uint8_t interrupt)
 {
     uint8_t ifr = get_if();
