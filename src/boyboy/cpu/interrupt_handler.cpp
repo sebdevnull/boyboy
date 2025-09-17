@@ -5,14 +5,17 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+#include "boyboy/cpu/interrupt_handler.h"
+
 #include <cstdint>
 
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/io/io.h"
 
-using Interrupts = boyboy::io::IoReg::Interrupts;
-
 namespace boyboy::cpu {
+
+constexpr auto IF = boyboy::io::IoReg::Interrupts::IF;
+constexpr auto IE = boyboy::io::IoReg::Interrupts::IE;
 
 void InterruptHandler::service()
 {
@@ -32,7 +35,7 @@ void InterruptHandler::service()
     cpu_.set_ime(false);
     cpu_.set_halted(false);
 
-    for (size_t i = 0; i < Vectors.size(); ++i) {
+    for (size_t i = 0; i < InterruptVectors::VectorsCount; ++i) {
         uint8_t mask = (1 << i);
         if ((pending & mask) != 0) {
             // Clear IF flag
@@ -41,7 +44,7 @@ void InterruptHandler::service()
             // Push PC to stack
             cpu_.push_pc();
             // Jump to interrupt vector
-            cpu_.set_pc(Vectors.at(i));
+            cpu_.set_pc(InterruptVectors::Vectors.at(i));
             // Interrupt handling takes 5 machine cycles
             cpu_.add_cycles(5 * 4);
             break;
@@ -84,22 +87,22 @@ void InterruptHandler::clear_interrupt(uint8_t interrupt)
 
 uint8_t InterruptHandler::get_ie() const
 {
-    return cpu_.read_byte(Interrupts::IE);
+    return cpu_.read_byte(IE);
 }
 
 void InterruptHandler::set_ie(uint8_t value)
 {
-    cpu_.write_byte(Interrupts::IE, value);
+    cpu_.write_byte(IE, value);
 }
 
 uint8_t InterruptHandler::get_if() const
 {
-    return cpu_.read_byte(Interrupts::IF);
+    return cpu_.read_byte(IF);
 }
 
 void InterruptHandler::set_if(uint8_t value)
 {
-    cpu_.write_byte(Interrupts::IF, value);
+    cpu_.write_byte(IF, value);
 }
 
 } // namespace boyboy::cpu

@@ -10,17 +10,41 @@
 #include <array>
 #include <cstdint>
 
-#include "boyboy/cpu/cpu_constants.h"
-
 namespace boyboy::mmu {
+// Forward declaration
 class Mmu;
-}
+} // namespace boyboy::mmu
 
 namespace boyboy::cpu {
 
-// Forward declarations
+// Forward declaration
 class Cpu;
-// class Mmu;
+
+struct Interrupts {
+    static constexpr uint8_t VBlank = (1 << 0);
+    static constexpr uint8_t LCDStat = (1 << 1);
+    static constexpr uint8_t Timer = (1 << 2);
+    static constexpr uint8_t Serial = (1 << 3);
+    static constexpr uint8_t Joypad = (1 << 4);
+};
+
+struct InterruptVectors {
+    static constexpr uint8_t VBlank = 0x40;
+    static constexpr uint8_t LCDStat = 0x48;
+    static constexpr uint8_t Timer = 0x50;
+    static constexpr uint8_t Serial = 0x58;
+    static constexpr uint8_t Joypad = 0x60;
+
+    static constexpr uint8_t VectorsCount = 5;
+
+    static constexpr std::array<uint16_t, VectorsCount> Vectors = {
+        VBlank,
+        LCDStat,
+        Timer,
+        Serial,
+        Joypad,
+    };
+};
 
 class InterruptHandler {
 public:
@@ -42,14 +66,6 @@ public:
 private:
     Cpu& cpu_;
     mmu::Mmu& mmu_;
-
-    constexpr static std::array<uint16_t, 5> Vectors = {
-        VBlankVector,
-        LCDStatVector,
-        TimerVector,
-        SerialVector,
-        JoypadVector,
-    };
 
     void clear_interrupt(uint8_t interrupt);
 
