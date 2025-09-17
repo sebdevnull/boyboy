@@ -81,19 +81,19 @@ public:
     void reset_cycles() { cycles_ = 0; }
 
     // Execution functions
-    void step();
+    uint8_t step();
     uint8_t fetch();
     [[nodiscard]] uint8_t peek() const; // fetch without PC increment
-    void execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
+    uint8_t execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
 
     // Execute aliases
-    void execute(Opcode opcode)
+    uint8_t execute(Opcode opcode)
     {
-        execute(static_cast<uint8_t>(opcode), InstructionType::Unprefixed);
+        return execute(static_cast<uint8_t>(opcode), InstructionType::Unprefixed);
     }
-    void execute(CBOpcode opcode)
+    uint8_t execute(CBOpcode opcode)
     {
-        execute(static_cast<uint8_t>(opcode), InstructionType::CBPrefixed);
+        return execute(static_cast<uint8_t>(opcode), InstructionType::CBPrefixed);
     }
 
     // Memory access wrappers
