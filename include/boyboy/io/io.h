@@ -13,9 +13,9 @@
 
 #include <array>
 #include <cstdint>
-#include <iostream>
-#include <ostream>
 
+#include "boyboy/io/iocomponent.h"
+#include "boyboy/io/serial.h"
 #include "boyboy/io/timer.h"
 #include "boyboy/mmu_constants.h"
 
@@ -98,32 +98,35 @@ struct IoReg {
 
 class Io {
 public:
-    Io(std::ostream& out = std::cout) : serial_out_(out) {}
-    ~Io() = default;
-
-    // Delete move and copy
-    Io(const Io&) = delete;
-    Io& operator=(const Io&) = delete;
-    Io(Io&&) = delete;
-    Io& operator=(Io&&) = delete;
-
-    void tick(uint16_t cycles);
+    Io();
 
     // Read/write I/O registers
     [[nodiscard]] uint8_t read(uint16_t addr) const;
     void write(uint16_t addr, uint8_t value);
 
+    void tick(uint16_t cycles);
+
     // Components accessors
+    std::vector<IoComponent*>& get_components() { return components_; }
+    [[nodiscard]] const std::vector<IoComponent*>& get_components() const { return components_; }
     [[nodiscard]] const Timer& timer() const { return timer_; }
     [[nodiscard]] Timer& timer() { return timer_; }
+    [[nodiscard]] const Serial& serial() const { return serial_; }
+    [[nodiscard]] Serial& serial() { return serial_; }
 
-    [[nodiscard]] const std::ostream& get_serial_stream() const { return serial_out_; }
+    ~Io() = default;
+    Io(const Io&) = delete;
+    Io& operator=(const Io&) = delete;
+    Io(Io&&) = delete;
+    Io& operator=(Io&&) = delete;
 
 private:
+    Serial serial_;
     Timer timer_;
 
+    std::vector<IoComponent*> components_{&serial_, &timer_};
+
     std::array<uint8_t, mmu::IOSize> registers_{};
-    std::ostream& serial_out_;
 
     [[nodiscard]] static uint8_t io_addr(uint16_t addr)
     {
