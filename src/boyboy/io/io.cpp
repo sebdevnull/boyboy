@@ -16,20 +16,34 @@
 
 namespace boyboy::io {
 
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+void Io::tick(uint16_t cycles)
+{
+    timer_.tick(cycles);
+}
+
 [[nodiscard]] uint8_t Io::read(uint16_t addr) const
 {
+    if (IoReg::Timer::contains(addr)) {
+        return timer_.read(addr);
+    }
+
+    // Default behavior: return the value in the register
     return registers_.at(io_addr(addr));
 }
 
 void Io::write(uint16_t addr, uint8_t value)
 {
     if (addr == IoReg::Serial::SB) {
+        // TODO: move to serial module
         auto printable = utils::printable_char(static_cast<char>(value));
         log::trace("[IO] Serial Output: {} - '{}'", utils::PrettyHex{value}.to_string(), printable);
 
         // Output to the serial stream
         serial_out_ << static_cast<char>(value) << std::flush;
+    }
+    else if (IoReg::Timer::contains(addr)) {
+        timer_.write(addr, value);
+        return;
     }
 
     registers_.at(io_addr(addr)) = value;
