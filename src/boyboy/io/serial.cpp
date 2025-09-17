@@ -33,4 +33,11 @@ void Serial::write(uint16_t addr, uint8_t value)
     }
 }
 
+void Serial::set_interrupt_cb(cpu::InterruptRequestCallback callback)
+{
+    request_interrupt_ = std::move(callback);
+}
+
+void Serial::reset() {}
+
 } // namespace boyboy::io

@@ -27,6 +27,9 @@ public:
     // Set callback to request CPU interrupts
     virtual void set_interrupt_cb(cpu::InterruptRequestCallback callback) = 0;
 
+    // Reset component state
+    virtual void reset() = 0;
+
     // Delete move and copy
     IoComponent(const IoComponent&) = delete;
     IoComponent& operator=(const IoComponent&) = delete;

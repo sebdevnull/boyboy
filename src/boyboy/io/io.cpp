@@ -53,4 +53,12 @@ void Io::write(uint16_t addr, uint8_t value)
     registers_.at(io_addr(addr)) = value;
 }
 
+void Io::reset()
+{
+    registers_.fill(0);
+    for (auto* component : components_) {
+        component->reset();
+    }
+}
+
 } // namespace boyboy::io

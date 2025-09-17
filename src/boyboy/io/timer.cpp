@@ -78,6 +78,22 @@ void Timer::write(uint16_t addr, uint8_t value)
     }
 }
 
+void Timer::set_interrupt_cb(cpu::InterruptRequestCallback callback)
+{
+    request_interrupt_ = std::move(callback);
+}
+
+void Timer::reset()
+{
+    div_ = 0;
+    tima_ = 0;
+    tma_ = 0;
+    tac_ = 0;
+    div_counter_ = 0;
+    tima_counter_ = 0;
+    stopped_ = false;
+}
+
 void Timer::start()
 {
     stopped_ = false;

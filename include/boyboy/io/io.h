@@ -114,6 +114,8 @@ public:
     [[nodiscard]] const Serial& serial() const { return serial_; }
     [[nodiscard]] Serial& serial() { return serial_; }
 
+    void reset();
+    
     ~Io() = default;
     Io(const Io&) = delete;
     Io& operator=(const Io&) = delete;

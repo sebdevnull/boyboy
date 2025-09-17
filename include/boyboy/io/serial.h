@@ -22,10 +22,8 @@ public:
     void tick(uint16_t cycles) override;
     [[nodiscard]] uint8_t read(uint16_t addr) const override;
     void write(uint16_t addr, uint8_t value) override;
-    void set_interrupt_cb(cpu::InterruptRequestCallback callback) override
-    {
-        request_interrupt_ = std::move(callback);
-    }
+    void set_interrupt_cb(cpu::InterruptRequestCallback callback) override;
+    void reset() override;
 
     void set_output_stream(std::ostream& out) { serial_out_ = &out; }
 
