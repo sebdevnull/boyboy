@@ -5,8 +5,6 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-// TODO: implement interrupts
-
 #pragma once
 
 #include <cstdint>
@@ -16,6 +14,7 @@
 #include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/cpu/instructions.h"
+#include "boyboy/cpu/interrupt_handler.h"
 #include "boyboy/cpu/opcodes.h"
 #include "boyboy/cpu/registers.h"
 #include "boyboy/mmu.h"
@@ -24,7 +23,10 @@ namespace boyboy::cpu {
 
 class Cpu {
 public:
-    Cpu(std::shared_ptr<mmu::Mmu> mmu) : mmu_(std::move(mmu)) { reset(); }
+    Cpu(std::shared_ptr<mmu::Mmu> mmu) : mmu_(std::move(mmu)), interrupt_handler_(*this, *mmu_)
+    {
+        reset();
+    }
     ~Cpu() = default;
 
     // delete move and copy
@@ -46,7 +48,7 @@ public:
 
         // Reset flags and state
         ime_ = false;
-        ime_next_ = false;
+        ime_scheduled_ = false;
         halted_ = false;
         cycles_ = 0;
     }
@@ -60,6 +62,7 @@ public:
     [[nodiscard]] uint16_t get_pc() const { return registers_.pc; }
     void set_sp(uint16_t sp) { registers_.sp = sp; }
     void set_pc(uint16_t pc) { registers_.pc = pc; }
+    void push_pc() { push_r16(Reg16Name::PC); } // Push current PC to stack
 
     // Flag accessors
     [[nodiscard]] bool get_flag(uint8_t flag) const { return registers_.af.get_flag(flag); }
@@ -69,23 +72,28 @@ public:
     // State accessors
     [[nodiscard]] bool get_ime() const { return ime_; }
     void set_ime(bool ime) { ime_ = ime; }
+    void schedule_ime() { ime_scheduled_ = true; }
     [[nodiscard]] bool is_halted() const { return halted_; }
     void set_halted(bool halted) { halted_ = halted; }
+    [[nodiscard]] uint64_t get_cycles() const { return cycles_; }
+    void set_cycles(uint64_t cycles) { cycles_ = cycles; }
+    void add_cycles(uint8_t cycles) { cycles_ += cycles; }
+    void reset_cycles() { cycles_ = 0; }
 
     // Execution functions
-    void step();
+    uint8_t step();
     uint8_t fetch();
     [[nodiscard]] uint8_t peek() const; // fetch without PC increment
-    void execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
+    uint8_t execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
 
     // Execute aliases
-    void execute(Opcode opcode)
+    uint8_t execute(Opcode opcode)
     {
-        execute(static_cast<uint8_t>(opcode), InstructionType::Unprefixed);
+        return execute(static_cast<uint8_t>(opcode), InstructionType::Unprefixed);
     }
-    void execute(CBOpcode opcode)
+    uint8_t execute(CBOpcode opcode)
     {
-        execute(static_cast<uint8_t>(opcode), InstructionType::CBPrefixed);
+        return execute(static_cast<uint8_t>(opcode), InstructionType::CBPrefixed);
     }
 
     // Memory access wrappers
@@ -94,16 +102,26 @@ public:
     void write_byte(uint16_t addr, uint8_t value) { mmu_->write_byte(addr, value); }
     void write_word(uint16_t addr, uint16_t value) { mmu_->write_word(addr, value); }
 
+    // Interrupt handling
+    InterruptHandler& get_interrupt_handler() { return interrupt_handler_; }
+    [[nodiscard]] const InterruptHandler& get_interrupt_handler() const
+    {
+        return interrupt_handler_;
+    }
+    void request_interrupt(uint8_t interrupt) { interrupt_handler_.request(interrupt); }
+    void enable_interrupt(uint8_t interrupt) { interrupt_handler_.enable(interrupt); }
+
     // Helpers mainly for debugging and testing
     [[nodiscard]] std::string_view disassemble(uint16_t addr) const;
-    [[nodiscard]] uint64_t get_cycles() const { return cycles_; }
 
 private:
     std::shared_ptr<mmu::Mmu> mmu_;
     Registers registers_;
+    InterruptHandler interrupt_handler_;
+
     uint64_t cycles_{};
     bool ime_{false}; // Interrupt Master Enable flag
-    bool ime_next_{false};
+    bool ime_scheduled_{false};
     bool halted_{false};
 
     // Helper functions

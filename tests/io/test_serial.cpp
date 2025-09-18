@@ -7,9 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include <memory>
-
-#include "boyboy/io.h"
+#include "boyboy/io/io.h"
 #include "boyboy/mmu.h"
 
 using boyboy::io::Io;
@@ -21,17 +19,18 @@ protected:
     {
         buffer_.str(""); // Clear the buffer
         buffer_.clear();
-        io_ = std::make_unique<Io>(buffer_);
+        io_.reset();
+        io_.serial().set_output_stream(buffer_);
     }
 
     std::ostringstream buffer_;
-    std::unique_ptr<Io> io_;
+    Io io_;
 };
 
 TEST_F(SerialIOTest, WritesCharacterToSB)
 {
-    io_->write(Serial::SB, 'H');
-    io_->write(Serial::SB, 'i');
+    io_.write(Serial::SB, 'H');
+    io_.write(Serial::SB, 'i');
     EXPECT_EQ(buffer_.str(), "Hi");
 }
 
@@ -40,7 +39,7 @@ TEST(SerialMMUTest, WritesCharacterToSB)
 {
     std::ostringstream buffer;
     boyboy::mmu::Mmu mmu;
-    
+
     auto* cout_buf = std::cout.rdbuf(buffer.rdbuf()); // Redirect std::cout to buffer
 
     mmu.write_byte(Serial::SB, 'H');

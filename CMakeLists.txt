@@ -84,10 +84,13 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/cpu/cpu.cpp
     src/boyboy/cpu/instructions.cpp
     src/boyboy/cpu/instructions_table.cpp
+    src/boyboy/cpu/interrupt_handler.cpp
+    src/boyboy/io/io.cpp
+    src/boyboy/io/serial.cpp
+    src/boyboy/io/timer.cpp
     src/boyboy/cartridge.cpp
     src/boyboy/display.cpp
     src/boyboy/mmu.cpp
-    src/boyboy/io.cpp
     src/boyboy/emulator.cpp
 )
 

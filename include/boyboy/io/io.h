@@ -11,9 +11,13 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
-#include <iostream>
-#include <ostream>
+
+#include "boyboy/io/iocomponent.h"
+#include "boyboy/io/serial.h"
+#include "boyboy/io/timer.h"
+#include "boyboy/mmu_constants.h"
 
 namespace boyboy::io {
 
@@ -21,11 +25,15 @@ namespace boyboy::io {
 struct IoReg {
     struct Joypad {
         static constexpr uint16_t P1 = 0xFF00; // Joypad
+
+        static bool contains(uint16_t addr) { return addr == P1; }
     };
 
     struct Serial {
         static constexpr uint16_t SB = 0xFF01; // Serial Data
         static constexpr uint16_t SC = 0xFF02; // Serial Control
+
+        static bool contains(uint16_t addr) { return addr == SB || addr == SC; }
     };
 
     struct Timer {
@@ -33,6 +41,8 @@ struct IoReg {
         static constexpr uint16_t TIMA = 0xFF05; // Timer Counter
         static constexpr uint16_t TMA = 0xFF06;  // Timer Modulo
         static constexpr uint16_t TAC = 0xFF07;  // Timer Control
+
+        static bool contains(uint16_t addr) { return addr >= DIV && addr <= TAC; }
     };
 
     struct Sound {
@@ -57,6 +67,8 @@ struct IoReg {
         static constexpr uint16_t NR50 = 0xFF24; // Channel control / ON-OFF / Volume
         static constexpr uint16_t NR51 = 0xFF25; // Selection of Sound output terminal
         static constexpr uint16_t NR52 = 0xFF26; // Sound on/off
+
+        static bool contains(uint16_t addr) { return addr >= NR10 && addr <= NR52; }
     };
 
     struct Lcd {
@@ -72,32 +84,56 @@ struct IoReg {
         static constexpr uint16_t OBP1 = 0xFF49; // Object Palette 1 Data
         static constexpr uint16_t WY = 0xFF4A;   // Window Y Position
         static constexpr uint16_t WX = 0xFF4B;   // Window X Position minus 7
+
+        static bool contains(uint16_t addr) { return addr >= LCDC && addr <= WX; }
     };
 
     struct Interrupts {
         static constexpr uint16_t IF = 0xFF0F; // Interrupt Flag
         static constexpr uint16_t IE = 0xFFFF; // Interrupt Enable
+
+        static bool contains(uint16_t addr) { return addr == IF || addr == IE; }
     };
 };
 
 class Io {
 public:
-    Io(std::ostream& out = std::cout) : serial_out_(out) {}
-    ~Io() = default;
+    Io();
 
-    // delete move and copy
+    // Read/write I/O registers
+    [[nodiscard]] uint8_t read(uint16_t addr) const;
+    void write(uint16_t addr, uint8_t value);
+
+    void tick(uint16_t cycles);
+
+    // Components accessors
+    std::vector<IoComponent*>& get_components() { return components_; }
+    [[nodiscard]] const std::vector<IoComponent*>& get_components() const { return components_; }
+    [[nodiscard]] const Timer& timer() const { return timer_; }
+    [[nodiscard]] Timer& timer() { return timer_; }
+    [[nodiscard]] const Serial& serial() const { return serial_; }
+    [[nodiscard]] Serial& serial() { return serial_; }
+
+    void reset();
+    
+    ~Io() = default;
     Io(const Io&) = delete;
     Io& operator=(const Io&) = delete;
     Io(Io&&) = delete;
     Io& operator=(Io&&) = delete;
 
-    [[nodiscard]] uint8_t read(uint16_t addr) const;
-    void write(uint16_t addr, uint8_t value);
-
-    [[nodiscard]] const std::ostream& get_serial_stream() const { return serial_out_; }
-
 private:
-    std::ostream& serial_out_;
+    Serial serial_;
+    Timer timer_;
+
+    std::vector<IoComponent*> components_{&serial_, &timer_};
+
+    std::array<uint8_t, mmu::IOSize> registers_{};
+
+    [[nodiscard]] static uint8_t io_addr(uint16_t addr)
+    {
+        return static_cast<uint8_t>(addr - mmu::IOStart);
+    }
 };
 
 } // namespace boyboy::io

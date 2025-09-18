@@ -1018,7 +1018,7 @@ void Cpu::ret_nc()
 void Cpu::reti()
 {
     ret();
-    ime_ = true;
+    set_ime(true);
 }
 // RST n
 // clang-format off
@@ -1151,22 +1151,31 @@ void Cpu::rrca()
     set_flag(Flag::Carry, new_carry);
 }
 
-// TODO: implement properly when interrupts are handled
 // EI
 void Cpu::ei()
 {
-    ime_next_ = true;
+    schedule_ime();
 }
 // DI
 void Cpu::di()
 {
-    ime_ = false;
+    set_ime(false);
 }
 
 // HALT
 void Cpu::halt()
 {
-    halted_ = true;
+    if (get_ime() || interrupt_handler_.pending() == 0) {
+        // Normal HALT
+        set_halted(true);
+    }
+    else {
+        // IME = 0 && (IE & IF) != 0
+        // HALT bug: halt mode is not entered and PC is not incremented when executing the next
+        // instruction, effectively causing the next instruction to be executed twice.
+        // We won't enter halt mode, but we will continue execution normally.
+        // Most ROMs will run a NOP after HALT to avoid the bug, so it will not be an issue.
+    }
 }
 // STOP
 void Cpu::stop_n8()

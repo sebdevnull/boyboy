@@ -130,7 +130,7 @@ uint16_t Mmu::read_word(uint16_t addr) const
 
     uint16_t local_addr = addr - region.start;
 
-    return utils::to_u16(region.data[local_addr], region.data[local_addr + 1]);
+    return utils::to_u16(region.data[local_addr + 1], region.data[local_addr]);
 }
 
 void Mmu::write_byte(uint16_t addr, uint8_t value)
@@ -191,8 +191,8 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
     }
 
     uint16_t local_addr = addr - region.start;
-    region.data[local_addr] = utils::msb(value);
-    region.data[local_addr + 1] = utils::lsb(value);
+    region.data[local_addr] = utils::lsb(value);
+    region.data[local_addr + 1] = utils::msb(value);
 }
 
 void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)

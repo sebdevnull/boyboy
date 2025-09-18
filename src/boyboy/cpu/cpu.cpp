@@ -117,12 +117,15 @@ void Cpu::set_register(Reg16Name reg, uint16_t value)
     }
 }
 
-void Cpu::step()
+uint8_t Cpu::step()
 {
-    // If EI was just executed, enable IME now
-    if (ime_next_) {
-        ime_ = true;
-        ime_next_ = false;
+    interrupt_handler_.service();
+
+    if (halted_) {
+        // TODO: This should be 0 cycles, but until we have a clock, we use 4 cycles
+        // to keep other components ticking
+        cycles_ += 4;
+        return 4;
     }
 
 #ifdef DISASSEMBLY_LOG
@@ -137,7 +140,16 @@ void Cpu::step()
         instr_type = InstructionType::CBPrefixed;
     }
 
-    execute(opcode, instr_type);
+    uint8_t cycles = execute(opcode, instr_type);
+
+    // IME is enabled after the instruction following EI
+    if (ime_scheduled_ &&
+        (opcode != static_cast<uint8_t>(Opcode::EI) || instr_type != InstructionType::Unprefixed)) {
+        ime_scheduled_ = false;
+        ime_ = true;
+    }
+
+    return cycles;
 }
 
 uint8_t Cpu::fetch()
@@ -150,11 +162,12 @@ uint8_t Cpu::fetch()
     return read_byte(registers_.pc);
 }
 
-void Cpu::execute(uint8_t opcode, InstructionType instr_type)
+uint8_t Cpu::execute(uint8_t opcode, InstructionType instr_type)
 {
     const auto& instr = InstructionTable::get_instruction(instr_type, opcode);
     (this->*instr.execute)();
     cycles_ += instr.cycles;
+    return instr.cycles;
 }
 
 std::string_view Cpu::disassemble(uint16_t addr) const
