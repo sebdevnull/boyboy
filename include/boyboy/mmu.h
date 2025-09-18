@@ -31,12 +31,16 @@
 #include <span>
 
 #include "boyboy/cartridge.h"
+#include "boyboy/io/io.h"
 #include "boyboy/mmu_constants.h"
 
 namespace boyboy::mmu {
 
 class Mmu {
 public:
+    using IoWriteCallback = std::function<void(uint16_t, uint8_t)>;
+    using IoReadCallback = std::function<void(uint16_t, uint8_t)>;
+
     Mmu() { reset(); }
 
     // Reset MMU state
@@ -50,6 +54,14 @@ public:
     void write_byte(uint16_t addr, uint8_t value);
     void write_word(uint16_t addr, uint16_t value);
     void copy(uint16_t dst_addr, std::span<uint8_t> src);
+
+    [[nodiscard]] io::Io& get_io() { return io_; }
+    [[nodiscard]] const io::Io& get_io() const { return io_; }
+
+    // IO read/write callbacks
+    void set_io_write_callback(IoWriteCallback callback);
+    void set_io_read_callback(IoReadCallback callback);
+
 
 private:
     enum class MemoryRegionID : uint8_t {
@@ -85,7 +97,19 @@ private:
         // Optional I/O callbacks
         std::function<void(uint16_t, uint8_t)> write_handler = nullptr;
         std::function<uint8_t(uint16_t)> read_handler = nullptr;
+
+        // TODO: use helpers
+        // Helpers
+        [[nodiscard]] size_t size() const { return end - start + 1; }
+        [[nodiscard]] bool contains(uint16_t addr) const { return addr >= start && addr <= end; }
     };
+
+    // I/O handler
+    io::Io io_;
+
+    // Optional I/O read/write callbacks
+    IoWriteCallback io_write_callback_ = nullptr;
+    IoReadCallback io_read_callback_ = nullptr;
 
     // ROM load status flag
     bool rom_loaded_ = false;
@@ -131,6 +155,10 @@ private:
     [[nodiscard]] inline size_t find_region_index(uint16_t addr) const;
     [[nodiscard]] inline MemoryRegion& find_region(uint16_t addr);
     [[nodiscard]] inline const MemoryRegion& find_region(uint16_t addr) const;
+
+    // I/O read/write handlers
+    void io_write(uint16_t addr, uint8_t value);
+    [[nodiscard]] uint8_t io_read(uint16_t addr) const;
 };
 
 } // namespace boyboy::mmu

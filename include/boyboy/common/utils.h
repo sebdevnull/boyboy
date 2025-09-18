@@ -65,4 +65,6 @@ struct PrettyHex {
     }
 };
 
+std::string printable_char(char c);
+
 } // namespace boyboy::utils

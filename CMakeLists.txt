@@ -65,12 +65,29 @@ if(BOYBOY_DEBUG)
     add_compile_definitions(BOYBOY_DEBUG)
 endif()
 
+option(LOG_LEVEL "Set log level (TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL, OFF)" "INFO")
+if(LOG_LEVEL)
+    message(NOTICE "[INFO] Log level set to ${LOG_LEVEL}")
+    add_compile_definitions(LOG_LEVEL="${LOG_LEVEL}")
+endif()
+
+option(DISASSEMBLY_LOG "Enable instruction disassembly logs" OFF)
+if(DISASSEMBLY_LOG)
+    message(NOTICE "[INFO] Instruction disassembly logs enabled")
+    add_compile_definitions(DISASSEMBLY_LOG)
+endif()
+
 # --- Library target ---
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE
+    src/boyboy/common/utils.cpp
     src/boyboy/cpu/cpu.cpp
     src/boyboy/cpu/instructions.cpp
     src/boyboy/cpu/instructions_table.cpp
+    src/boyboy/cpu/interrupt_handler.cpp
+    src/boyboy/io/io.cpp
+    src/boyboy/io/serial.cpp
+    src/boyboy/io/timer.cpp
     src/boyboy/cartridge.cpp
     src/boyboy/display.cpp
     src/boyboy/mmu.cpp

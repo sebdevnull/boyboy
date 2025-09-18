@@ -23,10 +23,13 @@ set(TEST_SOURCES
     test_main.cpp
     test_cartridge.cpp
     test_mmu.cpp
+    io/test_serial.cpp
+    io/test_timer.cpp
     cpu/test_cpu.cpp
     cpu/test_registers.cpp
     cpu/test_instruction_table.cpp
     cpu/test_instruction_stubs.cpp
+    cpu/test_interrupts.cpp
     cpu/instructions/alu/inc_dec.cpp
     cpu/instructions/alu/add_sub.cpp
     cpu/instructions/alu/logic.cpp
@@ -51,7 +54,7 @@ set(TEST_SOURCES
     cpu/instructions/misc/misc.cpp
     cpu/instructions/instructions_8bit.cpp
     cpu/instructions/instructions_16bit.cpp
-    # cpu/test_roms.cpp
+    cpu/test_roms.cpp
 )
 
 # --- Options ---

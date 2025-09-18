@@ -23,6 +23,31 @@ inline void init(const std::string& log_file = "logs/boyboy.log", bool async = t
     try {
         std::shared_ptr<spdlog::logger> logger;
         bool truncate = true;
+        auto log_level = spdlog::level::info;
+
+#ifdef LOG_LEVEL
+        if (std::string(LOG_LEVEL) == "TRACE") {
+            log_level = spdlog::level::trace;
+        }
+        else if (std::string(LOG_LEVEL) == "DEBUG") {
+            log_level = spdlog::level::debug;
+        }
+        else if (std::string(LOG_LEVEL) == "INFO") {
+            log_level = spdlog::level::info;
+        }
+        else if (std::string(LOG_LEVEL) == "WARN") {
+            log_level = spdlog::level::warn;
+        }
+        else if (std::string(LOG_LEVEL) == "ERROR") {
+            log_level = spdlog::level::err;
+        }
+        else if (std::string(LOG_LEVEL) == "CRITICAL") {
+            log_level = spdlog::level::critical;
+        }
+        else if (std::string(LOG_LEVEL) == "OFF") {
+            log_level = spdlog::level::off;
+        }
+#endif
 
         // Create sinks: console + file
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -43,12 +68,12 @@ inline void init(const std::string& log_file = "logs/boyboy.log", bool async = t
         }
 
         spdlog::set_default_logger(logger);
-        spdlog::set_level(spdlog::level::trace);
+        spdlog::set_level(log_level);
         spdlog::flush_on(spdlog::level::info);
 
         // --- CPU logger (file only) ---
         static auto cpu_logger = std::make_shared<spdlog::logger>("cpu_file_only", file_sink);
-        cpu_logger->set_level(spdlog::level::trace);
+        cpu_logger->set_level(log_level);
         spdlog::register_logger(cpu_logger); // optional: register by name
     }
     catch (const spdlog::spdlog_ex& ex) {

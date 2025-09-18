@@ -1,18 +1,46 @@
 # 🎮 BoyBoy
 
-**boyboy** is a work-in-progress **Game Boy emulator** written in C++.
+[![C++23](https://img.shields.io/badge/C++-23-blue.svg)](https://isocpp.org/)
+[![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg)](https://www.linux.org/)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-## ✨ Vision
+**BoyBoy** is a work-in-progress **Game Boy emulator** written in C++23, focusing on accuracy and learning.
 
-The long-term goal of **BoyBoy** was to:
+## 📊 Project status
 
-- Emulate the original Game Boy hardware (CPU, memory, graphics, sound)  
+**Development stage:** Early development, not playable yet.
+
+**Progress overview:**
+
+| Component             | Status        |
+|-----------------------|---------------|
+| CPU core              | ✅ Implemented |
+| Memory & DMA          | ⏳ Partial     |
+| ROM & Cartridge       | ⏳ Partial     |
+| PPU (graphics)        | ❌ Not started |
+| APU (audio)           | ❌ Not started |
+| I/O & Peripherals     | ⏳ Partial     |
+| CLI/GUI & Extras      | ⏳ Partial     |
+| Testing & Validation  | ⏳ Partial     |
+
+**Current milestone:** `v0.5-cpu-validated` - CPU core implemented and validated with Blargg's CPU test ROMs.
+
+> For a detailed feature checklist, see [ROADMAP](docs/ROADMAP.md).
+
+## 🎯 Vision
+
+**BoyBoy** aims to be an accurate, maintainable, and developer-friendly Game Boy emulator.
+
+The project is designed to:
+
+- Faithfully emulate original Game Boy hardware: CPU, memory, I/O, graphics, and audio
 - Run commercial and homebrew ROMs  
-- Provide a simple interface for debugging and testing  
+- Provide a developer-friendly debugging and testing environment
+- Serve as a hands-on learning platform for emulator development and low-level programming
 
 ## 📦 Dependencies
 
-To build **boyboy**, the following libraries are required:
+To build **BoyBoy**, the following libraries are required:
 
 - [GLFW](https://www.glfw.org/) – For windowing and input  
 - [GLEW](http://glew.sourceforge.net/) – For OpenGL extension loading  
@@ -43,7 +71,7 @@ Make sure you have **CMake 3.27+** and a C++23 compiler.
     cmake --build --preset debug
     ```
 
-3. Run tests (if any):
+3. Run tests:
 
     ```bash
     ctest --preset debug

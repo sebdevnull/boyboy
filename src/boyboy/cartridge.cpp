@@ -17,6 +17,7 @@
 #include <stdexcept>
 
 #include "boyboy/common/utils.h"
+#include "boyboy/common/errors.h"
 #include "boyboy/log/logging.h"
 
 namespace boyboy::cartridge {
@@ -49,14 +50,14 @@ void Cartridge::load_rom(std::string_view path)
     load(path);
     parse_header();
 
-    if (!header_checksum()) {
+    if (auto cks = header_checksum(); cks != 0) {
         unload_rom();
-        throw std::runtime_error("Invalid ROM header checksum");
+        throw errors::ChecksumError("header", header_.header_checksum, cks);
     }
 
-    if (!checksum()) {
+    if (auto cks = checksum(); cks != 0) {
         unload_rom();
-        throw std::runtime_error("Invalid ROM checksum");
+        throw errors::ChecksumError("global", header_.checksum, cks);
     }
 }
 
@@ -66,7 +67,12 @@ void Cartridge::unload_rom()
     header_.reset();
 }
 
-bool Cartridge::header_checksum()
+/**
+ * @brief Calculate and verify the header checksum.
+ * 
+ * @return uint8_t 0 if checksum matches, non-zero computed checksum otherwise.
+ */
+uint8_t Cartridge::header_checksum()
 {
     uint8_t cks = 0;
     std::ranges::for_each(rom_.begin() + Header::HeaderStart,
@@ -80,10 +86,15 @@ bool Cartridge::header_checksum()
                   utils::PrettyHex{cks}.to_string());
     }
 
-    return pass;
+    return pass ? 0 : cks;
 }
 
-bool Cartridge::checksum()
+/**
+ * @brief Calculate and verify the global ROM checksum.
+ * 
+ * @return uint16_t 0 if checksum matches, non-zero computed checksum otherwise.
+ */
+uint16_t Cartridge::checksum()
 {
     uint16_t cks = 0;
     std::ranges::for_each(rom_.begin(), rom_.end(), [&cks](auto b) { cks += utils::to_u8(b); });
@@ -98,7 +109,7 @@ bool Cartridge::checksum()
                   utils::PrettyHex{cks}.to_string());
     }
 
-    return pass;
+    return pass ? 0 : cks;
 }
 
 /**

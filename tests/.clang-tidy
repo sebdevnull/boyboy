@@ -1,6 +1,8 @@
 InheritParentConfig: true
 
 Checks: >
-  -bugprone-easily-swappable-parameters
+  -bugprone-easily-swappable-parameters,
+  -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-non-private-member-variables-in-classes
 
 WarningsAsErrors: ""
