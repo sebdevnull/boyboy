@@ -10,7 +10,7 @@
 #include <cstdint>
 
 #include "boyboy/io/iocomponent.h"
-#include "boyboy/io/io.h"
+#include "boyboy/io/registers.h"
 
 namespace boyboy::ppu {
 

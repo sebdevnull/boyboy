@@ -10,7 +10,7 @@
 #include "boyboy/io/serial.h"
 
 #include "boyboy/common/utils.h"
-#include "boyboy/io/io.h"
+#include "boyboy/io/registers.h"
 #include "boyboy/log/logging.h"
 
 namespace boyboy::io {
