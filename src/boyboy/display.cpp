@@ -87,7 +87,7 @@ void Display::poll_events(bool& running)
 void Display::render_frame(const ppu::FrameBuffer& framebuffer)
 {
     glTexSubImage2D(
-        GL_TEXTURE_2D, 0, 0, 0, width_, height_, GL_RGB, GL_UNSIGNED_BYTE, framebuffer.data());
+        GL_TEXTURE_2D, 0, 0, 0, width_, height_, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer.data());
 
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -106,7 +106,7 @@ void Display::init_opengl()
     glBindTexture(GL_TEXTURE_2D, texture_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
     // Quad vertices
     // clang-format off
