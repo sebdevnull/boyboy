@@ -134,6 +134,7 @@ private:
     uint8_t previous_ly_ = 0;
     int cycles_ = 0;
     int cycles_in_mode_ = 0;
+    uint8_t window_line_counter_ = 0;
 
     // Frame management
     uint64_t frame_count_ = 0;
@@ -151,6 +152,8 @@ private:
     uint8_t& LY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LY));
     uint8_t& LYC_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LYC));
     uint8_t& BGP_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::BGP));
+    uint8_t& WY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::WY));
+    uint8_t& WX_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::WX));
 
     cpu::InterruptRequestCallback request_interrupt_;
 

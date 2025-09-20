@@ -20,6 +20,10 @@ using io::IoReg;
 
 void Ppu::tick(uint16_t cycles)
 {
+    if (lcd_off()) {
+        return;
+    }
+
     cycles_ += cycles;
     cycles_in_mode_ += cycles;
 
@@ -52,6 +56,7 @@ void Ppu::tick(uint16_t cycles)
                 switch_mode(Mode::VBlank);
                 frame_ready_ = true;
                 frame_count_++;
+                window_line_counter_ = 0;
             }
             else {
                 // Continue to next line in OAMScan mode
@@ -66,6 +71,7 @@ void Ppu::tick(uint16_t cycles)
             if (LY_ >= TotalScanlines) {
                 // Restart scanning from line 0
                 LY_ = 0;
+                window_line_counter_ = 0;
                 switch_mode(Mode::OAMScan);
             }
         }
@@ -86,7 +92,25 @@ void Ppu::write(uint16_t addr, uint8_t value)
         // LY is read-only
         return;
     }
-    if (addr == IoReg::Ppu::STAT) {
+
+    if (addr == IoReg::Ppu::LCDC) {
+        // Check if LCD is being disabled
+        bool lcd_enabled = (value & registers::LCDC::LCDAndPPUEnable) != 0;
+        if (!lcd_off() && !lcd_enabled) {
+            LY_ = 0;
+            cycles_in_mode_ = 0;
+            window_line_counter_ = 0;
+            switch_mode(Mode::HBlank);
+        }
+        else if (lcd_off() && lcd_enabled) {
+            // LCD is being enabled
+            LY_ = 0;
+            cycles_in_mode_ = 0;
+            window_line_counter_ = 0;
+            switch_mode(Mode::OAMScan);
+        }
+    }
+    else if (addr == IoReg::Ppu::STAT) {
         // Only bits 3-6 are writable
         value &= 0b01111000;
         value |= STAT_ & 0b10000111;
@@ -107,8 +131,10 @@ void Ppu::reset()
     cycles_ = 0;
     cycles_in_mode_ = 0;
     mode_ = Mode::OAMScan;
+    previous_mode_ = mode_;
     frame_ready_ = false;
     frame_count_ = 0;
+    window_line_counter_ = 0;
 }
 
 // Fill framebuffer with checkerboard pattern
@@ -181,7 +207,41 @@ void Ppu::render_background()
 
 void Ppu::render_window()
 {
-    // Placeholder for window rendering logic
+    if (!window_enabled() || LY_ < WY_) {
+        return;
+    }
+
+    uint16_t tilemap_addr = window_tile_map_addr();
+    uint16_t tiledata_addr = bg_window_tile_data_addr();
+    uint8_t win_y = window_line_counter_;
+
+    int first_x = std::max(0, WX_ - 7);
+    bool win_visible = first_x < LCDWidth;
+
+    if (!win_visible) {
+        return;
+    }
+
+    for (int x = first_x; x < LCDWidth; ++x) {
+        uint8_t win_x = x + 7 - WX_;
+        uint16_t tile_col = win_x / 8;
+        uint16_t tile_row = win_y / 8;
+        uint8_t px_in_tile_x = win_x % 8;
+        uint8_t px_in_tile_y = win_y % 8;
+
+        uint8_t tile_index = mem_read(tilemap_addr + (tile_row * 32) + tile_col);
+        uint16_t tile_addr = tiledata_addr + (tile_index * 16);
+
+        uint8_t lsb = mem_read(tile_addr + (px_in_tile_y * 2));
+        uint8_t msb = mem_read(tile_addr + (px_in_tile_y * 2) + 1);
+
+        uint8_t color_index =
+            ((msb >> (7 - px_in_tile_x)) & 0x1) << 1 | ((lsb >> (7 - px_in_tile_x)) & 0x1);
+
+        framebuffer_.at((LY_ * LCDWidth) + x) = palette_color(color_index, BGP_);
+    }
+
+    window_line_counter_++;
 }
 
 void Ppu::render_sprites()
