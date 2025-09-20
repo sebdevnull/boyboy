@@ -116,6 +116,13 @@ public:
     // Memory read callback for PPU to access VRAM/OAM through MMU
     void set_mem_read_cb(MemoryReadCB cb) { mem_read_ = std::move(cb); }
 
+    // Get color from palette
+    [[nodiscard]] static Pixel palette_color(uint8_t color_id, uint8_t palette)
+    {
+        uint8_t color = (palette >> (color_id * 2)) & 0x3;
+        return Palette.at(color);
+    }
+
     void test_framebuffer();
 
 private:
@@ -195,12 +202,6 @@ private:
         return (LCDC_ & registers::LCDC::BGAndWindowTileData) != 0
                    ? registers::LCDC::BGAndWindowTileData1
                    : registers::LCDC::BGAndWindowTileData0;
-    }
-
-    [[nodiscard]] static Pixel palette_color(uint8_t color_id, uint8_t palette)
-    {
-        uint8_t color = (palette >> (color_id * 2)) & 0x3;
-        return Palette.at(color);
     }
 
     [[nodiscard]] static Pixel to_rgba(uint8_t color)
