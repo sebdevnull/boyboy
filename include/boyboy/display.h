@@ -30,8 +30,8 @@ public:
     void render_frame(const ppu::FrameBuffer& framebuffer);
 
 private:
-    int width_ = ppu::Width;
-    int height_ = ppu::Height;
+    int width_ = ppu::LCDWidth;
+    int height_ = ppu::LCDHeight;
     int scale_;
 
     SDL_Window* window_ = nullptr;

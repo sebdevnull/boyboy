@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <ostream>
 
 #include "boyboy/io/iocomponent.h"
@@ -17,9 +18,9 @@
 namespace boyboy::ppu {
 
 // Screen dimensions
-static constexpr int Width = 160;
-static constexpr int Height = 144;
-static constexpr int FramebufferSize = Width * Height;
+static constexpr int LCDWidth = 160;
+static constexpr int LCDHeight = 144;
+static constexpr int FramebufferSize = LCDWidth * LCDHeight;
 
 // PPU Modes
 enum class Mode : uint8_t {
@@ -60,7 +61,7 @@ struct Cycles {
 };
 
 // Number of scanlines
-static constexpr int VisibleScanlines = Height;
+static constexpr int VisibleScanlines = LCDHeight;
 static constexpr int VBlankScanlines = 10;
 static constexpr int TotalScanlines = VisibleScanlines + VBlankScanlines;
 
@@ -73,10 +74,27 @@ static constexpr uint32_t CyclesPerFrame =
 // Types definitions
 using Pixel = uint32_t; // RGBA format
 using FrameBuffer = std::array<Pixel, FramebufferSize>;
+using MemoryReadCB = std::function<uint8_t(uint16_t)>;
+
+// Simple grayscale palette (white to black)
+static constexpr std::array<Pixel, 4> Palette = {
+    0xFFFFFFFF, // White
+    0xFFAAAAAA, // Light gray
+    0xFF555555, // Dark gray
+    0xFF000000  // Black
+};
+
+// Green-scale palette (light green to dark green)
+// static constexpr std::array<Pixel, 4> Palette = {
+//     0xFFE0F8D0, // Light green
+//     0xFF88C070, // Medium light green
+//     0xFF346856, // Medium dark green
+//     0xFF081820  // Dark green
+// };
 
 class Ppu : public io::IoComponent {
 public:
-    Ppu() { test_framebuffer(); };
+    Ppu() { reset(); }
 
     // IoComponent interface
     void tick(uint16_t cycles) override;
@@ -95,9 +113,14 @@ public:
     [[nodiscard]] uint8_t ly() const { return LY_; }
     [[nodiscard]] bool lcd_off() const { return (LCDC_ & registers::LCDC::LCDAndPPUEnable) == 0; }
 
+    // Memory read callback for PPU to access VRAM/OAM through MMU
+    void set_mem_read_cb(MemoryReadCB cb) { mem_read_ = std::move(cb); }
+
     void test_framebuffer();
 
 private:
+    MemoryReadCB mem_read_;
+
     // PPU state
     Mode mode_ = Mode::OAMScan;
     Mode previous_mode_ = mode_;
@@ -114,21 +137,71 @@ private:
     // Using array for easy reset and direct access
     // Frequently accessed registers have references to avoid repeated lookups
     std::array<uint8_t, io::IoReg::Ppu::Size> registers_{};
-    uint8_t& LY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LY));
-    uint8_t& STAT_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::STAT));
     uint8_t& LCDC_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LCDC));
+    uint8_t& STAT_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::STAT));
+    uint8_t& SCY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::SCY));
+    uint8_t& SCX_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::SCX));
+    uint8_t& LY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LY));
     uint8_t& LYC_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LYC));
+    uint8_t& BGP_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::BGP));
 
     cpu::InterruptRequestCallback request_interrupt_;
 
     void switch_mode(Mode new_mode);
+
+    // Rendering
     void render_scanline();
     void render_background();
     void render_window();
     void render_sprites();
 
+    // Interrupt handling
     void check_interrupts();
     void request_interrupt(uint8_t interrupt);
+
+    [[nodiscard]] uint8_t mem_read(uint16_t addr) const
+    {
+        if (mem_read_) {
+            return mem_read_(addr);
+        }
+        return 0xFF;
+    }
+
+    // Helpers to check LCDC flags
+    [[nodiscard]] bool bg_enabled() const
+    {
+        return (LCDC_ & registers::LCDC::BGAndWindowEnable) != 0;
+    }
+    [[nodiscard]] bool window_enabled() const
+    {
+        return bg_enabled() && (LCDC_ & registers::LCDC::WindowEnable) != 0;
+    }
+    [[nodiscard]] bool sprites_enabled() const { return (LCDC_ & registers::LCDC::OBJEnable) != 0; }
+    [[nodiscard]] bool large_sprites() const { return (LCDC_ & registers::LCDC::OBJSize) != 0; }
+
+    // Helpers to get addresses based on LCDC settings
+    [[nodiscard]] uint16_t bg_tile_map_addr() const
+    {
+        return (LCDC_ & registers::LCDC::BGTileMapArea) != 0 ? registers::LCDC::BGTileMapArea1
+                                                             : registers::LCDC::BGTileMapArea0;
+    }
+    [[nodiscard]] uint16_t window_tile_map_addr() const
+    {
+        return (LCDC_ & registers::LCDC::WindowTileMap) != 0 ? registers::LCDC::WindowTileMapArea1
+                                                             : registers::LCDC::WindowTileMapArea0;
+    }
+    [[nodiscard]] uint16_t bg_window_tile_data_addr() const
+    {
+        return (LCDC_ & registers::LCDC::BGAndWindowTileData) != 0
+                   ? registers::LCDC::BGAndWindowTileData1
+                   : registers::LCDC::BGAndWindowTileData0;
+    }
+
+    [[nodiscard]] static Pixel palette_color(uint8_t color_id, uint8_t palette)
+    {
+        uint8_t color = (palette >> (color_id * 2)) & 0x3;
+        return Palette.at(color);
+    }
 
     [[nodiscard]] static Pixel to_rgba(uint8_t color)
     {

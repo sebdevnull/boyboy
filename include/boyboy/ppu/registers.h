@@ -21,6 +21,13 @@ struct LCDC {
     static constexpr uint8_t OBJSize = 0b00000100;             // Bit 2 - OBJ (Sprite) Size
     static constexpr uint8_t OBJEnable = 0b00000010;           // Bit 1 - OBJ (Sprite) Enable
     static constexpr uint8_t BGAndWindowEnable = 0b00000001;   // Bit 0 - BG & Window Display Enable
+
+    static constexpr uint16_t BGTileMapArea0 = 0x9800;       // BGTileMapArea = 0
+    static constexpr uint16_t BGTileMapArea1 = 0x9C00;       // BGTileMapArea = 1
+    static constexpr uint16_t WindowTileMapArea0 = 0x9800;   // WindowTileMap = 0
+    static constexpr uint16_t WindowTileMapArea1 = 0x9C00;   // WindowTileMap = 1
+    static constexpr uint16_t BGAndWindowTileData0 = 0x9000; // BGAndWindowTileData = 0
+    static constexpr uint16_t BGAndWindowTileData1 = 0x8000; // BGAndWindowTileData = 1
 };
 
 // LCD Status (STAT) Register (Mixed) - 0xFF41
