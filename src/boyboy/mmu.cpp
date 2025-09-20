@@ -290,14 +290,23 @@ void Mmu::init_memory_map()
         .end = OAMEnd,
         .data = oam_,
     };
+    map(MemoryRegionID::NotUsable) = {
+        .id = MemoryRegionID::NotUsable,
+        .start = NotUsableStart,
+        .end = NotUsableEnd,
+        .data = {},
+        // .read_only = true,
+        .read_handler = [](uint16_t) { return uint8_t{0x00}; },
+        .write_handler = [](uint16_t, uint8_t) {},
+    };
     map(MemoryRegionID::IO) = {
         .id = MemoryRegionID::IO,
         .start = IOStart,
         .end = IOEnd,
         .data = ior_,
         .io_register = true,
-        .write_handler = [&](uint16_t addr, uint8_t value) { io_write(addr, value); },
         .read_handler = [&](uint16_t addr) -> uint8_t { return io_read(addr); },
+        .write_handler = [&](uint16_t addr, uint8_t value) { io_write(addr, value); },
     };
     map(MemoryRegionID::HRAM) = {
         .id = MemoryRegionID::HRAM,

@@ -55,13 +55,12 @@ public:
     void write_word(uint16_t addr, uint16_t value);
     void copy(uint16_t dst_addr, std::span<uint8_t> src);
 
-    [[nodiscard]] io::Io& get_io() { return io_; }
-    [[nodiscard]] const io::Io& get_io() const { return io_; }
+    [[nodiscard]] io::Io& io() { return io_; }
+    [[nodiscard]] const io::Io& io() const { return io_; }
 
     // IO read/write callbacks
     void set_io_write_callback(IoWriteCallback callback);
     void set_io_read_callback(IoReadCallback callback);
-
 
 private:
     enum class MemoryRegionID : uint8_t {
@@ -73,6 +72,7 @@ private:
         WRAM1,
         ECHO,
         OAM,
+        NotUsable,
         IO,
         HRAM,
         IEReg,
@@ -95,8 +95,8 @@ private:
         std::optional<MemoryRegionID> mirror = std::nullopt;
 
         // Optional I/O callbacks
-        std::function<void(uint16_t, uint8_t)> write_handler = nullptr;
         std::function<uint8_t(uint16_t)> read_handler = nullptr;
+        std::function<void(uint16_t, uint8_t)> write_handler = nullptr;
 
         // TODO: use helpers
         // Helpers
@@ -134,8 +134,8 @@ private:
         .read_only = false,
         .mirrored = false,
         .io_register = false,
-        .write_handler = nullptr,
         .read_handler = nullptr,
+        .write_handler = nullptr,
     };
 
     // Memory map table for address mapping

@@ -60,6 +60,7 @@ static constexpr size_t WRAM0Size = WRAM0End - WRAM0Start + 1;
 static constexpr size_t WRAM1Size = WRAM1End - WRAM1Start + 1;
 static constexpr size_t WRAMSize = WRAM0Size + WRAM1Size;
 static constexpr size_t OAMSize = OAMEnd - OAMStart + 1;
+static constexpr size_t NotUsableSize = NotUsableEnd - NotUsableStart + 1;
 static constexpr size_t IOSize = IOEnd - IOStart + 1;
 static constexpr size_t HRAMSize = HRAMEnd - HRAMStart + 1;
 
