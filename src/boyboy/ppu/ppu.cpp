@@ -7,6 +7,10 @@
 
 #include "boyboy/ppu/ppu.h"
 
+#include <cstdint>
+
+#include "boyboy/io/registers.h"
+#include "boyboy/log/logging.h"
 #include "boyboy/ppu/registers.h"
 
 namespace boyboy::ppu {
@@ -17,6 +21,9 @@ void Ppu::tick(uint16_t cycles)
 {
     cycles_ += cycles;
     cycles_in_mode_ += cycles;
+
+    previous_mode_ = mode_;
+    previous_ly_ = LY_;
 
     switch (mode_) {
     case Mode::OAMScan:
@@ -40,7 +47,7 @@ void Ppu::tick(uint16_t cycles)
         if (cycles_in_mode_ >= Cycles::HBlank) {
             cycles_in_mode_ -= Cycles::HBlank;
             LY_++;
-            if (LY_ == Height) {
+            if (LY_ == VisibleScanlines) {
                 // Enter VBlank
                 switch_mode(Mode::VBlank);
                 frame_ready_ = true;
@@ -64,6 +71,8 @@ void Ppu::tick(uint16_t cycles)
         }
         break;
     }
+
+    check_interrupts();
 }
 
 uint8_t Ppu::read(uint16_t addr) const
@@ -80,7 +89,7 @@ void Ppu::write(uint16_t addr, uint8_t value)
     if (addr == IoReg::Ppu::STAT) {
         // Only bits 3-6 are writable
         value &= 0b01111000;
-        value |= (registers_.at(IoReg::Ppu::STAT) & 0b10000111);
+        value |= STAT_ & 0b10000111;
     }
 
     registers_.at(IoReg::Ppu::local_addr(addr)) = value;
@@ -127,6 +136,63 @@ void Ppu::render_scanline()
     for (int x = 0; x < Width; ++x) {
         framebuffer_.at((LY_ * Width) + x) = to_rgba(color);
     }
+}
+
+void Ppu::render_background()
+{
+    // Placeholder for background rendering logic
+}
+
+void Ppu::render_window()
+{
+    // Placeholder for window rendering logic
+}
+
+void Ppu::render_sprites()
+{
+    // Placeholder for sprite rendering logic
+}
+
+void Ppu::check_interrupts()
+{
+    if (lcd_off()) {
+        return;
+    }
+
+    if (previous_ly_ != LY_) {
+        if ((STAT_ & registers::STAT::LYCInt) != 0 && (LY_ == LYC_)) {
+            request_interrupt(cpu::Interrupts::LCDStat);
+            return;
+        }
+    }
+
+    if (previous_mode_ != mode_) {
+        if (mode_ == Mode::OAMScan && (STAT_ & registers::STAT::Mode2OAMInt) != 0) {
+            request_interrupt(cpu::Interrupts::LCDStat);
+            return;
+        }
+        if (mode_ == Mode::VBlank) {
+            request_interrupt(cpu::Interrupts::VBlank);
+            if ((STAT_ & registers::STAT::Mode1VBlankInt) != 0) {
+                request_interrupt(cpu::Interrupts::LCDStat);
+                return;
+            }
+        }
+        if (mode_ == Mode::HBlank && (STAT_ & registers::STAT::Mode0HBlankInt) != 0) {
+            request_interrupt(cpu::Interrupts::LCDStat);
+            return;
+        }
+    }
+}
+
+void Ppu::request_interrupt(uint8_t interrupt)
+{
+    if (!request_interrupt_) {
+        log::warn("PPU interrupt {} requested but no callback set", interrupt);
+        return;
+    }
+
+    request_interrupt_(interrupt);
 }
 
 } // namespace boyboy::ppu
