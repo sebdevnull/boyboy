@@ -12,6 +12,7 @@
 #include <functional>
 #include <ostream>
 
+#include "boyboy/common/utils.h"
 #include "boyboy/io/iocomponent.h"
 #include "boyboy/io/registers.h"
 #include "boyboy/ppu/registers.h"
@@ -112,6 +113,17 @@ struct Sprite {
     [[nodiscard]] bool x_flipped() const { return (flags & XFlip) != 0; }
     [[nodiscard]] bool behind_bg() const { return (flags & Priority) != 0; }
 };
+// sprite to string for debugging
+inline std::string to_string(const Sprite& sprite)
+{
+    return "Sprite{y=" + std::to_string(sprite.y) + ", x=" + std::to_string(sprite.x) +
+           ", tile=" + std::to_string(sprite.tile) +
+           ", flags=" + utils::PrettyHex(sprite.flags).to_string() + "}";
+}
+inline std::ostream& operator<<(std::ostream& os, const Sprite& sprite)
+{
+    return os << to_string(sprite);
+}
 
 class Ppu : public io::IoComponent {
 public:
