@@ -352,7 +352,9 @@ uint8_t Ppu::sprite_pixel_color(const Sprite& sprite, uint8_t y_in_sprite, uint8
         }
     }
 
-    uint16_t tile_addr = bg_window_tile_data_addr() + (tile_index * 16);
+    // sprites always use 0x8000 method
+    uint16_t tile_addr = registers::LCDC::OBJTileData + (tile_index * 16);
+
     uint8_t lsb = mem_read(tile_addr + (y_in_sprite * 2));
     uint8_t msb = mem_read(tile_addr + (y_in_sprite * 2) + 1);
 

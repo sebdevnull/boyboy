@@ -28,6 +28,7 @@ struct LCDC {
     static constexpr uint16_t WindowTileMapArea1 = 0x9C00;   // WindowTileMap = 1
     static constexpr uint16_t BGAndWindowTileData0 = 0x9000; // BGAndWindowTileData = 0
     static constexpr uint16_t BGAndWindowTileData1 = 0x8000; // BGAndWindowTileData = 1
+    static constexpr uint16_t OBJTileData = 0x8000;          // OBJ (Sprite) Tile Data
 };
 
 // LCD Status (STAT) Register (Mixed) - 0xFF41
