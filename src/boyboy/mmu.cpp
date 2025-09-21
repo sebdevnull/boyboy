@@ -13,10 +13,13 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
 #include <span>
 #include <stdexcept>
+#include <string>
 
 #include "boyboy/common/utils.h"
+#include "boyboy/log/logging.h"
 
 namespace boyboy::mmu {
 
@@ -230,6 +233,22 @@ void Mmu::set_io_write_callback(IoWriteCallback callback)
 void Mmu::set_io_read_callback(IoReadCallback callback)
 {
     io_read_callback_ = std::move(callback);
+}
+
+void Mmu::dump(uint16_t start_addr, uint16_t end_addr, const std::string& filename) const
+{
+    if (!filename.empty()) {
+        std::ofstream out(filename, std::ios::binary);
+        if (!out) {
+            log::error("Failed to open file: {}", filename);
+            return;
+        }
+        for (uint16_t addr = start_addr; addr <= end_addr; ++addr) {
+            uint8_t byte = read_byte(addr);
+            out.put(static_cast<char>(byte));
+        }
+        log::info("Memory dumped to {}", filename);
+    }
 }
 
 // NOLINTEND(misc-no-recursion)

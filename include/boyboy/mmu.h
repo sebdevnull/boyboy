@@ -62,6 +62,9 @@ public:
     void set_io_write_callback(IoWriteCallback callback);
     void set_io_read_callback(IoReadCallback callback);
 
+    // For debugging: dump memory region to file
+    void dump(uint16_t start_addr, uint16_t end_addr, const std::string& filename = "") const;
+
 private:
     enum class MemoryRegionID : uint8_t {
         ROMBank0 = 0,
