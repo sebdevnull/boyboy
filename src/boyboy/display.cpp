@@ -63,8 +63,17 @@ bool Display::init(const std::string& title)
 
 void Display::shutdown()
 {
+    // Cleanup OpenGL resources
+    glDeleteTextures(1, &texture_);
+    glDeleteProgram(shader_program_);
+    glDeleteVertexArrays(1, &VAO_);
+    glDeleteBuffers(1, &VBO_);
+    glDeleteBuffers(1, &EBO_);
+
+    // Destroy window and OpenGL context
     SDL_GL_DeleteContext(gl_context_);
     SDL_DestroyWindow(window_);
+
     SDL_Quit();
 }
 
