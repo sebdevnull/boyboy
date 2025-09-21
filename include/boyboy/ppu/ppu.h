@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <functional>
 #include <ostream>
@@ -75,6 +76,7 @@ static constexpr uint32_t CyclesPerFrame =
 using Pixel = uint32_t; // RGBA format
 using FrameBuffer = std::array<Pixel, FramebufferSize>;
 using MemoryReadCB = std::function<uint8_t(uint16_t)>;
+using MemoryWriteCB = std::function<void(uint16_t, uint8_t)>;
 
 // Simple grayscale palette (white to black)
 static constexpr std::array<Pixel, 4> Palette = {
@@ -91,6 +93,25 @@ static constexpr std::array<Pixel, 4> Palette = {
 //     0xFF346856, // Medium dark green
 //     0xFF081820  // Dark green
 // };
+
+struct Sprite {
+    uint8_t y;     // Y position on screen (minus 16)
+    uint8_t x;     // X position on screen (minus 8)
+    uint8_t tile;  // Tile index in memory
+    uint8_t flags; // Attributes/flags
+
+    // Attribute flags
+    static constexpr uint8_t Priority = (1 << 7);      // 0=OBJ above BG, 1=OBJ behind BG color 1-3
+    static constexpr uint8_t YFlip = (1 << 6);         // 0=Normal, 1=Vertically flipped
+    static constexpr uint8_t XFlip = (1 << 5);         // 0=Normal, 1=Horizontally flipped
+    static constexpr uint8_t PaletteNumber = (1 << 4); // 0=OBP0, 1=OBP1
+    // Bits 3-0 are not used in DMG mode
+
+    [[nodiscard]] bool palette() const { return (flags & PaletteNumber) != 0; }
+    [[nodiscard]] bool y_flipped() const { return (flags & YFlip) != 0; }
+    [[nodiscard]] bool x_flipped() const { return (flags & XFlip) != 0; }
+    [[nodiscard]] bool behind_bg() const { return (flags & Priority) != 0; }
+};
 
 class Ppu : public io::IoComponent {
 public:
@@ -113,8 +134,9 @@ public:
     [[nodiscard]] uint8_t ly() const { return LY_; }
     [[nodiscard]] bool lcd_off() const { return (LCDC_ & registers::LCDC::LCDAndPPUEnable) == 0; }
 
-    // Memory read callback for PPU to access VRAM/OAM through MMU
+    // Memory callbacks for PPU to access VRAM/OAM through MMU
     void set_mem_read_cb(MemoryReadCB cb) { mem_read_ = std::move(cb); }
+    void set_mem_write_cb(MemoryWriteCB cb) { mem_write_ = std::move(cb); }
 
     // Get color from palette
     [[nodiscard]] static Pixel palette_color(uint8_t color_id, uint8_t palette)
@@ -127,6 +149,7 @@ public:
 
 private:
     MemoryReadCB mem_read_;
+    MemoryWriteCB mem_write_;
 
     // PPU state
     Mode mode_ = Mode::OAMScan;
@@ -151,6 +174,8 @@ private:
     uint8_t& SCX_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::SCX));
     uint8_t& LY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LY));
     uint8_t& LYC_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LYC));
+    uint8_t& OBP0_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::OBP0));
+    uint8_t& OBP1_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::OBP1));
     uint8_t& BGP_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::BGP));
     uint8_t& WY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::WY));
     uint8_t& WX_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::WX));
@@ -164,11 +189,17 @@ private:
     void render_background();
     void render_window();
     void render_sprites();
+    void render_sprite_pixel(const Sprite& sprite, std::array<bool, LCDWidth>& x_drawn);
+
+    uint8_t sprite_pixel_color(const Sprite& sprite, uint8_t y_in_sprite, uint8_t x_in_sprite);
+
+    [[nodiscard]] std::array<Sprite, 40> read_oam() const;
 
     // Interrupt handling
     void check_interrupts();
     void request_interrupt(uint8_t interrupt);
 
+    // Memory access helpers
     [[nodiscard]] uint8_t mem_read(uint16_t addr) const
     {
         if (mem_read_) {
@@ -176,6 +207,13 @@ private:
         }
         return 0xFF;
     }
+    void mem_write(uint16_t addr, uint8_t value)
+    {
+        if (mem_write_) {
+            mem_write_(addr, value);
+        }
+    }
+    void write_dma(uint8_t value);
 
     // Helpers to check LCDC flags
     [[nodiscard]] bool bg_enabled() const

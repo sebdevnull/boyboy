@@ -7,11 +7,13 @@
 
 #include "boyboy/ppu/ppu.h"
 
+#include <algorithm>
 #include <cstdint>
 
 #include "boyboy/common/utils.h"
 #include "boyboy/io/registers.h"
 #include "boyboy/log/logging.h"
+#include "boyboy/mmu_constants.h"
 #include "boyboy/ppu/registers.h"
 
 namespace boyboy::ppu {
@@ -114,6 +116,10 @@ void Ppu::write(uint16_t addr, uint8_t value)
         // Only bits 3-6 are writable
         value &= 0b01111000;
         value |= STAT_ & 0b10000111;
+    }
+    else if (addr == IoReg::Ppu::DMA) {
+        write_dma(value);
+        return;
     }
 
     registers_.at(IoReg::Ppu::local_addr(addr)) = value;
@@ -222,6 +228,7 @@ void Ppu::render_window()
         return;
     }
 
+    bool drawn = false;
     for (int x = first_x; x < LCDWidth; ++x) {
         uint8_t win_x = x + 7 - WX_;
         uint16_t tile_col = win_x / 8;
@@ -230,7 +237,13 @@ void Ppu::render_window()
         uint8_t px_in_tile_y = win_y % 8;
 
         uint8_t tile_index = mem_read(tilemap_addr + (tile_row * 32) + tile_col);
-        uint16_t tile_addr = tiledata_addr + (tile_index * 16);
+        uint16_t tile_addr = 0;
+        if (tiledata_addr == registers::LCDC::BGAndWindowTileData1) {
+            tile_addr = tiledata_addr + (tile_index * 16);
+        }
+        else {
+            tile_addr = tiledata_addr + (static_cast<int8_t>(tile_index) * 16);
+        }
 
         uint8_t lsb = mem_read(tile_addr + (px_in_tile_y * 2));
         uint8_t msb = mem_read(tile_addr + (px_in_tile_y * 2) + 1);
@@ -239,14 +252,131 @@ void Ppu::render_window()
             ((msb >> (7 - px_in_tile_x)) & 0x1) << 1 | ((lsb >> (7 - px_in_tile_x)) & 0x1);
 
         framebuffer_.at((LY_ * LCDWidth) + x) = palette_color(color_index, BGP_);
+        drawn = true;
     }
 
-    window_line_counter_++;
+    if (drawn) {
+        window_line_counter_++;
+    }
 }
 
 void Ppu::render_sprites()
 {
-    // Placeholder for sprite rendering logic
+    if (!sprites_enabled()) {
+        return;
+    }
+
+    auto oam_sprites = read_oam();
+    std::vector<Sprite> scanline_sprites;
+
+    // Select sprites on current scanline
+    for (const auto& sprite : oam_sprites) {
+        int sprite_height = large_sprites() ? 16 : 8;
+        int sprite_y = sprite.y - 16;
+        if (LY_ >= sprite_y && LY_ < (sprite_y + sprite_height)) {
+            scanline_sprites.push_back(sprite);
+            if (scanline_sprites.size() >= 10) {
+                break; // Max 10 sprites per scanline
+            }
+        }
+    }
+
+    // Stable sort by X coordinate to preserve OAM order for sprites with same X
+    std::ranges::stable_sort(scanline_sprites,
+                             [](const Sprite& a, const Sprite& b) { return a.x < b.x; });
+
+    // Track which X positions have been drawn
+    std::array<bool, LCDWidth> x_drawn{false};
+
+    // Render sprites
+    for (const auto& sprite : scanline_sprites) {
+        render_sprite_pixel(sprite, x_drawn);
+    }
+}
+
+void Ppu::render_sprite_pixel(const Sprite& sprite, std::array<bool, LCDWidth>& x_drawn)
+{
+    int sprite_height = large_sprites() ? 16 : 8;
+
+    int sprite_y = sprite.y - 16;
+    int y_in_sprite = LY_ - sprite_y;
+    if (y_in_sprite < 0 || y_in_sprite >= sprite_height) {
+        return; // off-screen vertically
+    }
+
+    uint8_t palette = sprite.palette() ? OBP1_ : OBP0_;
+
+    int sprite_x = sprite.x - 8;
+    for (int px = 0; px < 8; ++px) {
+        int framebuffer_x = sprite_x + px;
+        if (framebuffer_x < 0 || framebuffer_x >= LCDWidth) {
+            continue; // off-screen horizontally
+        }
+
+        if (x_drawn.at(framebuffer_x)) {
+            continue; // pixel already drawn by higher priority sprite
+        }
+
+        uint8_t color_index = sprite_pixel_color(sprite, y_in_sprite, px);
+
+        if (color_index == 0) {
+            continue; // transparent pixel
+        }
+
+        Pixel bg_pixel = framebuffer_.at((LY_ * LCDWidth) + framebuffer_x);
+        Pixel bg_color0 = palette_color(0, BGP_);
+        Pixel sprite_color = palette_color(color_index, palette);
+
+        // Handle sprite priority
+        if (!sprite.behind_bg() || bg_pixel == bg_color0) {
+            framebuffer_.at((LY_ * LCDWidth) + framebuffer_x) = sprite_color;
+            x_drawn.at(framebuffer_x) = true;
+        }
+    }
+}
+
+uint8_t Ppu::sprite_pixel_color(const Sprite& sprite, uint8_t y_in_sprite, uint8_t x_in_sprite)
+{
+    int sprite_height = large_sprites() ? 16 : 8;
+
+    if (sprite.y_flipped()) {
+        y_in_sprite = sprite_height - 1 - y_in_sprite;
+    }
+
+    uint8_t tile_index = sprite.tile;
+    if (sprite_height == 16) {
+        tile_index &= 0xFE; // ignore LSB for 16px sprites
+        if (y_in_sprite >= 8) {
+            tile_index |= 1;  // use second tile
+            y_in_sprite -= 8; // adjust to tile row
+        }
+    }
+
+    uint16_t tile_addr = bg_window_tile_data_addr() + (tile_index * 16);
+    uint8_t lsb = mem_read(tile_addr + (y_in_sprite * 2));
+    uint8_t msb = mem_read(tile_addr + (y_in_sprite * 2) + 1);
+
+    if (sprite.x_flipped()) {
+        x_in_sprite = 7 - x_in_sprite;
+    }
+
+    // raw color index (0-3)
+    uint8_t color_index =
+        ((msb >> (7 - x_in_sprite)) & 0x1) << 1 | ((lsb >> (7 - x_in_sprite)) & 0x1);
+    return color_index;
+}
+
+std::array<Sprite, 40> Ppu::read_oam() const
+{
+    std::array<Sprite, 40> sprites{};
+    for (size_t i = 0; i < 40; ++i) {
+        uint16_t base_addr = mmu::OAMStart + (i * 4);
+        sprites.at(i).y = mem_read(base_addr);
+        sprites.at(i).x = mem_read(base_addr + 1);
+        sprites.at(i).tile = mem_read(base_addr + 2);
+        sprites.at(i).flags = mem_read(base_addr + 3);
+    }
+    return sprites;
 }
 
 void Ppu::check_interrupts()
@@ -309,6 +439,16 @@ void Ppu::request_interrupt(uint8_t interrupt)
                utils::PrettyHex(BGP_).to_string());
 
     request_interrupt_(interrupt);
+}
+
+// TODO: move to mmu or dma controller and handle timing (160 cycles)
+void Ppu::write_dma(uint8_t value)
+{
+    uint16_t source_addr = static_cast<uint16_t>(value) << 8;
+    for (uint16_t i = 0; i < 160; ++i) {
+        uint8_t data = mem_read(source_addr + i);
+        mem_write(mmu::OAMStart + i, data);
+    }
 }
 
 } // namespace boyboy::ppu
