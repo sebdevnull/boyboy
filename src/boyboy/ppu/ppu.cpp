@@ -11,6 +11,7 @@
 #include <cstdint>
 
 #include "boyboy/common/utils.h"
+#include "boyboy/cpu/interrupts.h"
 #include "boyboy/io/registers.h"
 #include "boyboy/log/logging.h"
 #include "boyboy/mmu_constants.h"
@@ -26,6 +27,21 @@ void Ppu::tick(uint16_t cycles)
         return;
     }
 
+    if ((STAT_ & registers::STAT::PPUModeMask) != static_cast<uint8_t>(mode_)) {
+        log::warn("PPU mode out of sync! STAT={}, Mode={}",
+                  utils::PrettyHex(STAT_).to_string(),
+                  to_string(mode_));
+        // Correct the mode in STAT
+        STAT_ = (STAT_ & ~registers::STAT::PPUModeMask) | static_cast<uint8_t>(mode_);
+    }
+
+    if (((STAT_ & registers::STAT::LYCEqualsLY) != 0) != (LY_ == LYC_)) {
+        log::warn("PPU LYC=LY flag out of sync! STAT={}, LY={}, LYC={}",
+                  utils::PrettyHex(STAT_).to_string(),
+                  LY_,
+                  LYC_);
+    }
+
     cycles_ += cycles;
     cycles_in_mode_ += cycles;
 
@@ -36,14 +52,13 @@ void Ppu::tick(uint16_t cycles)
     case Mode::OAMScan:
         if (cycles_in_mode_ >= Cycles::OAMScan) {
             cycles_in_mode_ -= Cycles::OAMScan;
-            switch_mode(Mode::Transfer);
+            set_mode(Mode::Transfer);
         }
         break;
     case Mode::Transfer:
         if (cycles_in_mode_ >= Cycles::Transfer) {
             cycles_in_mode_ -= Cycles::Transfer;
-            mode_ = Mode::HBlank;
-            switch_mode(Mode::HBlank);
+            set_mode(Mode::HBlank);
 
             // Render the current scanline
             render_scanline();
@@ -52,35 +67,40 @@ void Ppu::tick(uint16_t cycles)
     case Mode::HBlank:
         if (cycles_in_mode_ >= Cycles::HBlank) {
             cycles_in_mode_ -= Cycles::HBlank;
-            LY_++;
+            // LY_++;
+            inc_ly();
+            // log::trace("PPU LY incremented to {}", LY_);
             if (LY_ == VisibleScanlines) {
                 // Enter VBlank
-                switch_mode(Mode::VBlank);
+                set_mode(Mode::VBlank);
                 frame_ready_ = true;
                 frame_count_++;
                 window_line_counter_ = 0;
             }
             else {
                 // Continue to next line in OAMScan mode
-                switch_mode(Mode::OAMScan);
+                set_mode(Mode::OAMScan);
             }
         }
         break;
     case Mode::VBlank:
         if (cycles_in_mode_ >= Cycles::VBlank) {
             cycles_in_mode_ -= Cycles::VBlank;
-            LY_++;
+            // LY_++;
+            inc_ly();
+            // log::trace("PPU LY incremented to {}", LY_);
             if (LY_ >= TotalScanlines) {
                 // Restart scanning from line 0
-                LY_ = 0;
+                // LY_ = 0;
+                set_ly(0);
                 window_line_counter_ = 0;
-                switch_mode(Mode::OAMScan);
+                set_mode(Mode::OAMScan);
             }
         }
         break;
     }
 
-    check_interrupts();
+    // check_interrupts();
 }
 
 uint8_t Ppu::read(uint16_t addr) const
@@ -90,6 +110,13 @@ uint8_t Ppu::read(uint16_t addr) const
 
 void Ppu::write(uint16_t addr, uint8_t value)
 {
+    log::trace("PPU Write: {} <- {}, STAT={}, LY={}, Mode={}",
+               IoReg::Ppu::to_string(addr),
+               utils::PrettyHex(value).to_string(),
+               utils::PrettyHex(STAT_).to_string(),
+               LY_,
+               to_string(mode_));
+
     if (addr == IoReg::Ppu::LY) {
         // LY is read-only
         return;
@@ -99,23 +126,40 @@ void Ppu::write(uint16_t addr, uint8_t value)
         // Check if LCD is being disabled
         bool lcd_enabled = (value & registers::LCDC::LCDAndPPUEnable) != 0;
         if (!lcd_off() && !lcd_enabled) {
-            LY_ = 0;
+            log::info("LCD disabled");
+            // LY_ = 0;
+            set_ly(0);
             cycles_in_mode_ = 0;
             window_line_counter_ = 0;
-            switch_mode(Mode::HBlank);
+            set_mode(Mode::HBlank);
+            log::debug("PPU state after LCD off: mode={}, LY={}", to_string(mode_), LY_);
         }
         else if (lcd_off() && lcd_enabled) {
-            // LCD is being enabled
-            LY_ = 0;
+            log::info("LCD enabled");
+            // LY_ = 0;
+            set_ly(0);
             cycles_in_mode_ = 0;
             window_line_counter_ = 0;
-            switch_mode(Mode::OAMScan);
+            set_mode(Mode::OAMScan);
+            log::debug("PPU state after LCD on: mode={}, LY={}", to_string(mode_), LY_);
         }
     }
     else if (addr == IoReg::Ppu::STAT) {
         // Only bits 3-6 are writable
         value &= 0b01111000;
         value |= STAT_ & 0b10000111;
+        log::trace("PPU STAT write, old value: {}, new value: {}",
+                   utils::PrettyHex(STAT_).to_string(),
+                   utils::PrettyHex(value).to_string());
+    }
+    else if (addr == IoReg::Ppu::LYC) {
+        log::trace("PPU LYC write, old value: {}, new value: {}",
+                   utils::PrettyHex(LYC_).to_string(),
+                   utils::PrettyHex(value).to_string());
+        // Update LYC=LY flag immediately
+        LYC_ = value;
+        update_lyc();
+        return;
     }
     else if (addr == IoReg::Ppu::DMA) {
         write_dma(value);
@@ -136,11 +180,37 @@ void Ppu::reset()
     framebuffer_.fill(0);
     cycles_ = 0;
     cycles_in_mode_ = 0;
-    mode_ = Mode::OAMScan;
+    // mode_ = Mode::OAMScan;
     previous_mode_ = mode_;
     frame_ready_ = false;
     frame_count_ = 0;
     window_line_counter_ = 0;
+    set_mode(Mode::OAMScan);
+}
+
+void Ppu::set_ly(uint8_t ly)
+{
+    LY_ = ly;
+    update_lyc();
+}
+
+void Ppu::inc_ly()
+{
+    LY_++;
+    update_lyc();
+}
+
+void Ppu::update_lyc()
+{
+    if (LY_ == LYC_) {
+        STAT_ |= registers::STAT::LYCEqualsLY;
+        if ((STAT_ & registers::STAT::LYCInt) != 0) {
+            request_interrupt(cpu::Interrupts::LCDStat);
+        }
+    }
+    else {
+        STAT_ &= ~registers::STAT::LYCEqualsLY;
+    }
 }
 
 // Fill framebuffer with checkerboard pattern
@@ -155,14 +225,21 @@ void Ppu::test_framebuffer()
     }
 }
 
-void Ppu::switch_mode(Mode new_mode)
+void Ppu::set_mode(Mode new_mode)
 {
+    // Update STAT mode bits
     mode_ = new_mode;
     STAT_ = (STAT_ & ~registers::STAT::PPUModeMask) | static_cast<uint8_t>(mode_);
+
+    // Update LY=LYC flag
+    // update_lyc();
+
+    check_interrupts();
 }
 
 void Ppu::render_scanline()
 {
+    // log::trace("Rendering scanline {}", LY_);
     render_background();
     render_window();
     render_sprites();
@@ -393,21 +470,26 @@ void Ppu::check_interrupts()
     if (previous_ly_ != LY_) {
         if ((STAT_ & registers::STAT::LYCInt) != 0 && (LY_ == LYC_)) {
             stat_request = true;
+            log::trace("LYC=LY coincidence STAT interrupt triggered (LYC={}, LY={})", LYC_, LY_);
         }
     }
 
     if (previous_mode_ != mode_) {
         if (mode_ == Mode::OAMScan && (STAT_ & registers::STAT::Mode2OAMInt) != 0) {
             stat_request = true;
+            log::trace("OAM STAT interrupt triggered");
         }
         if (mode_ == Mode::VBlank) {
             vblank_request = true;
+            log::trace("VBlank interrupt triggered");
             if ((STAT_ & registers::STAT::Mode1VBlankInt) != 0) {
                 stat_request = true;
+                log::trace("VBlank STAT interrupt triggered");
             }
         }
         if (mode_ == Mode::HBlank && (STAT_ & registers::STAT::Mode0HBlankInt) != 0) {
             stat_request = true;
+            log::trace("HBlank STAT interrupt triggered");
         }
     }
 
@@ -441,12 +523,21 @@ void Ppu::request_interrupt(uint8_t interrupt)
                utils::PrettyHex(BGP_).to_string());
 
     request_interrupt_(interrupt);
+
+    uint8_t ie_reg = mem_read(IoReg::Interrupts::IE);
+    uint8_t if_reg = mem_read(IoReg::Interrupts::IF);
+    log::trace("IE: {}, IF: {}",
+               utils::PrettyHex(ie_reg).to_string(),
+               utils::PrettyHex(if_reg).to_string());
 }
 
 // TODO: move to mmu or dma controller and handle timing (160 cycles)
 void Ppu::write_dma(uint8_t value)
 {
     uint16_t source_addr = static_cast<uint16_t>(value) << 8;
+
+    log::info("DMA transfer from {} to OAM", utils::PrettyHex(source_addr).to_string());
+
     for (uint16_t i = 0; i < 160; ++i) {
         uint8_t data = mem_read(source_addr + i);
         mem_write(mmu::OAMStart + i, data);

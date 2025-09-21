@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 namespace boyboy::io {
 
@@ -77,6 +78,38 @@ struct IoReg {
         static constexpr uint16_t Size = WX - LCDC + 1;
         static bool contains(uint16_t addr) { return addr >= LCDC && addr <= WX; }
         static uint16_t local_addr(uint16_t addr) { return addr - io::IoReg::Ppu::LCDC; }
+
+        static std::string to_string(uint16_t addr)
+        {
+            switch (addr) {
+            case LCDC:
+                return "LCDC";
+            case STAT:
+                return "STAT";
+            case SCY:
+                return "SCY";
+            case SCX:
+                return "SCX";
+            case LY:
+                return "LY";
+            case LYC:
+                return "LYC";
+            case DMA:
+                return "DMA";
+            case BGP:
+                return "BGP";
+            case OBP0:
+                return "OBP0";
+            case OBP1:
+                return "OBP1";
+            case WY:
+                return "WY";
+            case WX:
+                return "WX";
+            default:
+                return "Unknown PPU register";
+            }
+        }
     };
 
     struct Interrupts {

@@ -143,8 +143,11 @@ public:
 
     // Accessors for convenience and testing
     [[nodiscard]] Mode mode() const { return mode_; }
-    [[nodiscard]] uint8_t ly() const { return LY_; }
     [[nodiscard]] bool lcd_off() const { return (LCDC_ & registers::LCDC::LCDAndPPUEnable) == 0; }
+    [[nodiscard]] uint8_t ly() const { return LY_; }
+    void set_ly(uint8_t ly);
+    void inc_ly();
+    void update_lyc(); // check and update LYC=LY flag
 
     // Memory callbacks for PPU to access VRAM/OAM through MMU
     void set_mem_read_cb(MemoryReadCB cb) { mem_read_ = std::move(cb); }
@@ -194,7 +197,7 @@ private:
 
     cpu::InterruptRequestCallback request_interrupt_;
 
-    void switch_mode(Mode new_mode);
+    void set_mode(Mode new_mode);
 
     // Rendering
     void render_scanline();
