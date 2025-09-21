@@ -29,6 +29,7 @@ void Emulator::step()
 void Emulator::run()
 {
     ppu_.set_mem_read_cb([this](uint16_t addr) { return mmu_->read_byte(addr); });
+    ppu_.set_mem_write_cb([this](uint16_t addr, uint8_t value) { mmu_->write_byte(addr, value); });
 
     display_.init();
 
