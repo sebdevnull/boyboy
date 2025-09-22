@@ -293,7 +293,7 @@ void Mmu::Dma::start(uint8_t value)
     tick_counter = 0;
     cks = 0;
 
-    log::debug("Starting DMA transfer from {}", utils::PrettyHex(src).to_string());
+    log::trace("Starting DMA transfer from {}", utils::PrettyHex(src).to_string());
 }
 
 void Mmu::Dma::tick(uint16_t cycles, Mmu& mmu)
@@ -320,7 +320,7 @@ void Mmu::Dma::tick(uint16_t cycles, Mmu& mmu)
 
     if (bytes_remaining == 0) {
         active = false;
-        log::debug("DMA transfer completed, checksum: {}", utils::PrettyHex(cks).to_string());
+        log::trace("DMA transfer completed, checksum: {}", utils::PrettyHex(cks).to_string());
         if (cks == 0) {
             log::warn("DMA transfer checksum is zero, possible issue with source data");
         }
