@@ -2,6 +2,27 @@
  * @file test_roms.cpp
  * @brief Tests for blargg's CPU test ROMs.
  *
+ * These tests run the ROMs and check their serial output for "Passed" or "Failed".
+ *
+ * ========= Tests timings =========
+ * The times below are approximate and only for reference, they may vary depending on the machine.
+ * Future reference for optimizations.
+ * Run with: ctest --preset debug -R CpuROMTest -V
+ *
+ * 01-special.gb: ~1.05s
+ * 02-interrupts.gb: X (not run, see comment below)
+ * 03-op sp,hl.gb: ~1.15s
+ * 04-op r,imm.gb: ~1.35s
+ * 05-op rp.gb: ~1.85s
+ * 06-ld r,r.gb: ~0.30s
+ * 07-jr,jp,call,ret,rst.gb: ~0.25s
+ * 08-misc instrs.gb: ~0.25s
+ * 09-op r,r.gb: ~4.45s
+ * 10-bit ops.gb: ~6.8s
+ * 11-op a,(hl).gb: ~8.1s
+ * cpu_instrs.gb: X (not run, see comment below)
+ * ================================
+ *
  * @license GPLv3 (see LICENSE file)
  */
 
