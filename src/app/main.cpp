@@ -29,7 +29,7 @@ int main(int argc, const char** argv)
     emulator::Emulator emulator;
 
     try {
-        emulator.load_cartridge(args[1]);
+        emulator.load(args[1]);
     }
     catch (const std::runtime_error& e) {
         log::error("Failed to load ROM: {}", e.what());
