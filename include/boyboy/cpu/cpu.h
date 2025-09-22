@@ -112,6 +112,7 @@ public:
     void enable_interrupt(uint8_t interrupt) { interrupt_handler_.enable(interrupt); }
 
     // Helpers mainly for debugging and testing
+    void trace() const;
     [[nodiscard]] std::string_view disassemble(uint16_t addr) const;
 
 private:

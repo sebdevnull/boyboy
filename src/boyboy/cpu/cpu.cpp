@@ -129,7 +129,7 @@ uint8_t Cpu::step()
     }
 
 #ifdef DISASSEMBLY_LOG
-    log::cpu_trace("{}", disassemble(registers_.pc));
+    trace();
 #endif
 
     uint8_t opcode = fetch();
@@ -170,7 +170,35 @@ uint8_t Cpu::execute(uint8_t opcode, InstructionType instr_type)
     return instr.cycles;
 }
 
-std::string_view Cpu::disassemble(uint16_t addr) const
+void Cpu::trace() const
+{
+    log::cpu_trace("--- CPU TRACE ---");
+    log::cpu_trace(
+        "Instruction: {} ({})", disassemble(registers_.pc), utils::PrettyHex(peek()).to_string());
+    log::cpu_trace("Next bytes: {} {} {}",
+                   utils::PrettyHex(read_byte(registers_.pc + 1)).to_string(),
+                   utils::PrettyHex(read_byte(registers_.pc + 2)).to_string(),
+                   utils::PrettyHex(read_byte(registers_.pc + 3)).to_string());
+    log::cpu_trace(
+        "CPU State: PC={}, SP={}, AF={}, BC={}, DE={}, HL={}, Flags=[Z={}, N={}, H={}, C={}], "
+        "IME={}, HALT={}, Cycles={}",
+        utils::PrettyHex(registers_.pc).to_string(),
+        utils::PrettyHex(registers_.sp).to_string(),
+        utils::PrettyHex(registers_.af).to_string(),
+        utils::PrettyHex(registers_.bc).to_string(),
+        utils::PrettyHex(registers_.de).to_string(),
+        utils::PrettyHex(registers_.hl).to_string(),
+        get_flag(Flag::Zero) ? 1 : 0,
+        get_flag(Flag::Substract) ? 1 : 0,
+        get_flag(Flag::HalfCarry) ? 1 : 0,
+        get_flag(Flag::Carry) ? 1 : 0,
+        ime_ ? "ENABLED" : "DISABLED",
+        halted_ ? "HALTED" : "RUNNING",
+        cycles_);
+    log::cpu_trace("----------------");
+}
+
+[[nodiscard]] std::string_view Cpu::disassemble(uint16_t addr) const
 {
     uint8_t opcode = read_byte(addr);
     InstructionType instr_type = InstructionType::Unprefixed;
