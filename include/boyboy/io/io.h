@@ -15,6 +15,7 @@
 #include <cstdint>
 
 #include "boyboy/io/iocomponent.h"
+#include "boyboy/io/joypad.h"
 #include "boyboy/io/serial.h"
 #include "boyboy/io/timer.h"
 #include "boyboy/mmu_constants.h"
@@ -41,6 +42,8 @@ public:
     [[nodiscard]] Serial& serial() { return serial_; }
     [[nodiscard]] const ppu::Ppu& ppu() const { return ppu_; }
     [[nodiscard]] ppu::Ppu& ppu() { return ppu_; }
+    [[nodiscard]] const Joypad& joypad() const { return joypad_; }
+    [[nodiscard]] Joypad& joypad() { return joypad_; }
 
     void reset();
 
@@ -54,8 +57,9 @@ private:
     Serial serial_;
     Timer timer_;
     ppu::Ppu ppu_;
+    Joypad joypad_;
 
-    std::vector<IoComponent*> components_{&serial_, &timer_, &ppu_};
+    std::vector<IoComponent*> components_{&serial_, &timer_, &ppu_, &joypad_};
 
     std::array<uint8_t, mmu::IOSize> registers_{};
 
