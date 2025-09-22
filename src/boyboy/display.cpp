@@ -16,6 +16,8 @@
 #include <array>
 #include <iostream>
 
+#include "boyboy/io/buttons.h"
+#include "boyboy/log/logging.h"
 #include "boyboy/ppu/ppu.h"
 
 namespace boyboy::display {
@@ -58,11 +60,22 @@ bool Display::init(const std::string& title)
 
     init_opengl();
 
+    auto gl_version_to_string = [](GLenum name) -> std::string {
+        const auto* str = glGetString(name);
+        return str != nullptr ? reinterpret_cast<const char*>(str) : "Unknown"; // NOLINT
+    };
+
+    log::info("Display initialized: {}x{} @ {}x scale", width_, height_, scale_);
+    log::info("OpenGL Version: {}", gl_version_to_string(GL_VERSION));
+    log::info("OpenGL Renderer: {}", gl_version_to_string(GL_RENDERER));
+
     return true;
 }
 
 void Display::shutdown()
 {
+    log::info("Shutting down display...");
+
     // Cleanup OpenGL resources
     glDeleteTextures(1, &texture_);
     glDeleteProgram(shader_program_);
@@ -84,12 +97,55 @@ void Display::poll_events(bool& running)
     while (SDL_PollEvent(&event) != 0) {
         if (event.type == SDL_QUIT) {
             running = false;
+            return;
         }
         if (event.type == SDL_KEYDOWN) {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
                 running = false;
+                return;
             }
+            handle_key_event(event, true);
         }
+        else if (event.type == SDL_KEYUP) {
+            handle_key_event(event, false);
+        }
+    }
+}
+
+void Display::handle_key_event(const SDL_Event& event, bool pressed)
+{
+    if (!button_cb_) {
+        log::warn("Button event ignored, no callback set");
+        return;
+    }
+
+    switch (event.key.keysym.sym) {
+    case SDLK_z:
+        button_cb_(io::Button::A, pressed);
+        break;
+    case SDLK_x:
+        button_cb_(io::Button::B, pressed);
+        break;
+    case SDLK_RETURN:
+        button_cb_(io::Button::Start, pressed);
+        break;
+    case SDLK_BACKSPACE:
+        button_cb_(io::Button::Select, pressed);
+        break;
+    case SDLK_UP:
+        button_cb_(io::Button::Up, pressed);
+        break;
+    case SDLK_DOWN:
+        button_cb_(io::Button::Down, pressed);
+        break;
+    case SDLK_LEFT:
+        button_cb_(io::Button::Left, pressed);
+        break;
+    case SDLK_RIGHT:
+        button_cb_(io::Button::Right, pressed);
+        break;
+    default:
+        break;
     }
 }
 
