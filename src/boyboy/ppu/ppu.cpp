@@ -127,21 +127,23 @@ void Ppu::write(uint16_t addr, uint8_t value)
         bool lcd_enabled = (value & registers::LCDC::LCDAndPPUEnable) != 0;
         if (!lcd_off() && !lcd_enabled) {
             log::info("LCD disabled");
+            log::debug("PPU state before LCD OFF: mode={}, LY={}", to_string(mode_), LY_);
             // LY_ = 0;
             set_ly(0);
             cycles_in_mode_ = 0;
             window_line_counter_ = 0;
             set_mode(Mode::HBlank);
-            log::debug("PPU state after LCD off: mode={}, LY={}", to_string(mode_), LY_);
+            log::debug("PPU state after LCD OFF: mode={}, LY={}", to_string(mode_), LY_);
         }
         else if (lcd_off() && lcd_enabled) {
             log::info("LCD enabled");
+            log::debug("PPU state before LCD ON: mode={}, LY={}", to_string(mode_), LY_);
             // LY_ = 0;
             set_ly(0);
             cycles_in_mode_ = 0;
             window_line_counter_ = 0;
             set_mode(Mode::OAMScan);
-            log::debug("PPU state after LCD on: mode={}, LY={}", to_string(mode_), LY_);
+            log::debug("PPU state after LCD ON: mode={}, LY={}", to_string(mode_), LY_);
         }
     }
     else if (addr == IoReg::Ppu::STAT) {
