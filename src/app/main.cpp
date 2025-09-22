@@ -23,7 +23,8 @@ int main(int argc, const char** argv)
         return 1;
     }
 
-    log::init("logs/boyboy.log", false);
+    log::init("logs/boyboy.log", true);
+    log::info("Starting BoyBoy emulator");
 
     emulator::Emulator emulator;
 
@@ -35,7 +36,10 @@ int main(int argc, const char** argv)
         return 1;
     }
 
-    // emulator.run();
+    emulator.run();
+
+    log::info("Exiting BoyBoy emulator");
+    log::shutdown();
 
     return 0;
 }
