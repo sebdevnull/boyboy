@@ -49,12 +49,18 @@ public:
     // Maps ROM memory into own memory map
     void map_rom(const cartridge::Cartridge& cart);
 
+    // Memory access
     [[nodiscard]] uint8_t read_byte(uint16_t addr) const;
     [[nodiscard]] uint16_t read_word(uint16_t addr) const;
     void write_byte(uint16_t addr, uint8_t value);
     void write_word(uint16_t addr, uint16_t value);
     void copy(uint16_t dst_addr, std::span<uint8_t> src);
 
+    // DMA transfer
+    void start_dma(uint8_t value);
+    void tick_dma(uint16_t cycles);
+
+    // Access to I/O handler
     [[nodiscard]] io::Io& io() { return io_; }
     [[nodiscard]] const io::Io& io() const { return io_; }
 
@@ -106,6 +112,22 @@ private:
         [[nodiscard]] size_t size() const { return end - start + 1; }
         [[nodiscard]] bool contains(uint16_t addr) const { return addr >= start && addr <= end; }
     };
+
+    struct Dma {
+        bool active = false;
+        uint16_t src = 0;
+        uint16_t dst = OAMStart;
+        int bytes_remaining = 0;
+        uint16_t tick_counter = 0;
+        uint16_t cks = 0; // debug variable to track transfer content
+
+        void start(uint8_t value);
+        void tick(uint16_t cycles, Mmu& mmu);
+        void reset();
+    };
+
+    // DMA state
+    Dma dma_;
 
     // I/O handler
     io::Io io_;

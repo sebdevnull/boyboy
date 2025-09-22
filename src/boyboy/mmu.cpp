@@ -34,6 +34,9 @@ void Mmu::reset()
     hram_.fill(0);
     ier_ = 0;
 
+    io_.reset();
+    dma_.reset();
+
     init_memory_map();
 }
 
@@ -91,6 +94,7 @@ uint8_t Mmu::read_byte(uint16_t addr) const
     const auto& region = find_region(addr);
 
     if (&region == &dummy_open_bus_) {
+        log::warn("Read from open bus at {}", utils::PrettyHex(addr).to_string());
         return open_bus_;
     }
 
@@ -100,6 +104,11 @@ uint8_t Mmu::read_byte(uint16_t addr) const
         }
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
+
+        log::debug("Read from mirrored region at {} (mirrored to {})",
+                   utils::PrettyHex(addr).to_string(),
+                   utils::PrettyHex(mirror_addr).to_string());
+
         return read_byte(mirror_addr);
     }
 
@@ -115,6 +124,7 @@ uint16_t Mmu::read_word(uint16_t addr) const
     const auto& region = find_region(addr);
 
     if (&region == &dummy_open_bus_) {
+        log::warn("Read from open bus at {}", utils::PrettyHex(addr).to_string());
         return open_bus_;
     }
 
@@ -124,6 +134,11 @@ uint16_t Mmu::read_word(uint16_t addr) const
         }
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
+
+        log::debug("Read from mirrored region at {} (mirrored to {})",
+                   utils::PrettyHex(addr).to_string(),
+                   utils::PrettyHex(mirror_addr).to_string());
+
         return read_word(mirror_addr);
     }
 
@@ -141,10 +156,19 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
     auto& region = find_region(addr);
 
     if (region.read_only) {
+        log::warn("Attempted write to read-only memory at {}", utils::PrettyHex(addr).to_string());
+        return;
+    }
+
+    if (dma_.active && addr >= OAMStart && addr < OAMEnd) {
+        // Ignore writes to OAM during DMA transfer
+        log::warn("Attempted write to OAM during DMA transfer at {}",
+                  utils::PrettyHex(addr).to_string());
         return;
     }
 
     if (&region == &dummy_open_bus_) {
+        log::warn("Attempted write to open bus at {}", utils::PrettyHex(addr).to_string());
         return;
     }
 
@@ -154,6 +178,11 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
         }
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
+
+        log::debug("Write to mirrored region at {} (mirrored to {})",
+                   utils::PrettyHex(addr).to_string(),
+                   utils::PrettyHex(mirror_addr).to_string());
+
         write_byte(mirror_addr, value);
         return;
     }
@@ -171,10 +200,12 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
     auto& region = find_region(addr);
 
     if (region.read_only) {
+        log::warn("Attempted write to read-only memory at {}", utils::PrettyHex(addr).to_string());
         return;
     }
 
     if (&region == &dummy_open_bus_) {
+        log::warn("Attempted write to open bus at {}", utils::PrettyHex(addr).to_string());
         return;
     }
 
@@ -184,6 +215,11 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
         }
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
+
+        log::debug("Write to mirrored region at {} (mirrored to {})",
+                   utils::PrettyHex(addr).to_string(),
+                   utils::PrettyHex(mirror_addr).to_string());
+
         write_word(mirror_addr, value);
         return;
     }
@@ -203,10 +239,13 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
     auto& region = find_region(dst_addr);
 
     if (region.read_only) {
+        log::warn("Attempted copy to read-only memory at {}",
+                  utils::PrettyHex(dst_addr).to_string());
         return;
     }
 
     if (&region == &dummy_open_bus_) {
+        log::warn("Attempted copy to open bus at {}", utils::PrettyHex(dst_addr).to_string());
         return;
     }
 
@@ -216,6 +255,11 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
         }
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (dst_addr - region.start);
+
+        log::debug("Copy to mirrored region at {} (mirrored to {})",
+                   utils::PrettyHex(dst_addr).to_string(),
+                   utils::PrettyHex(mirror_addr).to_string());
+
         copy(mirror_addr, src);
         return;
     }
@@ -223,6 +267,71 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
     for (size_t i = 0; i < src.size(); i++) {
         write_byte(dst_addr + i, src[i]);
     }
+}
+
+void Mmu::start_dma(uint8_t value)
+{
+    dma_.start(value);
+}
+
+void Mmu::tick_dma(uint16_t cycles)
+{
+    dma_.tick(cycles, *this);
+}
+
+void Mmu::Dma::start(uint8_t value)
+{
+    if (active) {
+        log::warn("DMA transfer already in progress, new request ignored");
+        return;
+    }
+
+    src = static_cast<uint16_t>(value) << 8; // value * 0x100
+    dst = OAMStart;
+    active = true;
+    bytes_remaining = DMATransferSize;
+    tick_counter = 0;
+    cks = 0;
+
+    log::info("Starting DMA transfer from {}", utils::PrettyHex(src).to_string());
+}
+
+void Mmu::Dma::tick(uint16_t cycles, Mmu& mmu)
+{
+    if (!active) {
+        return;
+    }
+
+    tick_counter += cycles;
+
+    while (tick_counter >= 4 && bytes_remaining > 0) {
+        uint8_t data = mmu.read_byte(src);
+
+        // Use direct access to OAM to avoid blocking writes during DMA
+        mmu.oam_.at(dst - OAMStart) = data;
+
+        bytes_remaining--;
+        tick_counter -= 4;
+        src++;
+        dst++;
+
+        cks = (cks + data) & 0xFFFF; // simple checksum
+    }
+
+    if (bytes_remaining == 0) {
+        active = false;
+        log::info("DMA transfer completed, checksum: {}", utils::PrettyHex(cks).to_string());
+    }
+}
+
+void Mmu::Dma::reset()
+{
+    active = false;
+    src = 0;
+    dst = OAMStart;
+    bytes_remaining = 0;
+    tick_counter = 0;
+    cks = 0;
 }
 
 void Mmu::set_io_write_callback(IoWriteCallback callback)

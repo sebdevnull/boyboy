@@ -162,7 +162,7 @@ void Ppu::write(uint16_t addr, uint8_t value)
         return;
     }
     else if (addr == IoReg::Ppu::DMA) {
-        write_dma(value);
+        dma_start(value);
         return;
     }
 
@@ -531,17 +531,29 @@ void Ppu::request_interrupt(uint8_t interrupt)
                utils::PrettyHex(if_reg).to_string());
 }
 
-// TODO: move to mmu or dma controller and handle timing (160 cycles)
-void Ppu::write_dma(uint8_t value)
+[[nodiscard]] uint8_t Ppu::mem_read(uint16_t addr) const
 {
-    uint16_t source_addr = static_cast<uint16_t>(value) << 8;
-
-    log::info("DMA transfer from {} to OAM", utils::PrettyHex(source_addr).to_string());
-
-    for (uint16_t i = 0; i < 160; ++i) {
-        uint8_t data = mem_read(source_addr + i);
-        mem_write(mmu::OAMStart + i, data);
+    if (!mem_read_cb_) {
+        log::warn("PPU memory read at {} but no callback set", utils::PrettyHex(addr).to_string());
+        return 0xFF;
     }
+    return mem_read_cb_(addr);
+}
+void Ppu::mem_write(uint16_t addr, uint8_t value)
+{
+    if (!mem_write_cb_) {
+        log::warn("PPU memory write at {} but no callback set", utils::PrettyHex(addr).to_string());
+        return;
+    }
+    mem_write_cb_(addr, value);
+}
+void Ppu::dma_start(uint8_t value)
+{
+    if (!dma_start_cb_) {
+        log::warn("PPU DMA start at {} but no callback set", utils::PrettyHex(value).to_string());
+        return;
+    }
+    dma_start_cb_(value);
 }
 
 } // namespace boyboy::ppu

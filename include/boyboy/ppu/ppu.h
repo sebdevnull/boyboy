@@ -78,6 +78,7 @@ using Pixel = uint32_t; // RGBA format
 using FrameBuffer = std::array<Pixel, FramebufferSize>;
 using MemoryReadCB = std::function<uint8_t(uint16_t)>;
 using MemoryWriteCB = std::function<void(uint16_t, uint8_t)>;
+using DmaStartCB = std::function<void(uint8_t)>;
 
 // Simple grayscale palette (white to black)
 static constexpr std::array<Pixel, 4> Palette = {
@@ -150,8 +151,9 @@ public:
     void update_lyc(); // check and update LYC=LY flag
 
     // Memory callbacks for PPU to access VRAM/OAM through MMU
-    void set_mem_read_cb(MemoryReadCB cb) { mem_read_ = std::move(cb); }
-    void set_mem_write_cb(MemoryWriteCB cb) { mem_write_ = std::move(cb); }
+    void set_mem_read_cb(MemoryReadCB cb) { mem_read_cb_ = std::move(cb); }
+    void set_mem_write_cb(MemoryWriteCB cb) { mem_write_cb_ = std::move(cb); }
+    void set_dma_start_cb(DmaStartCB cb) { dma_start_cb_ = std::move(cb); }
 
     // Get color from palette
     [[nodiscard]] static Pixel palette_color(uint8_t color_id, uint8_t palette)
@@ -163,8 +165,9 @@ public:
     void test_framebuffer();
 
 private:
-    MemoryReadCB mem_read_;
-    MemoryWriteCB mem_write_;
+    MemoryReadCB mem_read_cb_;
+    MemoryWriteCB mem_write_cb_;
+    DmaStartCB dma_start_cb_;
 
     // PPU state
     Mode mode_ = Mode::OAMScan;
@@ -215,20 +218,9 @@ private:
     void request_interrupt(uint8_t interrupt);
 
     // Memory access helpers
-    [[nodiscard]] uint8_t mem_read(uint16_t addr) const
-    {
-        if (mem_read_) {
-            return mem_read_(addr);
-        }
-        return 0xFF;
-    }
-    void mem_write(uint16_t addr, uint8_t value)
-    {
-        if (mem_write_) {
-            mem_write_(addr, value);
-        }
-    }
-    void write_dma(uint8_t value);
+    [[nodiscard]] uint8_t mem_read(uint16_t addr) const;
+    void mem_write(uint16_t addr, uint8_t value);
+    void dma_start(uint8_t value);
 
     // Helpers to check LCDC flags
     [[nodiscard]] bool bg_enabled() const

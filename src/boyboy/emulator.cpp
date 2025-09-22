@@ -18,6 +18,7 @@ void Emulator::load_cartridge(const std::string& path)
 void Emulator::step()
 {
     auto cycles = cpu_.step();
+    mmu_->tick_dma(cycles);
     io_.tick(cycles);
 
     if (ppu_.frame_ready()) {
@@ -30,6 +31,7 @@ void Emulator::run()
 {
     ppu_.set_mem_read_cb([this](uint16_t addr) { return mmu_->read_byte(addr); });
     ppu_.set_mem_write_cb([this](uint16_t addr, uint8_t value) { mmu_->write_byte(addr, value); });
+    ppu_.set_dma_start_cb([this](uint8_t value) { mmu_->start_dma(value); });
 
     display_.init();
 
@@ -46,7 +48,6 @@ void Emulator::reset()
 {
     cpu_.reset();
     mmu_.reset();
-    io_.reset();
 }
 
 } // namespace boyboy::emulator
