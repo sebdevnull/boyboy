@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
 project(boyboy
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "BoyBoy: A Game Boy emulator written in C++"
     LANGUAGES CXX)
 
