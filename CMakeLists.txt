@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
 project(boyboy
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "BoyBoy: A Game Boy emulator written in C++"
     LANGUAGES CXX)
 
@@ -32,8 +32,7 @@ set_target_properties(spdlog_header_only PROPERTIES CXX_CLANG_TIDY "")
 
 # --- System dependencies ---
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(glfw3 REQUIRED)
+find_package(SDL2 REQUIRED)
 
 # --- Output directory for executables ---
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -88,6 +87,8 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/io/io.cpp
     src/boyboy/io/serial.cpp
     src/boyboy/io/timer.cpp
+    src/boyboy/io/joypad.cpp
+    src/boyboy/ppu/ppu.cpp
     src/boyboy/cartridge.cpp
     src/boyboy/display.cpp
     src/boyboy/mmu.cpp
@@ -97,9 +98,8 @@ target_sources(${BOYBOY_LIB} PRIVATE
 # --- Include directories ---
 target_include_directories(${BOYBOY_LIB}
     PUBLIC
-    ${OPENGL_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/external
     PRIVATE
     ${CMAKE_SOURCE_DIR}/src/boyboy
 )
@@ -122,9 +122,8 @@ target_compile_options(${BOYBOY_APP} PRIVATE
 # --- Link libraries ---
 target_link_libraries(${BOYBOY_APP} PRIVATE
     ${BOYBOY_LIB}
-    glfw
-    ${GLEW_LIBRARIES}
-    ${OPENGL_LIBRARIES}
+    SDL2::SDL2
+    OpenGL::GL
 )
 
 # ---- Sanitizer option ----

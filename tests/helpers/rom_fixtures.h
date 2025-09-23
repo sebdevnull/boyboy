@@ -83,7 +83,7 @@ protected:
     void SetUp() override
     {
         cpu::CpuTest::SetUp();
-        io = &mmu->get_io();
+        io = &mmu->io();
         cart.unload_rom();
         serial_capturer.clear();
         serial_output.clear();
@@ -154,7 +154,7 @@ protected:
             last_pc = current_pc;
 
             cycles = cpu.step();
-            io->tick(cycles);
+            io->serial().tick(cycles); // no need to tick all io components
         }
 
         if (serial_output.empty() && serial_capturer.has_new_data()) {

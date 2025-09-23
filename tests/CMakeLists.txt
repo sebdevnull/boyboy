@@ -25,6 +25,8 @@ set(TEST_SOURCES
     test_mmu.cpp
     io/test_serial.cpp
     io/test_timer.cpp
+    io/test_joypad.cpp
+    ppu/test_ppu.cpp
     cpu/test_cpu.cpp
     cpu/test_registers.cpp
     cpu/test_instruction_table.cpp

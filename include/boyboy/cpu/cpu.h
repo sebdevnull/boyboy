@@ -39,10 +39,10 @@ public:
     void reset()
     {
         // Registers
-        registers_.af = 0;
-        registers_.bc = 0;
-        registers_.de = 0;
-        registers_.hl = 0;
+        registers_.af = AFStartValue;
+        registers_.bc = BCStartValue;
+        registers_.de = DEStartValue;
+        registers_.hl = HLStartValue;
         registers_.sp = SPStartValue;
         registers_.pc = PCStartValue;
 
@@ -112,6 +112,7 @@ public:
     void enable_interrupt(uint8_t interrupt) { interrupt_handler_.enable(interrupt); }
 
     // Helpers mainly for debugging and testing
+    void trace() const;
     [[nodiscard]] std::string_view disassemble(uint16_t addr) const;
 
 private:

@@ -7,7 +7,7 @@
 
 #include "boyboy/io/timer.h"
 
-#include "boyboy/io/io.h"
+#include "boyboy/io/registers.h"
 
 namespace boyboy::io {
 
