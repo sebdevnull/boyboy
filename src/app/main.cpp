@@ -23,19 +23,23 @@ int main(int argc, const char** argv)
         return 1;
     }
 
-    log::init("logs/boyboy.log", false);
+    log::init("logs/boyboy.log", true);
+    log::info("Starting BoyBoy emulator");
 
     emulator::Emulator emulator;
 
     try {
-        emulator.load_cartridge(args[1]);
+        emulator.load(args[1]);
     }
     catch (const std::runtime_error& e) {
         log::error("Failed to load ROM: {}", e.what());
         return 1;
     }
 
-    // emulator.run();
+    emulator.run();
+
+    log::info("Exiting BoyBoy emulator");
+    log::shutdown();
 
     return 0;
 }

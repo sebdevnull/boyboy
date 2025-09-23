@@ -5,6 +5,9 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: add module-specific loggers (e.g., CPU, PPU, MMU)
+// TODO: improve logging format, add more context
+
 #pragma once
 
 #include <spdlog/async.h>
@@ -52,6 +55,7 @@ inline void init(const std::string& log_file = "logs/boyboy.log", bool async = t
         // Create sinks: console + file
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file, truncate);
+        auto cpu_file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/cpu.log", truncate);
 
         if (async) {
             // Thread pool: queue size 8192, 1 background thread
@@ -72,7 +76,7 @@ inline void init(const std::string& log_file = "logs/boyboy.log", bool async = t
         spdlog::flush_on(spdlog::level::info);
 
         // --- CPU logger (file only) ---
-        static auto cpu_logger = std::make_shared<spdlog::logger>("cpu_file_only", file_sink);
+        static auto cpu_logger = std::make_shared<spdlog::logger>("cpu", cpu_file_sink);
         cpu_logger->set_level(log_level);
         spdlog::register_logger(cpu_logger); // optional: register by name
     }
@@ -131,7 +135,7 @@ inline void shutdown()
 // Get CPU logger (file only)
 inline std::shared_ptr<spdlog::logger> cpu_logger()
 {
-    return spdlog::get("cpu_file_only");
+    return spdlog::get("cpu");
 }
 
 // --- CPU-only trace (file only) ---

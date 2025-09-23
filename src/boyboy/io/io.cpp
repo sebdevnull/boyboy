@@ -33,6 +33,12 @@ void Io::tick(uint16_t cycles)
     if (IoReg::Timer::contains(addr)) {
         return timer_.read(addr);
     }
+    if (IoReg::Ppu::contains(addr)) {
+        return ppu_.read(addr);
+    }
+    if (IoReg::Joypad::contains(addr)) {
+        return joypad_.read(addr);
+    }
 
     // Default behavior: return the value in the register
     return registers_.at(io_addr(addr));
@@ -46,6 +52,14 @@ void Io::write(uint16_t addr, uint8_t value)
     }
     if (IoReg::Timer::contains(addr)) {
         timer_.write(addr, value);
+        return;
+    }
+    if (IoReg::Ppu::contains(addr)) {
+        ppu_.write(addr, value);
+        return;
+    }
+    if (IoReg::Joypad::contains(addr)) {
+        joypad_.write(addr, value);
         return;
     }
 

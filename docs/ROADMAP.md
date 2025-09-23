@@ -2,16 +2,31 @@
 
 ## Milestones
 
-### 🎯 Current milestone
+### Current milestone
 
+- `v0.2.0` - PPU functional
+  - Complete PPU implementation
+  - Background, window, and sprite rendering
+  - LCD control and status handling
+  - VRAM and OAM management
+  - DMA integration
+  - Joypad input handling
+  - SDL2/glad rendering backend
+  - Demo playable with Dr. Mario
+
+### Next milestone
+
+- TBD - PPU stabilization and timing. More ROMs supported. MBC cartridges. Performance improvements. APU implementation. CLI/GUI enhancements.
+
+### Completed milestones
+
+- `v0.1.0`: Full CPU instruction set, interrupt handling, timers, passes Blargg's CPU test ROMs.
+- `v0.0.x`: Initial CPU and MMU implementation, partial instruction set, basic ROM loading.
+
+### Development Milestones
+
+- `v0.6-ppu-functional`: PPU implementation complete, including background, window, and sprite rendering. SDL2/glad rendering backend. DMA integration. Joypad input handling. Demo playable with Dr. Mario.
 - `v0.5-cpu-validated`: CPU core implemented, including complete instruction set, interrupt handling, and timers. Validated with Blargg's CPU test ROMs.
-
-### 🔜 Next milestone
-
-- `v0.6-ppu-partial`: Basic PPU (graphics) implementation with background rendering and LCD control.
-
-### ✅ Completed milestones
-
 - `v0.4-instructions-complete`: Full CPU instruction set implemented, including 8-bit, 16-bit, CB-prefixed, and special instructions.
 - `v0.3-instructions-unprefixed-complete`: Unprefixed 8-bit, 16-bit, and special instructions implemented.
 - `v0.2-rom-loading`: Basic ROM loading and header parsing implemented.
@@ -29,8 +44,8 @@
 - [ ] Memory management unit (MMU) ⏳
   - [x] Read/write memory ✅
   - [ ] Memory banking ⏳
-  - [ ] DMA integration
-- [ ] Direct Memory Access (DMA)
+  - [x] DMA integration ✅
+- [x] Direct Memory Access (DMA) ✅
 
 ## ROM & Cartridge
 
@@ -48,29 +63,29 @@
 ## I/O & Peripherals
 
 - [ ] I/O registers ⏳
-  - [ ] Joypad
+  - [x] Joypad ✅
   - [ ] Serial ⏳
   - [x] Timer ✅
   - [x] Interrupts ✅
   - [ ] Audio (APU)
-  - [ ] Graphics (PPU)
-- [ ] Input handling
+  - [x] Graphics (PPU) ✅
+- [x] Input handling ✅
 
 ## Graphics & Display
 
-- [ ] Graphics processing unit (PPU)
-  - [ ] Background rendering
-  - [ ] Sprite rendering
-  - [ ] LCD control/status
-  - [ ] Window & scrolling
+- [x] Graphics processing unit (PPU) ✅
+  - [x] Background rendering ✅
+  - [x] Sprite rendering ✅
+  - [x] LCD control/status ✅
+  - [x] Window & scrolling ✅
   - [ ] Color/palette handling (CGB support)
-- [ ] VRAM and OAM management
-- [ ] LCD timing & scanline handling
-- [ ] V-Blank and H-Blank handling
-- [ ] Frame rendering
-- [ ] OpenGL rendering backend
+- [x] VRAM and OAM management ✅
+- [x] LCD timing & scanline handling ✅
+- [x] V-Blank and H-Blank handling ✅
+- [x] Frame rendering ✅
+- [x] OpenGL rendering backend ✅
 - [ ] Window management ⏳
-  - [ ] Scaling & resizing
+  - [ ] Scaling & resizing ⏳
   - [ ] Fullscreen mode
 - [ ] Frame rate control
 
@@ -94,9 +109,9 @@
   - [ ] Start/Pause/Reset
   - [ ] Debug options (log level, test mode)
 - [ ] GUI interface ⏳
-  - [ ] Basic window ⏳
-  - [ ] Display rendering
-  - [ ] Input handling
+  - [x] Basic window ✅
+  - [x] Display rendering ✅
+  - [x] Input handling ✅
   - [ ] Basic controls (load, start, pause, reset)
 - [ ] Configuration file support
 - [ ] Save states
@@ -107,10 +122,10 @@
   - [ ] Performance profiling
 - [ ] Logging ⏳
   - [x] CPU instructions ✅
-  - [ ] Interrupts
+  - [ ] Interrupts ⏳
   - [ ] Memory access
   - [ ] Input events ⏳
-  - [ ] PPU events
+  - [ ] PPU events ⏳
   - [ ] APU events
   - [x] Log levels (trace, debug, info, warning, error, critical) ✅
   - [ ] Modular logging ⏳
@@ -121,7 +136,7 @@
 
 ## Testing & Validation
 
-- [x] [Blargg’s CPU test ROMs](../README.md#🧪-test-roms) ✅
+- [x] [Blargg’s CPU test ROMs](../README.md#test-roms) ✅
 - [x] CPU instruction set tests ✅
 - [x] Interrupt handling tests ✅
 - [x] Timer tests ✅
@@ -130,7 +145,13 @@
 - [ ] ROM loading tests ⏳
 - [ ] Cartridge tests ⏳
 - [ ] I/O registers and Input tests ⏳
-- [ ] PPU tests
+  - [ ] Serial ⏳
+  - [x] Timer ✅
+  - [x] Joypad ✅
+- [ ] PPU tests ⏳
+  - [ ] Background rendering ⏳
+  - [ ] Window rendering
+  - [ ] Sprite rendering
 - [ ] APU tests
 - [ ] Integration tests ⏳
 - [ ] Performance tests
