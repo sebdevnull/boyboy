@@ -15,6 +15,7 @@
 #include "boyboy/common/utils.h"
 #include "boyboy/io/iocomponent.h"
 #include "boyboy/io/registers.h"
+#include "boyboy/ppu/palettes.h"
 #include "boyboy/ppu/registers.h"
 
 namespace boyboy::ppu {
@@ -80,21 +81,8 @@ using MemoryReadCB = std::function<uint8_t(uint16_t)>;
 using MemoryWriteCB = std::function<void(uint16_t, uint8_t)>;
 using DmaStartCB = std::function<void(uint8_t)>;
 
-// Simple grayscale palette (white to black)
-static constexpr std::array<Pixel, 4> Palette = {
-    0xFFFFFFFF, // White
-    0xFFAAAAAA, // Light gray
-    0xFF555555, // Dark gray
-    0xFF000000  // Black
-};
-
-// Green-scale palette (light green to dark green)
-// static constexpr std::array<Pixel, 4> Palette = {
-//     0xFFE0F8D0, // Light green
-//     0xFF88C070, // Medium light green
-//     0xFF346856, // Medium dark green
-//     0xFF081820  // Dark green
-// };
+// Color palette
+const auto Palette = palettes::PocketGray;
 
 struct Sprite {
     uint8_t y;     // Y position on screen (minus 16)
