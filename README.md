@@ -13,7 +13,7 @@
 
 ## Project status
 
-**Development stage:** Early development, not playable yet.
+**Development stage:** Early development, passing most CPU and PPU tests. Only Dr. Mario is playable so far.
 
 **Progress overview:**
 
