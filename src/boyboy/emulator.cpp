@@ -46,6 +46,10 @@ void Emulator::run()
 
     display_.init();
 
+    // Enable LCD: it seems that some games expect it to be on at start, probably because the boot
+    // ROM does it so we will enable it until we implement the boot ROM (if we ever do)
+    ppu_.enable_lcd(true);
+
     auto start = std::chrono::high_resolution_clock::now();
 
     // TODO: running uncapped for now, add frame limiting when we optimize performance
