@@ -6,7 +6,11 @@
  */
 
 // TODO: handle better mirrored memory sections
+//       We actually only have one (ECHO -> WRAM) and it behaves differently depending on the
+//       cartridge type and GB HW version (DMG/CGB). Check "The Cycle-Accurate Game Boy Docs"
+
 // TODO: map cartridge RAM
+// TODO: "find_region" is probably a performance bottleneck, as it is called on EVERY memory access
 
 #include "boyboy/mmu.h"
 
@@ -105,8 +109,9 @@ uint8_t Mmu::read_byte(uint16_t addr) const
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
 
-        log::debug("Read from mirrored region at {} (mirrored to {})",
+        log::debug("Read from mirrored region at {}: [{}] (mirrored to {})",
                    utils::PrettyHex(addr).to_string(),
+                   utils::PrettyHex(mirror.data[addr - region.start]).to_string(),
                    utils::PrettyHex(mirror_addr).to_string());
 
         return read_byte(mirror_addr);
@@ -179,8 +184,9 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
 
-        log::debug("Write to mirrored region at {} (mirrored to {})",
+        log::debug("Write to mirrored region at {}: [{}] (mirrored to {})",
                    utils::PrettyHex(addr).to_string(),
+                   utils::PrettyHex(value).to_string(),
                    utils::PrettyHex(mirror_addr).to_string());
 
         write_byte(mirror_addr, value);
@@ -321,9 +327,9 @@ void Mmu::Dma::tick(uint16_t cycles, Mmu& mmu)
     if (bytes_remaining == 0) {
         active = false;
         log::trace("DMA transfer completed, checksum: {}", utils::PrettyHex(cks).to_string());
-        if (cks == 0) {
-            log::warn("DMA transfer checksum is zero, possible issue with source data");
-        }
+        // if (cks == 0) {
+        //     log::warn("DMA transfer checksum is zero, possible issue with source data");
+        // }
     }
 }
 
@@ -372,16 +378,14 @@ void Mmu::init_memory_map()
         .start = ROMBank0Start,
         .end = ROMBank0End,
         .data = cart_,
-        // .read_only = true,
-        .read_only = false,
+        .read_only = true,
     };
     map(MemoryRegionID::ROMBank1) = {
         .id = MemoryRegionID::ROMBank1,
         .start = ROMBank1Start,
         .end = ROMBank1End,
         .data = std::span<uint8_t>(cart_).subspan(ROMBank0Size),
-        // .read_only = true,
-        .read_only = false,
+        .read_only = true,
     };
     map(MemoryRegionID::VRAM) = {
         .id = MemoryRegionID::VRAM,
@@ -426,7 +430,7 @@ void Mmu::init_memory_map()
         .start = NotUsableStart,
         .end = NotUsableEnd,
         .data = {},
-        // .read_only = true,
+        .read_only = true,
         .read_handler = [](uint16_t) { return uint8_t{0x00}; },
         .write_handler = [](uint16_t, uint8_t) {},
     };
@@ -450,8 +454,6 @@ void Mmu::init_memory_map()
         .start = IEAddr,
         .end = IEAddr,
         .data = {&ier_, 1},
-        // .read_only = true,
-        .read_only = false,
     };
 }
 
