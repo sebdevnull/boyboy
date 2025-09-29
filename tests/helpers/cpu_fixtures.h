@@ -19,6 +19,7 @@
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/registers.h"
 #include "boyboy/mmu.h"
+#include "boyboy/mmu_constants.h"
 
 // Helpers
 #include "helpers/cpu_asserts.h"
@@ -34,9 +35,14 @@ struct CpuTest : public ::testing::Test {
 
     void SetUp() override
     {
-        // Reset CPU to a clean state before each test
         cpu.reset();
         mmu->reset();
+
+        // Set flags to known state
+        clear_flags();
+
+        // Set PC to a writable area (WRAM) to avoid issues with read-only memory
+        cpu.set_pc(boyboy::mmu::WRAM0Start);
     }
 
     void run(boyboy::cpu::Opcode opcode)

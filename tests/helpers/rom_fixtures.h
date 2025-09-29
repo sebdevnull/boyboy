@@ -82,7 +82,12 @@ protected:
 
     void SetUp() override
     {
-        cpu::CpuTest::SetUp();
+        // We don't call CpuTest::SetUp() because we want "real" CPU initial state
+        // (e.g. PC=0x0100, SP=0xFFFE, etc)
+
+        cpu.reset();
+        mmu->reset();
+
         io = &mmu->io();
         cart.unload_rom();
         serial_capturer.clear();

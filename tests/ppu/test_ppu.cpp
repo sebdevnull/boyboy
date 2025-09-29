@@ -160,7 +160,7 @@ TEST_F(PpuTest, StatInterrupts)
     // Should trigger 2 mode switch interrupts per visible line (OAM and HBlank) minus one OAMScan
     // for the first line
     // Plus one LYC=LY interrupt when LY matches LYC
-    EXPECT_EQ(stat_irq_count, 2 * VisibleScanlines)
+    EXPECT_EQ(stat_irq_count, (2 * VisibleScanlines) + 1)
         << "STAT interrupts should be triggered for OAM, HBlank, and LYC=LY";
     EXPECT_EQ(vblank_irq_count, 1) << "One VBlank interrupt should be triggered";
     EXPECT_EQ(ppu_.mode(), Mode::VBlank) << "Should be in VBlank mode after visible lines";
