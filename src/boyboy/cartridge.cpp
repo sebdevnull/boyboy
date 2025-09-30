@@ -16,8 +16,8 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "boyboy/common/utils.h"
 #include "boyboy/common/errors.h"
+#include "boyboy/common/utils.h"
 #include "boyboy/log/logging.h"
 
 namespace boyboy::cartridge {
@@ -55,6 +55,15 @@ void Cartridge::load_rom(std::string_view path)
         throw errors::ChecksumError("header", header_.header_checksum, cks);
     }
 
+    if (!is_cart_supported()) {
+        auto cart_type = header_.cartridge_type;
+        unload_rom();
+        throw std::runtime_error(
+            std::format("Unsupported cartridge type: {} ({})",
+                        to_string(cart_type),
+                        utils::PrettyHex{static_cast<uint8_t>(cart_type)}.to_string()));
+    }
+
     if (auto cks = checksum(); cks != 0) {
         unload_rom();
         throw errors::ChecksumError("global", header_.checksum, cks);
@@ -67,9 +76,37 @@ void Cartridge::unload_rom()
     header_.reset();
 }
 
+bool Cartridge::is_cart_supported() const
+{
+    switch (header_.cartridge_type) {
+    case CartridgeType::ROMOnly:
+        return true;
+    case CartridgeType::MBC1:
+    case CartridgeType::MBC1RAM:
+    case CartridgeType::MBC1RAMBattery:
+    case CartridgeType::MBC2:
+    case CartridgeType::MBC2Battery:
+    case CartridgeType::ROMRAM:
+    case CartridgeType::ROMRAMBattery:
+    case CartridgeType::MBC3TimerBattery:
+    case CartridgeType::MBC3TimerRAMBattery:
+    case CartridgeType::MBC3:
+    case CartridgeType::MBC3RAM:
+    case CartridgeType::MBC3RAMBattery:
+    case CartridgeType::MBC5:
+    case CartridgeType::MBC5RAM:
+    case CartridgeType::MBC5RAMBattery:
+    case CartridgeType::MBC5Rumble:
+    case CartridgeType::MBC5RumbleRAM:
+    case CartridgeType::MBC5RumbleRAMBattery:
+    default:
+        return false;
+    }
+}
+
 /**
  * @brief Calculate and verify the header checksum.
- * 
+ *
  * @return uint8_t 0 if checksum matches, non-zero computed checksum otherwise.
  */
 uint8_t Cartridge::header_checksum()
@@ -91,7 +128,7 @@ uint8_t Cartridge::header_checksum()
 
 /**
  * @brief Calculate and verify the global ROM checksum.
- * 
+ *
  * @return uint16_t 0 if checksum matches, non-zero computed checksum otherwise.
  */
 uint16_t Cartridge::checksum()

@@ -88,6 +88,7 @@ public:
     void load_rom(std::string_view path);
     void unload_rom();
     [[nodiscard]] bool is_loaded() const { return rom_loaded_; }
+    [[nodiscard]] bool is_cart_supported() const;
 
     // Accessors
     [[nodiscard]] const std::vector<std::byte>& get_rom() const { return rom_; }
