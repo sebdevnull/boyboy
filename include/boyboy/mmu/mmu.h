@@ -47,7 +47,7 @@ public:
     void reset();
 
     // Maps ROM memory into own memory map
-    void map_rom(const cartridge::Cartridge& cart);
+    void map_rom(const cart::Cartridge& cart);
 
     // Memory access
     [[nodiscard]] uint8_t read_byte(uint16_t addr) const;

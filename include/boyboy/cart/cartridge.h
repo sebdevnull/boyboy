@@ -12,7 +12,7 @@
 #include <string_view>
 #include <vector>
 
-namespace boyboy::cartridge {
+namespace boyboy::cart {
 
 enum class CartridgeType : uint8_t {
     ROMOnly = 0x00,
@@ -108,4 +108,4 @@ private:
     uint16_t checksum();
 };
 
-} // namespace boyboy::cartridge
+} // namespace boyboy::cart

@@ -19,7 +19,7 @@ using boyboy::test::common::InvalidROM;
 using boyboy::test::common::ValidROM;
 using boyboy::test::rom::ROMTest;
 
-using boyboy::cartridge::CartridgeType;
+using boyboy::cart::CartridgeType;
 
 class CartridgeTest : public ROMTest {};
 

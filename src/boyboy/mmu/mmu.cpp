@@ -45,7 +45,7 @@ void Mmu::reset()
 }
 
 // copy map version
-void Mmu::map_rom(const cartridge::Cartridge& cart)
+void Mmu::map_rom(const cart::Cartridge& cart)
 {
     const auto& rom = cart.get_rom(); // std::vector<std::byte>
 
@@ -69,7 +69,7 @@ void Mmu::map_rom(const cartridge::Cartridge& cart)
 }
 
 // real map version
-// void Mmu::map_rom(const cartridge::Cartridge& cart)
+// void Mmu::map_rom(const cart::Cartridge& cart)
 // {
 //     const auto& rom = cart.get_rom();
 

@@ -41,7 +41,7 @@ private:
     ppu::Ppu& ppu_ = io_.ppu();
     io::Joypad& joypad_ = io_.joypad();
     display::Display display_;
-    cartridge::Cartridge cartridge_;
+    cart::Cartridge cartridge_;
 
     // Emulator state
     bool running_ = false;

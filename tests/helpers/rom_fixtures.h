@@ -70,7 +70,7 @@ struct ROMTest : public cpu::CpuTest {
 protected:
     const int LoopThreshold = 10000; // Arbitrary large number to prevent infinite loops
 
-    boyboy::cartridge::Cartridge cart;
+    boyboy::cart::Cartridge cart;
     boyboy::io::Io* io;
 
     SerialTestCapturer serial_capturer;

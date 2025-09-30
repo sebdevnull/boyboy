@@ -20,7 +20,7 @@
 #include "boyboy/common/utils.h"
 #include "boyboy/log/logging.h"
 
-namespace boyboy::cartridge {
+namespace boyboy::cart {
 
 // Safe conversion between std::byte and char for I/O operations
 namespace {
@@ -296,7 +296,7 @@ std::string_view to_string(CartridgeType type)
     oss << "{title: " << title << ", "
         << "cbg_flag: " << PrettyHex{cgb_flag} << ", "
         << "sgb_flag: " << PrettyHex{sgb_flag} << ", "
-        << "cart_Type: " << cartridge::to_string(cartridge_type).data() << ", "
+        << "cart_Type: " << cart::to_string(cartridge_type).data() << ", "
         << "rom_size: " << PrettyHex{rom_size} << ", "
         << "ram_size: " << PrettyHex{ram_size} << ", "
         << "header_cks: " << PrettyHex{header_checksum} << ", "
@@ -313,7 +313,7 @@ std::string_view to_string(CartridgeType type)
     oss << "Title: " << title << "\n"
         << "CGB Flag: " << PrettyHex{cgb_flag} << "\n"
         << "SGB Flag: " << PrettyHex{sgb_flag} << "\n"
-        << "Cartridge Type: " << cartridge::to_string(cartridge_type).data() << "\n"
+        << "Cartridge Type: " << cart::to_string(cartridge_type).data() << "\n"
         << "ROM Size: " << PrettyHex{rom_size} << "\n"
         << "RAM Size: " << PrettyHex{ram_size} << "\n"
         << "Header Checksum: " << PrettyHex{header_checksum} << "\n"
@@ -322,4 +322,4 @@ std::string_view to_string(CartridgeType type)
     return oss.str();
 }
 
-} // namespace boyboy::cartridge
+} // namespace boyboy::cart
