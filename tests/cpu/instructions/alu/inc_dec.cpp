@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 
 // boyboy
-#include "boyboy/mmu_constants.h"
+#include "boyboy/mmu/constants.h"
 
 // Helpers
 #include "helpers/cpu_fixtures.h"

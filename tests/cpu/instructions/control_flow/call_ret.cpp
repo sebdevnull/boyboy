@@ -17,7 +17,7 @@
 #include <cstdint>
 
 // boyboy
-#include "boyboy/mmu_constants.h"
+#include "boyboy/mmu/constants.h"
 
 // Helpers
 #include "helpers/cpu_asserts.h"

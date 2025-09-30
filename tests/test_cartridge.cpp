@@ -13,7 +13,7 @@
 #include "helpers/rom_fixtures.h"
 
 // boyboy
-#include "boyboy/cartridge.h"
+#include "boyboy/cart/cartridge.h"
 
 using boyboy::test::common::InvalidROM;
 using boyboy::test::common::ValidROM;

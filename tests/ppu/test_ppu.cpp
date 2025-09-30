@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "boyboy/mmu.h"
+#include "boyboy/mmu/mmu.h"
 #include "boyboy/ppu/ppu.h"
 #include "boyboy/ppu/registers.h"
 

@@ -18,8 +18,8 @@
 #include "boyboy/common/utils.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/cpu/registers.h"
-#include "boyboy/mmu.h"
-#include "boyboy/mmu_constants.h"
+#include "boyboy/mmu/constants.h"
+#include "boyboy/mmu/mmu.h"
 
 // Helpers
 #include "helpers/cpu_asserts.h"

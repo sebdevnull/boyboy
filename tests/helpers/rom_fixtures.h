@@ -18,7 +18,7 @@
 #include "helpers/cpu_fixtures.h"
 
 // boyboy
-#include "boyboy/cartridge.h"
+#include "boyboy/cart/cartridge.h"
 #include "boyboy/common/errors.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/io/io.h"

@@ -8,8 +8,8 @@
 #include <gtest/gtest.h>
 
 #include "boyboy/common/utils.h"
-#include "boyboy/mmu.h"
-#include "boyboy/mmu_constants.h"
+#include "boyboy/mmu/constants.h"
+#include "boyboy/mmu/mmu.h"
 
 using namespace boyboy::mmu;
 using namespace boyboy::utils;

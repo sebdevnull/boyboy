@@ -8,12 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "boyboy/cartridge.h"
+#include "boyboy/cart/cartridge.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/display.h"
 #include "boyboy/io/io.h"
 #include "boyboy/io/joypad.h"
-#include "boyboy/mmu.h"
+#include "boyboy/mmu/mmu.h"
 #include "boyboy/ppu/ppu.h"
 
 namespace boyboy::emulator {

@@ -17,7 +17,7 @@
 #include "boyboy/cpu/interrupt_handler.h"
 #include "boyboy/cpu/opcodes.h"
 #include "boyboy/cpu/registers.h"
-#include "boyboy/mmu.h"
+#include "boyboy/mmu/mmu.h"
 
 namespace boyboy::cpu {
 

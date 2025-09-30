@@ -30,9 +30,9 @@
 #include <optional>
 #include <span>
 
-#include "boyboy/cartridge.h"
+#include "boyboy/cart/cartridge.h"
 #include "boyboy/io/io.h"
-#include "boyboy/mmu_constants.h"
+#include "boyboy/mmu/constants.h"
 
 namespace boyboy::mmu {
 

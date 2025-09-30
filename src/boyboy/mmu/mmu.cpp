@@ -12,7 +12,7 @@
 // TODO: map cartridge RAM
 // TODO: "find_region" is probably a performance bottleneck, as it is called on EVERY memory access
 
-#include "boyboy/mmu.h"
+#include "boyboy/mmu/mmu.h"
 
 #include <algorithm>
 #include <cstddef>
