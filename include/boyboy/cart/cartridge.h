@@ -63,6 +63,13 @@ public:
         void reset() { *this = Header{}; }
         void print() const;
 
+        // Size calculations
+        [[nodiscard]] uint16_t rom_size_kb() const;
+        [[nodiscard]] uint16_t ram_size_kb() const;
+        [[nodiscard]] uint8_t num_rom_banks() const;
+        [[nodiscard]] uint8_t num_ram_banks() const;
+
+        // Printable string representations
         [[nodiscard]] std::string to_string() const;
         [[nodiscard]] std::string pretty_string() const;
 

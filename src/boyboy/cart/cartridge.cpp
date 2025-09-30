@@ -288,6 +288,71 @@ std::string_view to_string(CartridgeType type)
     }
 }
 
+[[nodiscard]] uint16_t Cartridge::Header::rom_size_kb() const
+{
+    switch (rom_size) {
+    case 0x00:
+        return 32; // 32KB
+    case 0x01:
+        return 64; // 64KB
+    case 0x02:
+        return 128; // 128KB
+    case 0x03:
+        return 256; // 256KB
+    case 0x04:
+        return 512; // 512KB
+    case 0x05:
+        return 1024; // 1MB
+    case 0x06:
+        return 2048; // 2MB
+    case 0x07:
+        return 4096; // 4MB
+    case 0x08:
+        return 8192; // 8MB
+    case 0x52:
+        return 1152; // 1.1MB
+    case 0x53:
+        return 1280; // 1.2MB
+    case 0x54:
+        return 1536; // 1.5MB
+    default:
+        throw std::runtime_error(
+            std::format("Unknown ROM size code: {}", utils::PrettyHex{rom_size}.to_string()));
+    }
+}
+
+[[nodiscard]] uint16_t Cartridge::Header::ram_size_kb() const
+{
+    switch (ram_size) {
+    case 0x00:
+        return 0; // No RAM
+    case 0x01:
+        log::warn("Cartridge RAM size code 0x01 is unofficial, assuming 2KB RAM");
+        return 2; // Unused, but some carts use it to indicate 2KB RAM
+    case 0x02:
+        return 8; // 8KB
+    case 0x03:
+        return 32; // 32KB (4 banks of 8KB each)
+    case 0x04:
+        return 128; // 128KB (16 banks of 8KB each)
+    case 0x05:
+        return 64; // 64KB (8 banks of 8KB each)
+    default:
+        throw std::runtime_error(
+            std::format("Unknown RAM size code: {}", utils::PrettyHex{ram_size}.to_string()));
+    }
+}
+
+[[nodiscard]] uint8_t Cartridge::Header::num_rom_banks() const
+{
+    return static_cast<uint8_t>(rom_size_kb() / 16); // Each bank is 16KB
+}
+
+[[nodiscard]] uint8_t Cartridge::Header::num_ram_banks() const
+{
+    return static_cast<uint8_t>(ram_size_kb() / 8); // Each bank is 8KB
+}
+
 [[nodiscard]] std::string Cartridge::Header::to_string() const
 {
     using namespace utils;
@@ -297,8 +362,8 @@ std::string_view to_string(CartridgeType type)
         << "cbg_flag: " << PrettyHex{cgb_flag} << ", "
         << "sgb_flag: " << PrettyHex{sgb_flag} << ", "
         << "cart_Type: " << cart::to_string(cartridge_type).data() << ", "
-        << "rom_size: " << PrettyHex{rom_size} << ", "
-        << "ram_size: " << PrettyHex{ram_size} << ", "
+        << "rom_size: " << PrettyHex{rom_size} << " (" << rom_size_kb() << " KiB), "
+        << "ram_size: " << PrettyHex{ram_size} << " (" << ram_size_kb() << " KiB), "
         << "header_cks: " << PrettyHex{header_checksum} << ", "
         << "cks: " << PrettyHex{checksum} << "}";
 
@@ -314,8 +379,8 @@ std::string_view to_string(CartridgeType type)
         << "CGB Flag: " << PrettyHex{cgb_flag} << "\n"
         << "SGB Flag: " << PrettyHex{sgb_flag} << "\n"
         << "Cartridge Type: " << cart::to_string(cartridge_type).data() << "\n"
-        << "ROM Size: " << PrettyHex{rom_size} << "\n"
-        << "RAM Size: " << PrettyHex{ram_size} << "\n"
+        << "ROM Size: " << PrettyHex{rom_size} << " (" << rom_size_kb() << " KiB)\n"
+        << "RAM Size: " << PrettyHex{ram_size} << " (" << ram_size_kb() << " KiB)\n"
         << "Header Checksum: " << PrettyHex{header_checksum} << "\n"
         << "Global Checksum: " << PrettyHex{checksum} << "\n";
 
