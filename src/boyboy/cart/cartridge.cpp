@@ -54,6 +54,7 @@ void Cartridge::load_rom()
 
     rom_loaded_ = true;
     log::info("Loaded ROM: {} ({} KB)", header_.title, rom_data_.size() / 1024);
+    log::info("ROM Header: {}", header_.to_string());
 }
 
 void Cartridge::unload_rom()
