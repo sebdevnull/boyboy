@@ -9,7 +9,6 @@
 
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <cstdint>
 #include <expected>
 #include <optional>
@@ -23,7 +22,13 @@
 #include "boyboy/cpu/opcodes.h"
 #include "boyboy/cpu/registers.h"
 
+// Helpers
+#include "helpers/common.h"
+
 namespace boyboy::test::cpu {
+
+// Include in namespace to avoid breaking cpu tests for the time being
+using boyboy::test::common::param_name;
 
 enum class OperandType : uint8_t {
     Register,
@@ -304,17 +309,5 @@ struct InstrParam {
         return os;
     }
 };
-
-// Parameter name generator (removes non-alphanumeric characters from name)
-template <typename ParamType>
-std::string param_name(const ::testing::TestParamInfo<ParamType>& info)
-{
-    std::string name = info.param.name;
-    name.erase(std::remove_if(name.begin(),
-                              name.end(),
-                              [](char c) { return !std::isalnum(static_cast<unsigned char>(c)); }),
-               name.end());
-    return name;
-}
 
 } // namespace boyboy::test::cpu
