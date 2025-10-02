@@ -7,6 +7,7 @@
 
 #include "boyboy/emulator.h"
 
+#include "boyboy/cart/cartridge_loader.h"
 #include "boyboy/log/logging.h"
 
 namespace boyboy::emulator {
@@ -15,7 +16,7 @@ void Emulator::load(const std::string& path)
 {
     log::info("Loading ROM from {}", path);
 
-    cartridge_.load_rom(path);
+    cartridge_ = cart::CartridgeLoader::load(path);
     mmu_->map_rom(cartridge_);
 }
 
