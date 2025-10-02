@@ -11,8 +11,10 @@
 
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <vector>
 
+#include "boyboy/cart/mbc.h"
 #include "helpers/cpu_fixtures.h"
 
 // boyboy
@@ -59,6 +61,39 @@ protected:
     void unload();
     void run();
     void serial_new_line(const std::string& line);
+};
+
+struct MBCParam {
+    cart::CartridgeType type;
+    uint16_t rom_banks;
+    uint8_t ram_banks;
+    std::string name;
+
+    // For pretty printing in test names
+    friend std::ostream& operator<<(std::ostream& os, const MBCParam& p)
+    {
+        os << p.name << " [Type=" << boyboy::cart::to_string(p.type)
+           << ", ROM Banks=" << static_cast<int>(p.rom_banks)
+           << ", RAM Banks=" << static_cast<int>(p.ram_banks) << "]";
+        return os;
+    }
+};
+
+class FakeROMTest : public ::testing::Test {
+protected:
+    static cart::RomData make_fake_rom(cart::CartridgeType type,
+                                       uint16_t rom_banks,
+                                       uint8_t ram_banks,
+                                       std::string title = "");
+
+    cart::RomData rom_data;
+    std::unique_ptr<cart::Cartridge> cart;
+};
+
+class MBCParamTest : public FakeROMTest,
+                     public ::testing::WithParamInterface<MBCParam> {
+protected:
+    void SetUp() override;
 };
 
 } // namespace boyboy::test::rom

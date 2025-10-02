@@ -7,8 +7,13 @@
 
 #include "helpers/rom_fixtures.h"
 
+#include <cstddef>
+#include <memory>
 #include <stdexcept>
 
+#include "boyboy/cart/cartridge.h"
+#include "boyboy/cart/cartridge_loader.h"
+#include "boyboy/cart/mbc.h"
 #include "common/paths.h"
 
 // boyboy
@@ -157,6 +162,59 @@ void ROMTest::serial_new_line(const std::string& line)
             break;
         }
     }
+}
+
+cart::RomData FakeROMTest::make_fake_rom(cart::CartridgeType type,
+                                         uint16_t rom_banks,
+                                         uint8_t ram_banks,
+                                         std::string title)
+{
+    // Minimum 2 rom_banks (no banking)
+    rom_banks = std::max(rom_banks, uint16_t{2});
+
+    cart::RomData rom_data(static_cast<long>(rom_banks) * cart::mbc::RomBankSize);
+
+    // Fill each bank with its index
+    for (long i = 0; i < rom_banks; i++) {
+        std::fill(rom_data.begin() + i * cart::mbc::RomBankSize,
+                  rom_data.begin() + (i + 1) * cart::mbc::RomBankSize,
+                  std::byte(i));
+    }
+
+    // Header setup
+    rom_data.at(cart::Cartridge::Header::CartridgeTypePos) = std::byte(type);
+    rom_data.at(cart::Cartridge::Header::ROMSizePos) =
+        std::byte(cart::rom_size_from_banks(rom_banks));
+    rom_data.at(cart::Cartridge::Header::RAMSizePos) =
+        std::byte(cart::ram_size_from_banks(ram_banks));
+
+    // Title (max 16 chars)
+    if (title.empty()) {
+        title = "FAKE_ROM";
+    }
+    title = title.substr(0, 16);
+    for (size_t i = 0; i < title.size(); i++) {
+        rom_data.at(cart::Cartridge::Header::TitlePos + i) = std::byte(title[i]);
+    }
+    for (size_t i = title.size(); i < 16; i++) {
+        rom_data.at(cart::Cartridge::Header::TitlePos + i) = std::byte(0);
+    }
+
+    // Simple header checksum
+    uint8_t cks = 0;
+    std::ranges::for_each(rom_data.begin() + cart::Cartridge::Header::HeaderStart,
+                          rom_data.begin() + cart::Cartridge::Header::HeaderEnd + 1,
+                          [&cks](auto b) { cks -= utils::to_u8(b) + 1; });
+    rom_data.at(cart::Cartridge::Header::HeaderChecksumPos) = std::byte(cks);
+
+    return rom_data;
+}
+
+void MBCParamTest::SetUp()
+{
+    auto p   = GetParam();
+    rom_data = make_fake_rom(p.type, p.rom_banks, p.ram_banks, p.name);
+    cart     = std::make_unique<cart::Cartridge>(cart::CartridgeLoader::load(rom_data));
 }
 
 } // namespace boyboy::test::rom
