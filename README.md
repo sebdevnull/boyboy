@@ -4,16 +4,23 @@
 [![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg)](https://www.linux.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-**BoyBoy** is a work-in-progress **Game Boy emulator** written in C++23, focusing on accuracy and learning.
+**BoyBoy** is a work-in-progress **Game Boy emulator** written in C++23, aiming for accuracy, maintainability, and developer-friendliness. It features a complete CPU core, memory management, and a functional PPU for graphics rendering. The project is designed to be a learning platform for emulator development and low-level programming.
 
-|     |     |
-|-----|-----|
-| <img src="docs/images/drmario.gif" alt="Dr. Mario running on BoyBoy" width="320"/> | <img src="docs/images/tests.gif" alt="Test ROMs running on BoyBoy" width="320"/> |
-| *Dr. Mario gameplay* | *PPU & CPU test suite (dmg-acid2 + Blargg)* |
+## Gameplay
+
+| ![Zelda gameplay](docs/images/zelda.gif) | ![Super Mario Land 2 gameplay](docs/images/super_mario_land2.gif) | ![Kirby's Dream Land gameplay](docs/images/kirbys_dream_land.gif) |
+|:---------------------:|:---------------------:|:---------------------:|
+| *The Legend of Zelda: Link's Awakening* | *Super Mario Land 2: 6 Golden Coins* | *Kirby's Dream Land* |
+
+| ![Tetris gameplay](docs/images/tetris.gif) | ![Dr. Mario gameplay](docs/images/dr_mario.gif) | ![Donkey Kong gameplay](docs/images/donkey_kong.gif) |
+|:---------------------:|:---------------------:|:---------------------:|
+| *Tetris*     | *Dr. Mario*  | *Donkey Kong* |
+
+> For full ROM compatibility status, check [Tested ROMs](docs/Tested_ROMs.md).
 
 ## Project status
 
-**Development stage:** Early development, passing most CPU and PPU tests. Only Dr. Mario is playable so far.
+**Development stage:** In development. Most MBC1 and ROM-Only cartridges playable. Passing most CPU and PPU test ROMs.
 
 **Progress overview:**
 
@@ -99,7 +106,7 @@ This project includes several ROMs for emulator testing and verification:
 - **Custom ROMs** – stored under `tests/roms/misc/custom/`  
   - `invalid.gb` – created to test invalid or malformed data handling  
 
-See [LICENSE-THIRD-PARTY.md](LICENSE-THIRD-PARTY.md) for detailed attribution, licenses, and legal notices.
+> See [LICENSE-THIRD-PARTY.md](LICENSE-THIRD-PARTY.md) for detailed attribution, licenses, and legal notices.
 
 ## Legal notice
 
