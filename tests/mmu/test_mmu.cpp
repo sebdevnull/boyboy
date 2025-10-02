@@ -73,36 +73,39 @@ TEST_F(MmuTest, MemoryRegionsRW)
 {
     // We don't test all regions in detail, just a few to verify read/write and mirroring
     // Some things to note:
+    //      - ROM and ERAM should return 0xFF because they aren't mapped to anything
     //      - IO registers have their own tests
     //      - NotUsable is always 0x00 on read and ignores writes
     //      - ROM is read-only
     //      - ECHO is mirrored to WRAM0
     // TODO: Not yet implemented/tested behaviors
     //      - Reading from unmapped areas returns open bus value (last value on bus)
-    //      - Bank switching (not implemented yet) -> ROMBank1, ERAM, WRAM1
-    //          - ROM and ERAM should return 0xFF if not mapped to anything
     //      - OAM is inaccessible during DMA transfer (ignores writes, reads return open bus)
     //      - Echo area's behavior is strange in DMG: with normal cartridge, mirrors WRAM,
     //        but with some cartridges it mirrors WRAM AND ERAM; it writes to both and reads
     //        are a bitwise AND of both. We ignore this for now and just mirror WRAM0.
 
     // ROMBank0
-    uint8_t ro_value = mmu.read_byte(ROMBank0Start);
-    mmu.write_byte(ROMBank0Start, ro_value + 1); // should be ignored
-    EXPECT_EQ(mmu.read_byte(ROMBank0Start), ro_value) << "ROMBank0 should be read-only";
+    uint8_t unmapped_val = mmu.read_byte(ROMBank0Start);
+    EXPECT_EQ(unmapped_val, OpenBusValue) << "Unmapped ROMBank0 should read open bus value";
+    mmu.write_byte(ROMBank0Start, 0); // should be ignored
+    EXPECT_EQ(mmu.read_byte(ROMBank0Start), OpenBusValue) << "ROMBank0 should be read-only"; 
 
     // ROMBank1
-    ro_value = mmu.read_byte(ROMBank1Start);
-    mmu.write_byte(ROMBank1Start, ro_value + 1); // should be ignored
-    EXPECT_EQ(mmu.read_byte(ROMBank1Start), ro_value) << "ROMBank1 should be read-only";
+    unmapped_val = mmu.read_byte(ROMBank1Start);
+    EXPECT_EQ(unmapped_val, OpenBusValue) << "Unmapped ROMBank1 should read open bus value";
+    mmu.write_byte(ROMBank1Start, 0); // should be ignored
+    EXPECT_EQ(mmu.read_byte(ROMBank1Start), OpenBusValue) << "ROMBank1 should be read-only";
 
     // VRAM
     mmu.write_byte(VRAMStart, 0xAA);
     EXPECT_EQ(mmu.read_byte(VRAMStart), 0xAA) << "VRAM should be writable";
 
     // ERAM
-    mmu.write_byte(ERAMStart, 0xBB);
-    EXPECT_EQ(mmu.read_byte(ERAMStart), 0xBB) << "ERAM should be writable";
+    unmapped_val = mmu.read_byte(ERAMStart);
+    EXPECT_EQ(unmapped_val, OpenBusValue) << "Unmapped ERAM should read open bus value";
+    mmu.write_byte(ERAMStart, 0);
+    EXPECT_EQ(mmu.read_byte(ERAMStart), OpenBusValue) << "Unmapped ERAM should be read-only";
 
     // WRAM0
     mmu.write_byte(WRAM0Start, 0xCC);
