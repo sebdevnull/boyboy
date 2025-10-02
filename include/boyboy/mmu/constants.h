@@ -64,8 +64,11 @@ static constexpr size_t NotUsableSize = NotUsableEnd - NotUsableStart + 1;
 static constexpr size_t IOSize = IOEnd - IOStart + 1;
 static constexpr size_t HRAMSize = HRAMEnd - HRAMStart + 1;
 
-// --- Other MMU constants ---
+// --- DMA constants ---
 static constexpr uint16_t DMATransferSize = 160;                   // 160 bytes for DMA transfer
 static constexpr uint16_t DMATransferCycles = DMATransferSize * 4; // 4 cycles per byte
+
+// --- Other MMU constants ---
+static constexpr uint8_t OpenBusValue = 0xFF; // Default value for open bus reads
 
 } // namespace boyboy::mmu

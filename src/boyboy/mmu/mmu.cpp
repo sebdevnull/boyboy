@@ -14,7 +14,6 @@
 
 #include "boyboy/mmu/mmu.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
@@ -22,8 +21,10 @@
 #include <stdexcept>
 #include <string>
 
+#include "boyboy/cart/cartridge.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/log/logging.h"
+#include "boyboy/mmu/constants.h"
 
 namespace boyboy::mmu {
 
@@ -44,52 +45,33 @@ void Mmu::reset()
     init_memory_map();
 }
 
-// copy map version
-void Mmu::map_rom(const cart::Cartridge& cart)
+void Mmu::map_rom(cart::Cartridge& cart)
 {
-    const auto& rom = cart.get_rom(); // std::vector<std::byte>
+    auto& rom_bank0 = map(MemoryRegionID::ROMBank0);
+    auto& rom_bank1 = map(MemoryRegionID::ROMBank1);
+    auto& eram = map(MemoryRegionID::ERAM);
 
-    // Clear cart memory
-    cart_.fill(0);
-
-    // Copy ROM data into MMU cart_ array
-    size_t bytes_to_copy = std::min(rom.size(), cart_.size());
-    for (size_t i = 0; i < bytes_to_copy; ++i) {
-        cart_.at(i) = static_cast<uint8_t>(rom.at(i));
-    }
+    auto cart_read = [&cart](uint16_t addr) -> uint8_t {
+        return cart.mbc_read(addr);
+    };
+    auto cart_write = [&cart](uint16_t addr, uint8_t value) {
+        cart.mbc_write(addr, value);
+    };
 
     // Map ROMBank0 (0x0000 - 0x3FFF)
-    map(MemoryRegionID::ROMBank0).data = std::span<uint8_t>(cart_).subspan(0, ROMBank0Size);
+    rom_bank0.read_handler = cart_read;
+    rom_bank0.write_handler = cart_write;
 
     // Map ROMBank1 (0x4000 - 0x7FFF)
-    map(MemoryRegionID::ROMBank1).data =
-        std::span<uint8_t>(cart_).subspan(ROMBank0Size, ROMBank1Size);
+    rom_bank1.read_handler = cart_read;
+    rom_bank1.write_handler = cart_write;
+
+    // Map ERAM (0xA000 - 0xBFFF)
+    eram.read_handler = cart_read;
+    eram.write_handler = cart_write;
 
     rom_loaded_ = true;
 }
-
-// real map version
-// void Mmu::map_rom(const cart::Cartridge& cart)
-// {
-//     const auto& rom = cart.get_rom();
-
-//     // NOLINTBEGIN
-
-//     const auto rom_ptr = reinterpret_cast<const uint8_t*>(rom.data());
-
-//     // Map ROMBank0 to the first 16KB of the cartridge ROM
-//     size_t bank0_size = std::min(ROMBank0Size, rom.size());
-//     map(MemoryMapIndex::ROMBank0).data =
-//         std::span<uint8_t>(const_cast<uint8_t*>(rom_ptr), bank0_size);
-
-//     // Map ROMBank1
-//     size_t bank1_size =
-//         std::min(ROMBank1Size, rom.size() > ROMBank0Size ? rom.size() - ROMBank0Size : 0);
-//     map(MemoryMapIndex::ROMBank1).data =
-//         std::span<uint8_t>(const_cast<uint8_t*>(rom_ptr + ROMBank0Size), bank1_size);
-
-//     // NOLINTEND
-// }
 
 // NOLINTBEGIN(misc-no-recursion)
 
@@ -373,19 +355,40 @@ void Mmu::dump(uint16_t start_addr, uint16_t end_addr, const std::string& filena
 
 void Mmu::init_memory_map()
 {
+    auto unloaded_rom_read = [](uint16_t addr) -> uint8_t {
+        log::warn("Read from ROM before ROM loaded at {}", utils::PrettyHex(addr).to_string());
+        return OpenBusValue;
+    };
+    auto unloaded_rom_write = [](uint16_t addr, uint8_t value) {
+        log::warn("Write to ROM before ROM loaded at {}: {}",
+                  utils::PrettyHex(addr).to_string(),
+                  utils::PrettyHex(value).to_string());
+    };
+    auto unloaded_eram_read = [](uint16_t addr) -> uint8_t {
+        log::warn("Read from ERAM before ROM loaded at {}", utils::PrettyHex(addr).to_string());
+        return OpenBusValue;
+    };
+    auto unloaded_eram_write = [](uint16_t addr, uint8_t value) {
+        log::warn("Write to ERAM before ROM loaded at {}: {}",
+                  utils::PrettyHex(addr).to_string(),
+                  utils::PrettyHex(value).to_string());
+    };
+
     map(MemoryRegionID::ROMBank0) = {
         .id = MemoryRegionID::ROMBank0,
         .start = ROMBank0Start,
         .end = ROMBank0End,
-        .data = cart_,
-        .read_only = true,
+        .data = {},
+        .read_handler = unloaded_rom_read,
+        .write_handler = unloaded_rom_write,
     };
     map(MemoryRegionID::ROMBank1) = {
         .id = MemoryRegionID::ROMBank1,
         .start = ROMBank1Start,
         .end = ROMBank1End,
-        .data = std::span<uint8_t>(cart_).subspan(ROMBank0Size),
-        .read_only = true,
+        .data = {},
+        .read_handler = unloaded_rom_read,
+        .write_handler = unloaded_rom_write,
     };
     map(MemoryRegionID::VRAM) = {
         .id = MemoryRegionID::VRAM,
@@ -397,7 +400,9 @@ void Mmu::init_memory_map()
         .id = MemoryRegionID::ERAM,
         .start = ERAMStart,
         .end = ERAMEnd,
-        .data = eram_,
+        .data = {},
+        .read_handler = unloaded_eram_read,
+        .write_handler = unloaded_eram_write,
     };
     map(MemoryRegionID::WRAM0) = {
         .id = MemoryRegionID::WRAM0,
