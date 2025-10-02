@@ -9,45 +9,25 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <filesystem>
 #include <format>
-#include <fstream>
-#include <ios>
 #include <iostream>
 #include <stdexcept>
 
+#include "boyboy/cart/mbc.h"
 #include "boyboy/common/errors.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/log/logging.h"
 
 namespace boyboy::cart {
 
-// Safe conversion between std::byte and char for I/O operations
-namespace {
-
-// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
-[[maybe_unused]] inline char* as_char_ptr(std::byte* ptr) noexcept
+void Cartridge::load_rom(RomData&& rom_data)
 {
-    static_assert(sizeof(std::byte) == sizeof(char), "std::byte and char must have the same size");
-    static_assert(alignof(std::byte) == alignof(char),
-                  "std::byte and char must have the same alignment");
-    return reinterpret_cast<char*>(ptr);
+    rom_data_ = std::move(rom_data);
+    load_rom();
 }
 
-[[maybe_unused]] inline const char* as_char_ptr(const std::byte* ptr) noexcept
+void Cartridge::load_rom()
 {
-    static_assert(sizeof(std::byte) == sizeof(char), "std::byte and char must have the same size");
-    static_assert(alignof(std::byte) == alignof(char),
-                  "std::byte and char must have the same alignment");
-    return reinterpret_cast<const char*>(ptr);
-}
-// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
-
-} // namespace
-
-void Cartridge::load_rom(std::string_view path)
-{
-    load(path);
     parse_header();
 
     if (auto cks = header_checksum(); cks != 0) {
@@ -64,28 +44,36 @@ void Cartridge::load_rom(std::string_view path)
                         utils::PrettyHex{static_cast<uint8_t>(cart_type)}.to_string()));
     }
 
-    if (auto cks = checksum(); cks != 0) {
-        unload_rom();
-        throw errors::ChecksumError("global", header_.checksum, cks);
-    }
+    // Game Boy hardware doesn't actually verify the global checksum,
+    // if (auto cks = checksum(); cks != 0) {
+    // unload_rom();
+    // throw errors::ChecksumError("global", header_.checksum, cks);
+    // }
+
+    mbc_.load_banks(*this);
+
+    rom_loaded_ = true;
+    log::info("Loaded ROM: {} ({} KB)", header_.title, rom_data_.size() / 1024);
 }
 
 void Cartridge::unload_rom()
 {
-    unload();
+    unload_rom_data();
     header_.reset();
+    mbc_.unload_banks();
 }
 
 bool Cartridge::is_cart_supported() const
 {
     switch (header_.cartridge_type) {
     case CartridgeType::ROMOnly:
-        return true;
     case CartridgeType::MBC1:
     case CartridgeType::MBC1RAM:
+    // TODO: support battery-backed RAM
     case CartridgeType::MBC1RAMBattery:
+        return true;
     case CartridgeType::MBC2:
-    case CartridgeType::MBC2Battery:
+    case CartridgeType::MBC2RAMBattery:
     case CartridgeType::ROMRAM:
     case CartridgeType::ROMRAMBattery:
     case CartridgeType::MBC3TimerBattery:
@@ -112,8 +100,8 @@ bool Cartridge::is_cart_supported() const
 uint8_t Cartridge::header_checksum()
 {
     uint8_t cks = 0;
-    std::ranges::for_each(rom_.begin() + Header::HeaderStart,
-                          rom_.begin() + Header::HeaderEnd + 1,
+    std::ranges::for_each(rom_data_.begin() + Header::HeaderStart,
+                          rom_data_.begin() + Header::HeaderEnd + 1,
                           [&cks](auto b) { cks -= utils::to_u8(b) + 1; });
 
     bool pass = cks == header_.header_checksum;
@@ -134,7 +122,8 @@ uint8_t Cartridge::header_checksum()
 uint16_t Cartridge::checksum()
 {
     uint16_t cks = 0;
-    std::ranges::for_each(rom_.begin(), rom_.end(), [&cks](auto b) { cks += utils::to_u8(b); });
+    std::ranges::for_each(
+        rom_data_.begin(), rom_data_.end(), [&cks](auto b) { cks += utils::to_u8(b); });
 
     // Don't compute the checksum bytes
     cks -= utils::msb(header_.checksum) + utils::lsb(header_.checksum);
@@ -149,53 +138,10 @@ uint16_t Cartridge::checksum()
     return pass ? 0 : cks;
 }
 
-/**
- * @brief Load a ROM from the specified file path.
- *
- * It loads into local memory, doesn't send to MMU yet.
- *
- * @param path Path to the ROM file.
- */
-void Cartridge::load(std::string_view path)
+void Cartridge::unload_rom_data()
 {
-    namespace fs = std::filesystem;
-
-    fs::path file_path(path);
-
-    if (!fs::exists(file_path)) {
-        log::debug("Current path: {}", fs::current_path().string());
-        throw std::runtime_error(std::format("File not found: {}", path));
-    }
-
-    std::uintmax_t file_size = 0;
-    try {
-        file_size = fs::file_size(file_path);
-    }
-    catch (const fs::filesystem_error& e) {
-        throw std::runtime_error(std::format("Failed to get file size: {}", e.what()));
-    }
-
-    std::ifstream rom_file(file_path, std::ios::binary);
-    if (!rom_file.is_open()) {
-        throw std::runtime_error(std::format("Failed to open file: {}", path));
-    }
-
-    rom_.resize(file_size);
-
-    rom_file.read(as_char_ptr(rom_.data()), static_cast<std::streamsize>(file_size));
-
-    if (rom_file.gcount() != static_cast<std::streamsize>(file_size)) {
-        rom_.clear();
-        throw std::runtime_error("Failed to read entire file");
-    }
-
-    rom_loaded_ = true;
-}
-
-void Cartridge::unload()
-{
-    rom_.clear();
-    rom_.shrink_to_fit();
+    rom_data_.clear();
+    rom_data_.shrink_to_fit();
     rom_loaded_ = false;
 }
 
@@ -203,21 +149,21 @@ void Cartridge::parse_header()
 {
     header_.title.clear();
     for (auto pos = Header::TitlePos; pos < Header::TitleEnd; ++pos) {
-        char cur_c = static_cast<char>(rom_.at(pos));
+        char cur_c = static_cast<char>(rom_data_.at(pos));
         if (cur_c == 0) {
             break;
         }
         header_.title += cur_c;
     }
 
-    header_.cgb_flag = static_cast<uint8_t>(rom_.at(Header::CGBFlagPos));
-    header_.sgb_flag = static_cast<uint8_t>(rom_.at(Header::SGBFlagPos));
-    header_.cartridge_type = static_cast<CartridgeType>(rom_.at(Header::CartridgeTypePos));
-    header_.rom_size = static_cast<uint8_t>(rom_.at(Header::ROMSizePos));
-    header_.ram_size = static_cast<uint8_t>(rom_.at(Header::RAMSizePos));
-    header_.header_checksum = static_cast<uint8_t>(rom_.at(Header::HeaderChecksumPos));
-    header_.checksum = static_cast<uint16_t>(rom_.at(Header::ChecksumPos)) << 8 |
-                       static_cast<uint16_t>(rom_.at(Header::ChecksumPos + 1));
+    header_.cgb_flag = static_cast<uint8_t>(rom_data_.at(Header::CGBFlagPos));
+    header_.sgb_flag = static_cast<uint8_t>(rom_data_.at(Header::SGBFlagPos));
+    header_.cartridge_type = static_cast<CartridgeType>(rom_data_.at(Header::CartridgeTypePos));
+    header_.rom_size = static_cast<RomSize>(rom_data_.at(Header::ROMSizePos));
+    header_.ram_size = static_cast<RamSize>(rom_data_.at(Header::RAMSizePos));
+    header_.header_checksum = static_cast<uint8_t>(rom_data_.at(Header::HeaderChecksumPos));
+    header_.checksum = static_cast<uint16_t>(rom_data_.at(Header::ChecksumPos)) << 8 |
+                       static_cast<uint16_t>(rom_data_.at(Header::ChecksumPos + 1));
 
     log::debug("Header loaded: {}", header_.to_string());
 }
@@ -235,7 +181,7 @@ std::string_view to_string(CartridgeType type)
         return "MBC1_RAM_BATTERY";
     case CartridgeType::MBC2:
         return "MBC2";
-    case CartridgeType::MBC2Battery:
+    case CartridgeType::MBC2RAMBattery:
         return "MBC2_BATTERY";
     case CartridgeType::ROMRAM:
         return "ROM_RAM";
@@ -257,12 +203,6 @@ std::string_view to_string(CartridgeType type)
         return "MBC3_RAM";
     case CartridgeType::MBC3RAMBattery:
         return "MBC3_RAM_BATTERY";
-    case CartridgeType::MBC4:
-        return "MBC4";
-    case CartridgeType::MBC4RAM:
-        return "MBC4_RAM";
-    case CartridgeType::MBC4RAMBattery:
-        return "MBC4_RAM_BATTERY";
     case CartridgeType::MBC5:
         return "MBC5";
     case CartridgeType::MBC5RAM:
@@ -275,6 +215,10 @@ std::string_view to_string(CartridgeType type)
         return "MBC5_RUMBLE_RAM";
     case CartridgeType::MBC5RumbleRAMBattery:
         return "MBC5_RUMBLE_RAM_BATTERY";
+    case CartridgeType::MBC6RAMBattery:
+        return "MBC6_RAM_BATTERY";
+    case CartridgeType::MBC7RAMBatteryAccelerometer:
+        return "MBC7_RAM_BATTERY_ACCELEROMETER";
     case CartridgeType::PocketCamera:
         return "POCKET_CAMERA";
     case CartridgeType::BandaiTama5:
@@ -288,69 +232,171 @@ std::string_view to_string(CartridgeType type)
     }
 }
 
-[[nodiscard]] uint16_t Cartridge::Header::rom_size_kb() const
+[[nodiscard]] std::string_view to_string(RomSize size)
 {
-    switch (rom_size) {
-    case 0x00:
-        return 32; // 32KB
-    case 0x01:
-        return 64; // 64KB
-    case 0x02:
-        return 128; // 128KB
-    case 0x03:
-        return 256; // 256KB
-    case 0x04:
-        return 512; // 512KB
-    case 0x05:
-        return 1024; // 1MB
-    case 0x06:
-        return 2048; // 2MB
-    case 0x07:
-        return 4096; // 4MB
-    case 0x08:
-        return 8192; // 8MB
-    case 0x52:
+    switch (size) {
+    case RomSize::KB32:
+        return "32KB";
+    case RomSize::KB64:
+        return "64KB";
+    case RomSize::KB128:
+        return "128KB";
+    case RomSize::KB256:
+        return "256KB";
+    case RomSize::KB512:
+        return "512KB";
+    case RomSize::MB1:
+        return "1MB";
+    case RomSize::MB2:
+        return "2MB";
+    case RomSize::MB4:
+        return "4MB";
+    case RomSize::MB8:
+        return "8MB";
+    case RomSize::MB1d1:
+        return "1.1MB";
+    case RomSize::MB1d2:
+        return "1.2MB";
+    case RomSize::MB1d5:
+        return "1.5MB";
+    default:
+        return "Unknown";
+    }
+}
+
+[[nodiscard]] uint16_t rom_size_kb(RomSize size)
+{
+    switch (size) {
+    case RomSize::KB32:
+        return 32;
+    case RomSize::KB64:
+        return 64;
+    case RomSize::KB128:
+        return 128;
+    case RomSize::KB256:
+        return 256;
+    case RomSize::KB512:
+        return 512;
+    case RomSize::MB1:
+        return 1024;
+    case RomSize::MB2:
+        return 2048;
+    case RomSize::MB4:
+        return 4096;
+    case RomSize::MB8:
+        return 8192;
+    case RomSize::MB1d1:
         return 1152; // 1.1MB
-    case 0x53:
+    case RomSize::MB1d2:
         return 1280; // 1.2MB
-    case 0x54:
+    case RomSize::MB1d5:
         return 1536; // 1.5MB
     default:
-        throw std::runtime_error(
-            std::format("Unknown ROM size code: {}", utils::PrettyHex{rom_size}.to_string()));
+        throw std::runtime_error(std::format(
+            "Unknown ROM size code: {}", utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()));
     }
 }
 
-[[nodiscard]] uint16_t Cartridge::Header::ram_size_kb() const
+[[nodiscard]] uint16_t num_rom_banks(RomSize size)
 {
-    switch (ram_size) {
-    case 0x00:
-        return 0; // No RAM
-    case 0x01:
+    return rom_size_kb(size) / mbc::RomBankSizeKB; // Each bank is 16KB
+}
+
+[[nodiscard]] RomSize rom_size_from_banks(uint16_t banks)
+{
+    switch (banks) {
+    case 2:
+        return RomSize::KB32;
+    case 4:
+        return RomSize::KB64;
+    case 8:
+        return RomSize::KB128;
+    case 16:
+        return RomSize::KB256;
+    case 32:
+        return RomSize::KB512;
+    case 64:
+        return RomSize::MB1;
+    case 128:
+        return RomSize::MB2;
+    case 256:
+        return RomSize::MB4;
+    case 512:
+        return RomSize::MB8;
+    case 72:
+        return RomSize::MB1d1; // 1.1MB
+    case 80:
+        return RomSize::MB1d2; // 1.2MB
+    case 96:
+        return RomSize::MB1d5; // 1.5MB
+    default:
+        throw std::runtime_error(std::format("Unsupported number of ROM banks: {}", banks));
+    }
+}
+
+[[nodiscard]] std::string_view to_string(RamSize size)
+{
+    switch (size) {
+    case RamSize::None:
+        return "None";
+    case RamSize::KB2:
+        return "2KB";
+    case RamSize::KB8:
+        return "8KB";
+    case RamSize::KB32:
+        return "32KB";
+    case RamSize::KB128:
+        return "128KB";
+    case RamSize::KB64:
+        return "64KB";
+    default:
+        return "Unknown";
+    }
+}
+
+[[nodiscard]] uint16_t ram_size_kb(RamSize size)
+{
+    switch (size) {
+    case RamSize::None:
+        return 0;
+    case RamSize::KB2:
         log::warn("Cartridge RAM size code 0x01 is unofficial, assuming 2KB RAM");
         return 2; // Unused, but some carts use it to indicate 2KB RAM
-    case 0x02:
-        return 8; // 8KB
-    case 0x03:
-        return 32; // 32KB (4 banks of 8KB each)
-    case 0x04:
-        return 128; // 128KB (16 banks of 8KB each)
-    case 0x05:
-        return 64; // 64KB (8 banks of 8KB each)
+    case RamSize::KB8:
+        return 8;
+    case RamSize::KB32:
+        return 32;
+    case RamSize::KB128:
+        return 128;
+    case RamSize::KB64:
+        return 64;
     default:
-        throw std::runtime_error(
-            std::format("Unknown RAM size code: {}", utils::PrettyHex{ram_size}.to_string()));
+        throw std::runtime_error(std::format(
+            "Unknown RAM size code: {}", utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()));
     }
 }
 
-[[nodiscard]] uint8_t Cartridge::Header::num_rom_banks() const
+[[nodiscard]] uint16_t num_ram_banks(RamSize size)
 {
-    return static_cast<uint8_t>(rom_size_kb() / 16); // Each bank is 16KB
+    return ram_size_kb(size) / mbc::RamBankSizeKB; // Each bank is 8KB
 }
 
-[[nodiscard]] uint8_t Cartridge::Header::num_ram_banks() const
+[[nodiscard]] RamSize ram_size_from_banks(uint8_t banks)
 {
-    return static_cast<uint8_t>(ram_size_kb() / 8); // Each bank is 8KB
+    switch (banks) {
+    case 0:
+        return RamSize::None;
+    case 1:
+        return RamSize::KB8;
+    case 4:
+        return RamSize::KB32;
+    case 16:
+        return RamSize::KB128;
+    case 8:
+        return RamSize::KB64;
+    default:
+        throw std::runtime_error(std::format("Unsupported number of RAM banks: {}", banks));
+    }
 }
 
 [[nodiscard]] std::string Cartridge::Header::to_string() const
@@ -362,8 +408,10 @@ std::string_view to_string(CartridgeType type)
         << "cbg_flag: " << PrettyHex{cgb_flag} << ", "
         << "sgb_flag: " << PrettyHex{sgb_flag} << ", "
         << "cart_Type: " << cart::to_string(cartridge_type).data() << ", "
-        << "rom_size: " << PrettyHex{rom_size} << " (" << rom_size_kb() << " KiB), "
-        << "ram_size: " << PrettyHex{ram_size} << " (" << ram_size_kb() << " KiB), "
+        << "rom_size: " << PrettyHex{static_cast<uint8_t>(rom_size)} << " ("
+        << cart::to_string(rom_size) << ", " << num_rom_banks(rom_size) << " banks), "
+        << "ram_size: " << PrettyHex{static_cast<uint8_t>(ram_size)} << " ("
+        << cart::to_string(ram_size) << ", " << num_ram_banks(ram_size) << " banks), "
         << "header_cks: " << PrettyHex{header_checksum} << ", "
         << "cks: " << PrettyHex{checksum} << "}";
 
@@ -379,8 +427,10 @@ std::string_view to_string(CartridgeType type)
         << "CGB Flag: " << PrettyHex{cgb_flag} << "\n"
         << "SGB Flag: " << PrettyHex{sgb_flag} << "\n"
         << "Cartridge Type: " << cart::to_string(cartridge_type).data() << "\n"
-        << "ROM Size: " << PrettyHex{rom_size} << " (" << rom_size_kb() << " KiB)\n"
-        << "RAM Size: " << PrettyHex{ram_size} << " (" << ram_size_kb() << " KiB)\n"
+        << "ROM Size: " << PrettyHex{static_cast<uint8_t>(rom_size)} << " ("
+        << cart::to_string(rom_size) << ", " << num_rom_banks(rom_size) << " banks)\n"
+        << "RAM Size: " << PrettyHex{static_cast<uint8_t>(ram_size)} << " ("
+        << cart::to_string(ram_size) << ", " << num_ram_banks(ram_size) << " banks)\n"
         << "Header Checksum: " << PrettyHex{header_checksum} << "\n"
         << "Global Checksum: " << PrettyHex{checksum} << "\n";
 

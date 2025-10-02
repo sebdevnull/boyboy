@@ -91,6 +91,8 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/io/joypad.cpp
     src/boyboy/ppu/ppu.cpp
     src/boyboy/cart/cartridge.cpp
+    src/boyboy/cart/cartridge_loader.cpp
+    src/boyboy/cart/mbc.cpp
     src/boyboy/display.cpp
     src/boyboy/emulator.cpp
 )

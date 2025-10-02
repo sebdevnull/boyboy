@@ -67,4 +67,8 @@ struct PrettyHex {
 
 std::string printable_char(char c);
 
+// Safe conversion between std::byte and char for I/O operations
+char* as_char_ptr(std::byte* ptr) noexcept;
+const char* as_char_ptr(const std::byte* ptr) noexcept;
+
 } // namespace boyboy::utils
