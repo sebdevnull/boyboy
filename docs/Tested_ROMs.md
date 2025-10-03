@@ -10,7 +10,7 @@ It includes both commercial games and well-known test ROMs used in the emulator 
 The emulator currently supports ROM-Only and MBC1 cartridges. Battery-backed RAM is not yet implemented, so games relying on save functionality might be playable but without saving progress.
 
 | Game Title | Cartridge Type | Notes | Status |
-|------------|----------------|--------|-------|
+|------------|----------------|--------|:-------:|
 | Alleyway | ROM ONLY | Game starts but controllers do not respond | ❌ |
 | Dr. Mario | ROM ONLY | Fully playable | ✅ |
 | Tetris | ROM ONLY | Fully playable | ✅ |
@@ -53,20 +53,20 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 
 > Source: [Blargg's Test ROMs](/README.md#test-roms)
 
-| ROM Name | Description | Status | Notes |
-|----------|-------------|--------|-----|
-| 01-special.gb | Tests special CPU instructions | ✅ | Passes all tests |
-| 02-interrupts.gb | Tests interrupt handling | ❌ | Hangs on "HALT bug" test |
-| 03-op sp,hl.gb | Tests stack pointer and HL instructions | ✅ | Passes all tests |
-| 04-op r,imm.gb | Tests immediate load instructions | ✅ | Passes all tests |
-| 05-op rp.gb | Tests register pair instructions | ✅ | Passes all tests |
-| 06-ld r,r.gb | Tests register to register load instructions | ✅ | Passes all tests |
-| 07-jr,jp,call,ret,rst.gb | Tests control flow instructions | ✅ | Passes all tests |
-| 08-misc instrs.gb | Tests miscellaneous instructions | ✅ | Passes all tests |
-| 09-op r,r.gb | Tests register to register arithmetic and logic instructions | ✅ | Passes all tests |
-| 10-bit ops.gb | Tests bit manipulation instructions | ✅ | Passes all tests |
-| 11-op a,(hl).gb | Tests accumulator and (HL) instructions | ✅ | Passes all tests |
-| cpu_instrs.gb | Comprehensive CPU instruction test | ❌ | Fails on test 2 (interrupts) |
+| ROM Name | Description | Notes | Status |
+|----------|-------------|-------|:------:|
+| 01-special.gb | Tests special CPU instructions | Passes all tests | ✅ |
+| 02-interrupts.gb | Tests interrupt handling | Hangs on "HALT bug" test | ❌ |
+| 03-op sp,hl.gb | Tests stack pointer and HL instructions | Passes all tests | ✅ |
+| 04-op r,imm.gb | Tests immediate load instructions | Passes all tests | ✅ |
+| 05-op rp.gb | Tests register pair instructions | Passes all tests | ✅ |
+| 06-ld r,r.gb | Tests register to register load instructions | Passes all tests | ✅ |
+| 07-jr,jp,call,ret,rst.gb | Tests control flow instructions | Passes all tests | ✅ |
+| 08-misc instrs.gb | Tests miscellaneous instructions | Passes all tests | ✅ |
+| 09-op r,r.gb | Tests register to register arithmetic and logic instructions | Passes all tests | ✅ |
+| 10-bit ops.gb | Tests bit manipulation instructions | Passes all tests | ✅ |
+| 11-op a,(hl).gb | Tests accumulator and (HL) instructions | Passes all tests | ✅ |
+| cpu_instrs.gb | Comprehensive CPU instruction test | Fails on test 2 (interrupts) | ❌ |
 
 ### PPU Test ROMs
 
