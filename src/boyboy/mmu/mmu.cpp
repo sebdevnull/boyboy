@@ -309,9 +309,6 @@ void Mmu::Dma::tick(uint16_t cycles, Mmu& mmu)
     if (bytes_remaining == 0) {
         active = false;
         log::trace("DMA transfer completed, checksum: {}", utils::PrettyHex(cks).to_string());
-        // if (cks == 0) {
-        //     log::warn("DMA transfer checksum is zero, possible issue with source data");
-        // }
     }
 }
 
@@ -471,7 +468,7 @@ void Mmu::init_memory_map()
         }
     }
 #ifndef NDEBUG
-    throw std::out_of_range("Invalid memory access at " + utils::PrettyHex(addr).to_string());
+    throw std::out_of_range(std::format("Invalid memory access at {}", utils::PrettyHex(addr).to_string()));
 #else
     return size_t(-1);
 #endif
