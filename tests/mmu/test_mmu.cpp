@@ -89,13 +89,15 @@ TEST_F(MmuTest, MemoryRegionsRW)
     uint8_t unmapped_val = mmu.read_byte(ROMBank0Start);
     EXPECT_EQ(unmapped_val, OpenBusValue) << "Unmapped ROMBank0 should read open bus value";
     mmu.write_byte(ROMBank0Start, 0); // should be ignored
-    EXPECT_EQ(mmu.read_byte(ROMBank0Start), OpenBusValue) << "ROMBank0 should be read-only"; 
+    EXPECT_EQ(mmu.read_byte(ROMBank0Start), OpenBusValue)
+        << "Unmapped ROMBank0 read return open bus value after write";
 
     // ROMBank1
     unmapped_val = mmu.read_byte(ROMBank1Start);
     EXPECT_EQ(unmapped_val, OpenBusValue) << "Unmapped ROMBank1 should read open bus value";
     mmu.write_byte(ROMBank1Start, 0); // should be ignored
-    EXPECT_EQ(mmu.read_byte(ROMBank1Start), OpenBusValue) << "ROMBank1 should be read-only";
+    EXPECT_EQ(mmu.read_byte(ROMBank1Start), OpenBusValue)
+        << "ROMBank1 should read open bus value after write";
 
     // VRAM
     mmu.write_byte(VRAMStart, 0xAA);
@@ -105,7 +107,8 @@ TEST_F(MmuTest, MemoryRegionsRW)
     unmapped_val = mmu.read_byte(ERAMStart);
     EXPECT_EQ(unmapped_val, OpenBusValue) << "Unmapped ERAM should read open bus value";
     mmu.write_byte(ERAMStart, 0);
-    EXPECT_EQ(mmu.read_byte(ERAMStart), OpenBusValue) << "Unmapped ERAM should be read-only";
+    EXPECT_EQ(mmu.read_byte(ERAMStart), OpenBusValue)
+        << "Unmapped ERAM should read open bus value after write";
 
     // WRAM0
     mmu.write_byte(WRAM0Start, 0xCC);
