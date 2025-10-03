@@ -30,9 +30,13 @@
 #include <optional>
 #include <span>
 
-#include "boyboy/cartridge.h"
 #include "boyboy/io/io.h"
-#include "boyboy/mmu_constants.h"
+#include "boyboy/mmu/constants.h"
+
+// Forward declaration
+namespace boyboy::cart {
+class Cartridge;
+}
 
 namespace boyboy::mmu {
 
@@ -47,7 +51,7 @@ public:
     void reset();
 
     // Maps ROM memory into own memory map
-    void map_rom(const cartridge::Cartridge& cart);
+    void map_rom(cart::Cartridge& cart);
 
     // Memory access
     [[nodiscard]] uint8_t read_byte(uint16_t addr) const;
@@ -150,7 +154,7 @@ private:
     uint8_t ier_{};                           // interrupt enable register
 
     // Fallback open bus region
-    uint8_t open_bus_{0xFF};
+    uint8_t open_bus_{OpenBusValue};
     MemoryRegion dummy_open_bus_{
         .id = MemoryRegionID::OpenBus,
         .start = 0x0000,

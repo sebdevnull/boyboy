@@ -14,7 +14,7 @@
 #include "boyboy/cpu/interrupts.h"
 #include "boyboy/io/registers.h"
 #include "boyboy/log/logging.h"
-#include "boyboy/mmu_constants.h"
+#include "boyboy/mmu/constants.h"
 #include "boyboy/ppu/registers.h"
 
 namespace boyboy::ppu {

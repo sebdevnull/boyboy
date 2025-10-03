@@ -18,7 +18,7 @@
 #include "boyboy/io/joypad.h"
 #include "boyboy/io/serial.h"
 #include "boyboy/io/timer.h"
-#include "boyboy/mmu_constants.h"
+#include "boyboy/mmu/constants.h"
 #include "boyboy/ppu/ppu.h"
 
 namespace boyboy::io {

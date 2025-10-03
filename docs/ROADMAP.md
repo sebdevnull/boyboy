@@ -41,9 +41,9 @@
   - [x] CB-prefixed instructions ✅
 - [x] Interrupt handling ✅
 - [x] Timers ✅
-- [ ] Memory management unit (MMU) ⏳
+- [x] Memory management unit (MMU) ✅
   - [x] Read/write memory ✅
-  - [ ] Memory banking ⏳
+  - [x] Memory banking ✅
   - [x] DMA integration ✅
 - [x] Direct Memory Access (DMA) ✅
 
@@ -53,11 +53,16 @@
   - [x] Header parsing ✅
   - [x] Checksum validation ✅
   - [x] ROM banks mapping ✅
-  - [ ] ROM banks switching
+  - [x] ROM banks switching ✅
   - [ ] Boot ROM support
 - [ ] Cartridge support ⏳
-  - [ ] MBC
-  - [ ] Save RAM support
+  - [x] ROM Only ✅
+  - [x] MBC1 ✅
+  - [ ] MBC2
+  - [ ] MBC3
+  - [ ] MBC5
+  - [ ] Other MBC types
+  - [ ] Battery-backed RAM support
   - [ ] RTC support
 
 ## I/O & Peripherals
@@ -119,7 +124,7 @@
   - [ ] CPU/Memory viewer ⏳
   - [ ] Breakpoints
   - [ ] Step execution ⏳
-  - [ ] Performance profiling
+  - [ ] Performance profiling ⏳
 - [ ] Logging ⏳
   - [x] CPU instructions ✅
   - [ ] Interrupts ⏳

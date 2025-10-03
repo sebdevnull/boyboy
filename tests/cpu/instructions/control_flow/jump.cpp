@@ -13,12 +13,16 @@
 
 #include <gtest/gtest.h>
 
+// boyboy
+#include "boyboy/mmu/constants.h"
+
 // Helpers
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
 using boyboy::cpu::Opcode;
 using boyboy::cpu::Reg16Name;
+using boyboy::mmu::WRAM0Start;
 
 using boyboy::test::cpu::FlagsParam;
 using boyboy::test::cpu::InstrParam;
@@ -59,7 +63,7 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JP_Z_A16,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.z = true},
             .src_value      = uint16_t{0x1234},
             .expected_value = uint16_t{0x1234},
@@ -70,10 +74,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JP_Z_A16,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.z = false},
             .src_value      = uint16_t{0x1234},
-            .expected_value = uint16_t{0x0103}, // Not taken, should just advance PC
+            .expected_value = uint16_t{WRAM0Start + 3}, // Not taken, should just advance PC
             .expect_z       = false,
             .name           = "JP_Z_A16_NotTaken",
         },
@@ -81,7 +85,7 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JP_NZ_A16,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.z = false},
             .src_value      = uint16_t{0x1234},
             .expected_value = uint16_t{0x1234},
@@ -92,10 +96,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JP_NZ_A16,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.z = true},
             .src_value      = uint16_t{0x1234},
-            .expected_value = uint16_t{0x0103}, // Not taken, should just advance PC
+            .expected_value = uint16_t{WRAM0Start + 3}, // Not taken, should just advance PC
             .expect_z       = true,
             .name           = "JP_NZ_A16_NotTaken",
         },
@@ -103,7 +107,7 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JP_C_A16,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.c = true},
             .src_value      = uint16_t{0x1234},
             .expected_value = uint16_t{0x1234},
@@ -114,10 +118,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JP_C_A16,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.c = false},
             .src_value      = uint16_t{0x1234},
-            .expected_value = uint16_t{0x0103}, // Not taken, should just advance PC
+            .expected_value = uint16_t{WRAM0Start + 3}, // Not taken, should just advance PC
             .expect_c       = false,
             .name           = "JP_C_A16_NotTaken",
         },
@@ -125,7 +129,7 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JP_NC_A16,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.c = false},
             .src_value      = uint16_t{0x1234},
             .expected_value = uint16_t{0x1234},
@@ -136,10 +140,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JP_NC_A16,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.c = true},
             .src_value      = uint16_t{0x1234},
-            .expected_value = uint16_t{0x0103}, // Not taken, should just advance PC
+            .expected_value = uint16_t{WRAM0Start + 3}, // Not taken, should just advance PC
             .expect_c       = true,
             .name           = "JP_NC_A16_NotTaken",
         }),
@@ -168,28 +172,28 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JR_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .src_value      = uint8_t{0x7F}, // +127
-            .expected_value = uint16_t{0x0181},
+            .expected_value = uint16_t{WRAM0Start + 2 + 0x7F},
             .name           = "JR_E8_Positive",
         },
         InstrParam{
             .opcode         = Opcode::JR_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start + 0x80},
             .src_value      = uint8_t{0x80}, // -128
-            .expected_value = uint16_t{0x0082},
+            .expected_value = uint16_t{WRAM0Start + 2},
             .name           = "JR_E8_Negative",
         },
         InstrParam{
             .opcode         = Opcode::JR_Z_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.z = true},
             .src_value      = uint8_t{0x7F}, // +127
-            .expected_value = uint16_t{0x0181},
+            .expected_value = uint16_t{WRAM0Start + 2 + 0x7F},
             .expect_z       = true,
             .name           = "JR_Z_E8_Taken",
         },
@@ -197,10 +201,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JR_Z_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.z = false},
-            .src_value      = uint8_t{0x7F},    // +127
-            .expected_value = uint16_t{0x0102}, // Not taken, should just advance PC
+            .src_value      = uint8_t{0x7F},            // +127
+            .expected_value = uint16_t{WRAM0Start + 2}, // Not taken, should just advance PC
             .expect_z       = false,
             .name           = "JR_Z_E8_NotTaken",
         },
@@ -208,10 +212,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JR_NZ_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.z = false},
             .src_value      = uint8_t{0x7F}, // +127
-            .expected_value = uint16_t{0x0181},
+            .expected_value = uint16_t{WRAM0Start + 2 + 0x7F},
             .expect_z       = false,
             .name           = "JR_NZ_E8_Taken",
         },
@@ -219,10 +223,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JR_NZ_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.z = true},
-            .src_value      = uint8_t{0x7F},    // +127
-            .expected_value = uint16_t{0x0102}, // Not taken, should just advance PC
+            .src_value      = uint8_t{0x7F},            // +127
+            .expected_value = uint16_t{WRAM0Start + 2}, // Not taken, should just advance PC
             .expect_z       = true,
             .name           = "JR_NZ_E8_NotTaken",
         },
@@ -230,10 +234,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JR_C_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.c = true},
             .src_value      = uint8_t{0x7F}, // +127
-            .expected_value = uint16_t{0x0181},
+            .expected_value = uint16_t{WRAM0Start + 2 + 0x7F},
             .expect_c       = true,
             .name           = "JR_C_E8_Taken",
         },
@@ -241,10 +245,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JR_C_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.c = false},
-            .src_value      = uint8_t{0x7F},    // +127
-            .expected_value = uint16_t{0x0102}, // Not taken, should just advance PC
+            .src_value      = uint8_t{0x7F},            // +127
+            .expected_value = uint16_t{WRAM0Start + 2}, // Not taken, should just advance PC
             .expect_c       = false,
             .name           = "JR_C_E8_NotTaken",
         },
@@ -252,10 +256,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JR_NC_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.c = false},
             .src_value      = uint8_t{0x7F}, // +127
-            .expected_value = uint16_t{0x0181},
+            .expected_value = uint16_t{WRAM0Start + 2 + 0x7F},
             .expect_c       = false,
             .name           = "JR_NC_E8_Taken",
         },
@@ -263,10 +267,10 @@ INSTANTIATE_TEST_SUITE_P(
             .opcode         = Opcode::JR_NC_E8,
             .src_op_type    = OperandType::Immediate,
             .dst            = Reg16Name::PC,
-            .initial_pc     = uint16_t{0x0100},
+            .initial_pc     = uint16_t{WRAM0Start},
             .initial_flags  = FlagsParam{.c = true},
-            .src_value      = uint8_t{0x7F},    // +127
-            .expected_value = uint16_t{0x0102}, // Not taken, should just advance PC
+            .src_value      = uint8_t{0x7F},            // +127
+            .expected_value = uint16_t{WRAM0Start + 2}, // Not taken, should just advance PC
             .expect_c       = true,
             .name           = "JR_NC_E8_NotTaken",
         }),

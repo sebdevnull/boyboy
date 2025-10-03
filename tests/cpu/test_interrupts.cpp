@@ -12,6 +12,7 @@
 #include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/cpu/interrupt_handler.h"
 #include "boyboy/cpu/interrupts.h"
+#include "boyboy/mmu/constants.h"
 
 // Helpers
 #include "helpers/cpu_fixtures.h"
@@ -20,6 +21,7 @@ using boyboy::cpu::Interrupts;
 using boyboy::cpu::InterruptVectors;
 using boyboy::cpu::PCStartValue;
 using boyboy::cpu::SPStartValue;
+using boyboy::mmu::WRAM0Start;
 
 using boyboy::test::cpu::CpuTest;
 
@@ -123,6 +125,10 @@ TEST_F(CpuInterruptsTest, VBlankInterrupt)
 
 TEST_F(CpuInterruptsTest, NoInterruptWhenIMEOff)
 {
+    // Initial PC and SP values (redundant but explicit for clarity)
+    uint16_t initial_pc = cpu.get_pc();
+    uint16_t initial_sp = cpu.get_sp();
+
     // Test that no interrupt is serviced when IME is off
     cpu.set_ime(false);
     cpu.enable_interrupt(Interrupts::VBlank);  // Enable V-Blank interrupt
@@ -139,12 +145,16 @@ TEST_F(CpuInterruptsTest, NoInterruptWhenIMEOff)
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank))
         << "Interrupt should still be enabled";
     EXPECT_FALSE(cpu.get_ime()) << "IME should still be false";
-    EXPECT_EQ(cpu.get_pc(), PCStartValue) << "PC should not change";
-    EXPECT_EQ(cpu.get_sp(), SPStartValue) << "SP should not change";
+    EXPECT_EQ(cpu.get_pc(), initial_pc) << "PC should not change";
+    EXPECT_EQ(cpu.get_sp(), initial_sp) << "SP should not change";
 }
 
 TEST_F(CpuInterruptsTest, NoInterruptWhenNoneRequested)
 {
+    // Initial PC and SP values (redundant but explicit for clarity)
+    uint16_t initial_pc = cpu.get_pc();
+    uint16_t initial_sp = cpu.get_sp();
+
     // Test that no interrupt is serviced when none are requested
     cpu.set_ime(true);
     cpu.enable_interrupt(Interrupts::VBlank); // Enable V-Blank interrupt
@@ -160,14 +170,15 @@ TEST_F(CpuInterruptsTest, NoInterruptWhenNoneRequested)
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank))
         << "Interrupt should still be enabled";
     EXPECT_TRUE(cpu.get_ime()) << "IME should still be true";
-    EXPECT_EQ(cpu.get_pc(), PCStartValue) << "PC should not change";
-    EXPECT_EQ(cpu.get_sp(), SPStartValue) << "SP should not change";
+    EXPECT_EQ(cpu.get_pc(), initial_pc) << "PC should not change";
+    EXPECT_EQ(cpu.get_sp(), initial_sp) << "SP should not change";
 }
 
 TEST_F(CpuInterruptsTest, MultipleInterrupts)
 {
     // Test that only the highest priority interrupt is serviced
-    cpu.set_pc(PCStartValue);
+    uint16_t initial_pc = WRAM0Start; // Set PC to a known value in writable memory
+    cpu.set_pc(initial_pc);
     cpu.set_sp(SPStartValue);
     cpu.set_ime(true);
     cpu.enable_interrupt(Interrupts::VBlank);  // Enable V-Blank interrupt
@@ -198,7 +209,7 @@ TEST_F(CpuInterruptsTest, MultipleInterrupts)
     EXPECT_FALSE(cpu.get_ime()) << "IME should be disabled after servicing";
     EXPECT_EQ(cpu.get_pc(), InterruptVectors::VBlank) << "PC should jump to V-Blank vector";
     EXPECT_EQ(cpu.get_sp(), SPStartValue - 2) << "SP should be decremented by 2";
-    EXPECT_EQ(cpu.read_word(cpu.get_sp()), PCStartValue) << "Original PC should be pushed to stack";
+    EXPECT_EQ(cpu.read_word(cpu.get_sp()), initial_pc) << "Original PC should be pushed to stack";
 
     // Service again to handle LCD STAT
     cpu.set_ime(true); // Re-enable IME for next interrupt
@@ -220,7 +231,8 @@ TEST_F(CpuInterruptsTest, MultipleInterrupts)
 TEST_F(CpuInterruptsTest, HaltThenInterrupt)
 {
     // Test that CPU exits HALT state when an interrupt is requested
-    cpu.set_pc(PCStartValue);
+    uint16_t initial_pc = WRAM0Start; // Set PC to a known value in writable memory
+    cpu.set_pc(initial_pc);
     cpu.set_sp(SPStartValue);
     cpu.set_ime(true);
     cpu.enable_interrupt(Interrupts::VBlank); // Enable V-Blank interrupt
@@ -249,7 +261,7 @@ TEST_F(CpuInterruptsTest, HaltThenInterrupt)
     EXPECT_FALSE(cpu.get_ime()) << "IME should be disabled after servicing interrupt";
     EXPECT_EQ(cpu.get_pc(), InterruptVectors::VBlank) << "PC should jump to V-Blank vector";
     EXPECT_EQ(cpu.get_sp(), SPStartValue - 2) << "SP should be decremented by 2";
-    EXPECT_EQ(cpu.read_word(cpu.get_sp()), PCStartValue + 1)
+    EXPECT_EQ(cpu.read_word(cpu.get_sp()), initial_pc + 1)
         << "Original PC+1 should be pushed to stack";
     EXPECT_FALSE(cpu.is_halted()) << "CPU should exit HALT state";
 }
