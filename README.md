@@ -57,17 +57,29 @@ The project is designed to:
 
 ## Upcoming features
 
-The following features are planned for future releases, in tentative order:
+The following features are planned for future releases, in rough order of priority:
 
-- **Core performance optimizations**: smoother emulation and rendering
-- **Complete cartridge support**: MBC2, MBC3, MBC5, battery-backed RAM, RTC
-- **Save states**: save and restore emulator state
-- **Boot ROM support**: authentic startup sequence
-- **Debugging enhancements**: breakpoints, step execution, memory and state inspection
-- **CLI improvements**: more options and features
-- **Audio (APU) implementation**: full sound emulation
-- **GUI frontend**: controls,  window management, visualization and debugging tools
-- **Cross-platform support**: Windows and macOS builds
+### Core
+
+- **Performance** – Smoother emulation and rendering  
+- **Save states** – Save and restore game state
+- **Boot ROM** – Authentic startup sequence  
+
+### Hardware
+
+- **Cartridge support** – MBC2, MBC3, MBC5, battery-backed RAM, RTC
+- **Audio (APU)** – Full audio emulation  
+
+### Tools & UI
+
+- **Debugging tools** – Breakpoints, step execution, memory/state inspection  
+- **CLI improvements** – More options and features
+- **GUI frontend** – Window management, controls, and visualization  
+
+### Other
+
+- **Cross-platform** – Windows and macOS support  
+- **Testing** – Additional test ROMs to verify compatibility
 
 ## Resources
 
