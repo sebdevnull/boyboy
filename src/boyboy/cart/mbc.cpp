@@ -116,7 +116,7 @@ void Mbc::write(uint16_t addr, uint8_t value)
         value &= 0x03;
         if (banking_mode_ == 0) {
             // in mode 0 use as 2 upper bits for ROM selection
-            rom_bank_select_ += (value << 5);
+            rom_bank_select_ = (rom_bank_select_ & 0x1F) | (value << 5);
             ram_bank_select_ = 0; // always bank 0 in mode 0
 
             // Mask to available banks
