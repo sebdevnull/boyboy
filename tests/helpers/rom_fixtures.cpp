@@ -200,11 +200,8 @@ cart::RomData FakeROMTest::make_fake_rom(cart::CartridgeType type,
         rom_data.at(cart::Cartridge::Header::TitlePos + i) = std::byte(0);
     }
 
-    // Simple header checksum
-    uint8_t cks = 0;
-    std::ranges::for_each(rom_data.begin() + cart::Cartridge::Header::HeaderStart,
-                          rom_data.begin() + cart::Cartridge::Header::HeaderEnd + 1,
-                          [&cks](auto b) { cks -= utils::to_u8(b) + 1; });
+    // Header checksum
+    uint8_t cks = cart::Cartridge::header_checksum(rom_data);
     rom_data.at(cart::Cartridge::Header::HeaderChecksumPos) = std::byte(cks);
 
     return rom_data;

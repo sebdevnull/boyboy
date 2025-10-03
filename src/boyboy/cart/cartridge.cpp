@@ -7,10 +7,10 @@
 
 #include "boyboy/cart/cartridge.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <format>
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 
 #include "boyboy/cart/mbc.h"
@@ -30,7 +30,7 @@ void Cartridge::load_rom()
 {
     parse_header();
 
-    if (auto cks = header_checksum(); cks != 0) {
+    if (auto cks = validate_header_checksum(); cks != 0) {
         unload_rom();
         throw errors::ChecksumError("header", header_.header_checksum, cks);
     }
@@ -44,11 +44,10 @@ void Cartridge::load_rom()
                         utils::PrettyHex{static_cast<uint8_t>(cart_type)}.to_string()));
     }
 
-    // Game Boy hardware doesn't actually verify the global checksum,
-    // if (auto cks = checksum(); cks != 0) {
-    // unload_rom();
-    // throw errors::ChecksumError("global", header_.checksum, cks);
-    // }
+    if (auto cks = validate_rom_checksum(); cks != 0) {
+        // Game Boy hardware doesn't verify the global checksum but we will at least log a warning
+        log::warn("ROM checksum validation failed, but continuing to load ROM");
+    }
 
     mbc_.load_banks(*this);
 
@@ -93,17 +92,37 @@ bool Cartridge::is_cart_supported() const
     }
 }
 
+uint8_t Cartridge::header_checksum(const RomData& rom_data)
+{
+    return std::accumulate(rom_data.begin() + Header::HeaderStart,
+                           rom_data.begin() + Header::HeaderEnd + 1,
+                           uint8_t{0},
+                           [](uint8_t acc, std::byte b) { return acc - (utils::to_u8(b) + 1); });
+}
+
+uint16_t Cartridge::rom_checksum(const RomData& rom_data)
+{
+    uint16_t cks = 0;
+    cks = std::accumulate(rom_data.begin(),
+                          rom_data.end(),
+                          uint16_t{0},
+                          [](uint16_t acc, std::byte b) { return acc + utils::to_u8(b); });
+
+    // Don't compute the checksum bytes
+    cks -= utils::to_u8(rom_data.at(Header::ChecksumPos));
+    cks -= utils::to_u8(rom_data.at(Header::ChecksumPos + 1));
+
+    return cks;
+}
+
 /**
  * @brief Calculate and verify the header checksum.
  *
  * @return uint8_t 0 if checksum matches, non-zero computed checksum otherwise.
  */
-uint8_t Cartridge::header_checksum()
+uint8_t Cartridge::validate_header_checksum()
 {
-    uint8_t cks = 0;
-    std::ranges::for_each(rom_data_.begin() + Header::HeaderStart,
-                          rom_data_.begin() + Header::HeaderEnd + 1,
-                          [&cks](auto b) { cks -= utils::to_u8(b) + 1; });
+    uint8_t cks = header_checksum(rom_data_);
 
     bool pass = cks == header_.header_checksum;
     if (!pass) {
@@ -120,14 +139,9 @@ uint8_t Cartridge::header_checksum()
  *
  * @return uint16_t 0 if checksum matches, non-zero computed checksum otherwise.
  */
-uint16_t Cartridge::checksum()
+uint16_t Cartridge::validate_rom_checksum()
 {
-    uint16_t cks = 0;
-    std::ranges::for_each(
-        rom_data_.begin(), rom_data_.end(), [&cks](auto b) { cks += utils::to_u8(b); });
-
-    // Don't compute the checksum bytes
-    cks -= utils::msb(header_.checksum) + utils::lsb(header_.checksum);
+    uint16_t cks = rom_checksum(rom_data_);
 
     bool pass = cks == header_.checksum;
     if (!pass) {

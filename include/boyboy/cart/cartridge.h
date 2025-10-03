@@ -140,6 +140,10 @@ public:
     [[nodiscard]] uint8_t mbc_read(uint16_t addr) const { return mbc_.read(addr); }
     void mbc_write(uint16_t addr, uint8_t value) { mbc_.write(addr, value); }
 
+    // Static checksum calculation methods (for testing)
+    static uint8_t header_checksum(const RomData& rom_data);
+    static uint16_t rom_checksum(const RomData& rom_data);
+
 private:
     Header header_{};
     mbc::Mbc mbc_;
@@ -149,8 +153,8 @@ private:
     void load_rom();
     void unload_rom_data();
     void parse_header();
-    uint8_t header_checksum();
-    uint16_t checksum();
+    uint8_t validate_header_checksum();
+    uint16_t validate_rom_checksum();
 };
 
 } // namespace boyboy::cart
