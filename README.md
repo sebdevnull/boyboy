@@ -69,6 +69,33 @@ The following features are planned for future releases, in tentative order:
 - **GUI frontend**: controls,  window management, visualization and debugging tools
 - **Cross-platform support**: Windows and macOS builds
 
+## Resources
+
+The following resources have been used in BoyBoy's development and may help you understand Game Boy hardware and emulation concepts:
+
+- [**Awesome Game Boy Development**](https://github.com/gbdev/awesome-gbdev) – Curated (and ***awesome***) list of Game Boy development resources. The only list you'll ever need!
+
+### Technical references
+
+- [**Pan Docs**](https://gbdev.io/pandocs/) – The ***definitive*** technical reference for Game Boy hardware.
+- [**Game Boy: Complete Technical Reference**](https://gekkio.fi/files/gb-docs/gbctr.pdf) – Comprehensive technical reference by [Gekkio](https://gekkio.fi/).
+- [**The Cycle-Accurate Game Boy Docs**](https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf) – Detailed analysis focused on cycle accuracy by [AntonioND](https://github.com/AntonioND).
+
+### CPU instruction references
+
+- [**Opcodes table**](https://gbdev.io/gb-opcodes/optables/) – Visual opcode table with cycle counts and flags. Views in hex and octal.
+- [**Opcodes JSON**](https://gbdev.io/gb-opcodes/Opcodes.json) – Complete instruction set in JSON format (***great for parsing!***).
+- [**Opcodes reference**](https://rgbds.gbdev.io/docs/v0.9.4/gbz80.7) – Detailed reference for the Game Boy CPU instruction set.
+
+### Emulation
+
+- [**Emulation of Nintendo Game Boy**](https://github.com/Baekalfen/PyBoy/blob/master/extras/PyBoy.pdf) – Academic paper on Game Boy emulation implementation in Python for the [PyBoy emulator](https://github.com/Baekalfen/PyBoy).
+
+### Test ROMs
+
+- [**Blargg's Test ROMs**](https://github.com/retrio/gb-test-roms) – Widely used test ROMs for CPU, PPU, and other hardware verification.
+- [**dmg-acid2**](https://github.com/mattcurrie/dmg-acid2) – Basic PPU rendering test ROM.
+
 ## Dependencies
 
 To build **BoyBoy**, the following libraries are required:
