@@ -1,9 +1,10 @@
 # Tested ROMs status
 
-This document lists the ROMs that have been tested with the BoyBoy emulator, along with their current status. The goal is to ensure compatibility with a wide range of games and test ROMs to validate the accuracy of the emulator.  
+This document lists the ROMs that have been tested with the BoyBoy emulator, along with their current status.  
+The goal is to ensure compatibility with a wide range of games and test ROMs to validate the accuracy of the emulator.  
 It includes both commercial games and well-known test ROMs used in the emulator development community.
 
-> See [LICENSE-THIRD-PARTY.md](LICENSE-THIRD-PARTY.md) for detailed attribution, licenses, and legal notices.
+> See [Third-Party Licenses](LICENSE-THIRD-PARTY.md) for detailed attribution, licenses, and legal notices.
 
 ## Games
 

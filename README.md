@@ -4,7 +4,9 @@
 [![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg)](https://www.linux.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-**BoyBoy** is a work-in-progress **Game Boy emulator** written in C++23, aiming for accuracy, maintainability, and developer-friendliness. It features a complete CPU core, memory management, and a functional PPU for graphics rendering. The project is designed to be a learning platform for emulator development and low-level programming.
+**BoyBoy** is a work-in-progress **Game Boy emulator** written in C++23, designed to be accurate, maintainable, and easy for developers to explore and extend.  
+It implements a complete CPU core, memory management, and a functional PPU for graphics rendering.  
+BoyBoy provides a hands-on platform for learning about emulator development and low-level programming.
 
 ## Gameplay
 
@@ -16,11 +18,26 @@
 |:---------------------:|:---------------------:|:---------------------:|
 | *Tetris*     | *Dr. Mario*  | *Donkey Kong* |
 
-> For full ROM compatibility status, check [Tested ROMs](docs/Tested_ROMs.md).
+> For full ROM compatibility status, check [Tested ROMs](docs/TestedROMs.md#games).
+
+## Project goals
+
+**BoyBoy** aims to be an accurate, maintainable, and developer-friendly Game Boy emulator.
+
+The project is designed to:
+
+- Faithfully emulate original Game Boy hardware: CPU, memory, I/O, graphics, and audio
+- Run commercial and homebrew ROMs  
+- Provide a developer-friendly debugging and testing environment
+- Serve as a hands-on learning platform for emulator development and low-level programming for the community
 
 ## Project status
 
-**Development stage:** In development. Most MBC1 and ROM-Only cartridges playable. Passing most CPU and PPU test ROMs.
+**BoyBoy** is currently in active development.  
+
+**Current version:** [`v0.2.0`](CHANGELOG.md#020---2025-09-23)  
+
+**Development stage:** Ongoing improvements and feature implementation.
 
 **Progress overview:**
 
@@ -35,20 +52,22 @@
 | CLI/GUI & Extras      | ⏳ Partial     |
 | Testing & Validation  | ⏳ Partial     |
 
-**Current milestone:** `v0.2.0` - PPU functional - Almost complete PPU implementation including background, window, and sprite rendering, LCD control and status handling, VRAM and OAM management, DMA integration, joypad input handling, SDL2/glad rendering backend, and a demo playable with Dr. Mario.
+> For a detailed feature checklist, see [Feature Checklist](/docs/Checklist.md).  
+> For detailed progress and changes, see [CHANGELOG](/CHANGELOG.md).
 
-> For a detailed feature checklist, see [ROADMAP](docs/ROADMAP.md).
+## Upcoming features
 
-## Project goals
+The following features are planned for future releases, in tentative order:
 
-**BoyBoy** aims to be an accurate, maintainable, and developer-friendly Game Boy emulator.
-
-The project is designed to:
-
-- Faithfully emulate original Game Boy hardware: CPU, memory, I/O, graphics, and audio
-- Run commercial and homebrew ROMs  
-- Provide a developer-friendly debugging and testing environment
-- Serve as a hands-on learning platform for emulator development and low-level programming
+- **Core performance optimizations**: smoother emulation and rendering
+- **Complete cartridge support**: MBC2, MBC3, MBC5, battery-backed RAM, RTC
+- **Save states**: save and restore emulator state
+- **Boot ROM support**: authentic startup sequence
+- **Debugging enhancements**: breakpoints, step execution, memory and state inspection
+- **CLI improvements**: more options and features
+- **Audio (APU) implementation**: full sound emulation
+- **GUI frontend**: controls,  window management, visualization and debugging tools
+- **Cross-platform support**: Windows and macOS builds
 
 ## Dependencies
 
@@ -91,7 +110,11 @@ Make sure you have **CMake 3.27+** and a C++23 compiler.
 
 ## Test ROMs
 
-This project includes several ROMs for emulator testing and verification:
+This project includes several ROMs for emulator testing and verification.
+
+> See [Tested ROMs](docs/TestedROMs.md#test-roms) for test ROMs passing status.  
+
+The included test ROMs are:
 
 - **blargg’s Game Boy test ROMs** – stored under `tests/roms/cpu/blargg/`, widely used for CPU, PPU, and other hardware verification  
   - [GitHub repository](https://github.com/retrio/gb-test-roms)  
@@ -106,10 +129,10 @@ This project includes several ROMs for emulator testing and verification:
 - **Custom ROMs** – stored under `tests/roms/misc/custom/`  
   - `invalid.gb` – created to test invalid or malformed data handling  
 
-> See [LICENSE-THIRD-PARTY.md](LICENSE-THIRD-PARTY.md) for detailed attribution, licenses, and legal notices.
+> See [Third-Party Licenses](LICENSE-THIRD-PARTY.md) for detailed attribution, licenses, and legal notices.
 
 ## Legal notice
 
 - **BoyBoy** is an independent project and is **not affiliated with or endorsed by Nintendo**.  
 - The Game Boy name, logo, and related trademarks are property of **Nintendo Co., Ltd.**  
-- See [LICENSE-THIRD-PARTY.md](LICENSE-THIRD-PARTY.md) for third-party attributions and disclaimers.  
+- See [Third-Party Licenses](LICENSE-THIRD-PARTY.md) for third-party attributions and disclaimers.  

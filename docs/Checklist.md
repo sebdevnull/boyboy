@@ -1,36 +1,15 @@
-# BoyBoy Detailed Roadmap
+# BoyBoy feature implementation checklist
 
-## Milestones
+Implementation status of every major component and feature in **BoyBoy**.
 
-### Current milestone
+**Status legend:**
 
-- `v0.2.0` - PPU functional
-  - Complete PPU implementation
-  - Background, window, and sprite rendering
-  - LCD control and status handling
-  - VRAM and OAM management
-  - DMA integration
-  - Joypad input handling
-  - SDL2/glad rendering backend
-  - Demo playable with Dr. Mario
+- ✅ Fully implemented
+- ⏳ Partial implementation / In progress
+- Blank: Not started / Not implemented
 
-### Next milestone
-
-- TBD - PPU stabilization and timing. More ROMs supported. MBC cartridges. Performance improvements. APU implementation. CLI/GUI enhancements.
-
-### Completed milestones
-
-- `v0.1.0`: Full CPU instruction set, interrupt handling, timers, passes Blargg's CPU test ROMs.
-- `v0.0.x`: Initial CPU and MMU implementation, partial instruction set, basic ROM loading.
-
-### Development Milestones
-
-- `v0.6-ppu-functional`: PPU implementation complete, including background, window, and sprite rendering. SDL2/glad rendering backend. DMA integration. Joypad input handling. Demo playable with Dr. Mario.
-- `v0.5-cpu-validated`: CPU core implemented, including complete instruction set, interrupt handling, and timers. Validated with Blargg's CPU test ROMs.
-- `v0.4-instructions-complete`: Full CPU instruction set implemented, including 8-bit, 16-bit, CB-prefixed, and special instructions.
-- `v0.3-instructions-unprefixed-complete`: Unprefixed 8-bit, 16-bit, and special instructions implemented.
-- `v0.2-rom-loading`: Basic ROM loading and header parsing implemented.
-- `v0.1-instructions-unprefixed-partial`: Partial implementation of unprefixed instructions. MMU with basic read/write support. Basic project structure and build system set up.
+> For planned upcoming features, see [README.md](/README.md#upcoming-features).  
+> For detailed progress and milestones, see [CHANGELOG.md](/CHANGELOG.md).
 
 ## CPU Core & Memory
 
