@@ -73,6 +73,25 @@
                 "ENABLE_CLANG_TIDY": "ON",
                 "BUILD_TESTING": "ON"
             }
+        },
+        {
+            "name": "release-symbols",
+            "inherits": "release",
+            "description": "Release with debug symbols (-O2 -g)",
+            "cacheVariables": {
+                "BUILD_TESTING": "OFF",
+                "CMAKE_FLAGS_RELEASE": "-O2 -g -DNDEBUG"
+            }
+        },
+        {
+            "name": "debug-optimized",
+            "inherits": "debug",
+            "description": "Debug with optimizations (-Og -g)",
+            "cacheVariables": {
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTING": "OFF",
+                "CMAKE_CXX_FLAGS_DEBUG": "-Og -g -Wall -Wextra -Wpedantic -DDEBUG"
+            }
         }
     ],
     "buildPresets": [
@@ -104,6 +123,16 @@
         {
             "name": "debug-tidy-tests",
             "configurePreset": "debug-tidy-tests",
+            "inherits": "default"
+        },
+        {
+            "name": "release-symbols",
+            "configurePreset": "release-symbols",
+            "inherits": "default"
+        },
+        {
+            "name": "debug-optimized",
+            "configurePreset": "debug-optimized",
             "inherits": "default"
         }
     ],
