@@ -40,4 +40,22 @@ std::string printable_char(char c)
     }
 }
 
+char* as_char_ptr(std::byte* ptr) noexcept
+{
+    static_assert(sizeof(std::byte) == sizeof(char), "std::byte and char must have the same size");
+    static_assert(alignof(std::byte) == alignof(char),
+                  "std::byte and char must have the same alignment");
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    return reinterpret_cast<char*>(ptr);
+}
+
+const char* as_char_ptr(const std::byte* ptr) noexcept
+{
+    static_assert(sizeof(std::byte) == sizeof(char), "std::byte and char must have the same size");
+    static_assert(alignof(std::byte) == alignof(char),
+                  "std::byte and char must have the same alignment");
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    return reinterpret_cast<const char*>(ptr);
+}
+
 } // namespace boyboy::utils

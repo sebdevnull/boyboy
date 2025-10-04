@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "boyboy/io/io.h"
-#include "boyboy/mmu.h"
+#include "boyboy/mmu/mmu.h"
 
 using boyboy::io::Io;
 using Serial = boyboy::io::IoReg::Serial;

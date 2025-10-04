@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
 project(boyboy
-    VERSION 0.2.0
+    VERSION 0.3.0
     DESCRIPTION "BoyBoy: A Game Boy emulator written in C++"
     LANGUAGES CXX)
 
@@ -84,14 +84,16 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/cpu/instructions.cpp
     src/boyboy/cpu/instructions_table.cpp
     src/boyboy/cpu/interrupt_handler.cpp
+    src/boyboy/mmu/mmu.cpp
     src/boyboy/io/io.cpp
     src/boyboy/io/serial.cpp
     src/boyboy/io/timer.cpp
     src/boyboy/io/joypad.cpp
     src/boyboy/ppu/ppu.cpp
-    src/boyboy/cartridge.cpp
+    src/boyboy/cart/cartridge.cpp
+    src/boyboy/cart/cartridge_loader.cpp
+    src/boyboy/cart/mbc.cpp
     src/boyboy/display.cpp
-    src/boyboy/mmu.cpp
     src/boyboy/emulator.cpp
 )
 

@@ -137,6 +137,11 @@ public:
     void set_ly(uint8_t ly);
     void inc_ly();
     void update_lyc(); // check and update LYC=LY flag
+    void enable_lcd(bool enable)
+    {
+        LCDC_ = (LCDC_ & ~registers::LCDC::LCDAndPPUEnable) |
+                (enable ? registers::LCDC::LCDAndPPUEnable : 0x00);
+    }
 
     // Memory callbacks for PPU to access VRAM/OAM through MMU
     void set_mem_read_cb(MemoryReadCB cb) { mem_read_cb_ = std::move(cb); }

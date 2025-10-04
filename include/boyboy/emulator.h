@@ -8,12 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "boyboy/cartridge.h"
+#include "boyboy/cart/cartridge.h"
 #include "boyboy/cpu/cpu.h"
 #include "boyboy/display.h"
 #include "boyboy/io/io.h"
 #include "boyboy/io/joypad.h"
-#include "boyboy/mmu.h"
+#include "boyboy/mmu/mmu.h"
 #include "boyboy/ppu/ppu.h"
 
 namespace boyboy::emulator {
@@ -41,7 +41,7 @@ private:
     ppu::Ppu& ppu_ = io_.ppu();
     io::Joypad& joypad_ = io_.joypad();
     display::Display display_;
-    cartridge::Cartridge cartridge_;
+    cart::Cartridge cartridge_;
 
     // Emulator state
     bool running_ = false;

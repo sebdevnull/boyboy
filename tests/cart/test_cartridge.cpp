@@ -13,20 +13,22 @@
 #include "helpers/rom_fixtures.h"
 
 // boyboy
-#include "boyboy/cartridge.h"
+#include "boyboy/cart/cartridge.h"
 
 using boyboy::test::common::InvalidROM;
 using boyboy::test::common::ValidROM;
 using boyboy::test::rom::ROMTest;
 
-using boyboy::cartridge::CartridgeType;
+using boyboy::cart::CartridgeType;
+using boyboy::cart::RamSize;
+using boyboy::cart::RomSize;
 
 class CartridgeTest : public ROMTest {};
 
 TEST_F(CartridgeTest, LoadValidRom)
 {
     EXPECT_NO_THROW(load(ValidROM));
-    EXPECT_GT(cart.size(), 0);
+    EXPECT_GT(cart.get_rom_data().size(), 0);
     EXPECT_TRUE(cart.is_loaded());
 }
 
@@ -43,15 +45,15 @@ TEST_F(CartridgeTest, HeaderParsing)
 
     EXPECT_EQ(header.title, "LIFE");
     EXPECT_EQ(header.cartridge_type, CartridgeType::ROMOnly);
-    EXPECT_EQ(header.rom_size, 0); // 32KB
-    EXPECT_EQ(header.ram_size, 0); // No RAM
+    EXPECT_EQ(header.rom_size, RomSize::KB32); // 32KB
+    EXPECT_EQ(header.ram_size, RamSize::None); // No RAM
 }
 
 TEST_F(CartridgeTest, UnloadRom)
 {
     load(ValidROM);
-    EXPECT_GT(cart.size(), 0);
+    EXPECT_GT(cart.get_rom_data().size(), 0);
     cart.unload_rom();
-    EXPECT_EQ(cart.size(), 0);
+    EXPECT_EQ(cart.get_rom_data().size(), 0);
     EXPECT_FALSE(cart.is_loaded());
 }

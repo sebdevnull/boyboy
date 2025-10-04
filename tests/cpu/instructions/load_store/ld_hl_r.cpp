@@ -9,6 +9,9 @@
 
 #include <gtest/gtest.h>
 
+// boyboy
+#include "boyboy/mmu/constants.h"
+
 // Helpers
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
@@ -16,6 +19,7 @@
 using boyboy::cpu::Opcode;
 using boyboy::cpu::Reg16Name;
 using boyboy::cpu::Reg8Name;
+using boyboy::mmu::VRAMStart;
 
 using boyboy::test::cpu::InstrParam;
 using boyboy::test::cpu::InstrTest;
@@ -43,7 +47,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .dst_op_type    = OperandType::Indirect,
                                  .src            = Reg8Name::A,
                                  .dst            = Reg16Name::HL,
-                                 .dst_addr       = 0x0000,
+                                 .dst_addr       = VRAMStart,
                                  .src_value      = uint8_t{0xAA},
                                  .expected_value = uint8_t{0xAA},
                                  .name           = "LD_AT_HL_A",
@@ -53,7 +57,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .dst_op_type    = OperandType::Indirect,
                                  .src            = Reg8Name::B,
                                  .dst            = Reg16Name::HL,
-                                 .dst_addr       = 0x1000,
+                                 .dst_addr       = VRAMStart + 1,
                                  .src_value      = uint8_t{0xBB},
                                  .expected_value = uint8_t{0xBB},
                                  .name           = "LD_AT_HL_B",
@@ -63,7 +67,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .dst_op_type    = OperandType::Indirect,
                                  .src            = Reg8Name::C,
                                  .dst            = Reg16Name::HL,
-                                 .dst_addr       = 0x2000,
+                                 .dst_addr       = VRAMStart + 2,
                                  .src_value      = uint8_t{0xCC},
                                  .expected_value = uint8_t{0xCC},
                                  .name           = "LD_AT_HL_C",
@@ -73,7 +77,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .dst_op_type    = OperandType::Indirect,
                                  .src            = Reg8Name::D,
                                  .dst            = Reg16Name::HL,
-                                 .dst_addr       = 0x3000,
+                                 .dst_addr       = VRAMStart + 3,
                                  .src_value      = uint8_t{0xDD},
                                  .expected_value = uint8_t{0xDD},
                                  .name           = "LD_AT_HL_D",
@@ -83,7 +87,7 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .dst_op_type    = OperandType::Indirect,
                                  .src            = Reg8Name::E,
                                  .dst            = Reg16Name::HL,
-                                 .dst_addr       = 0x4000,
+                                 .dst_addr       = VRAMStart + 4,
                                  .src_value      = uint8_t{0xEE},
                                  .expected_value = uint8_t{0xEE},
                                  .name           = "LD_AT_HL_E",
@@ -93,9 +97,9 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .dst_op_type    = OperandType::Indirect,
                                  .src            = Reg8Name::H,
                                  .dst            = Reg16Name::HL,
-                                 .dst_addr       = 0x55AA,
-                                 .src_value      = uint8_t{0x55},
-                                 .expected_value = uint8_t{0x55},
+                                 .dst_addr       = VRAMStart + 5,
+                                 .src_value      = uint8_t{0x80},
+                                 .expected_value = uint8_t{0x80},
                                  .name           = "LD_AT_HL_H",
                              },
                              InstrParam{
@@ -103,9 +107,9 @@ INSTANTIATE_TEST_SUITE_P(LdInstructions,
                                  .dst_op_type    = OperandType::Indirect,
                                  .src            = Reg8Name::L,
                                  .dst            = Reg16Name::HL,
-                                 .dst_addr       = 0x55AA,
-                                 .src_value      = uint8_t{0xAA},
-                                 .expected_value = uint8_t{0xAA},
+                                 .dst_addr       = VRAMStart + 6,
+                                 .src_value      = uint8_t{0x06},
+                                 .expected_value = uint8_t{0x06},
                                  .name           = "LD_AT_HL_L",
                              }),
                          boyboy::test::cpu::param_name<InstrParam>);

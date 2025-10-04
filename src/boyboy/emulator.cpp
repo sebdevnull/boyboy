@@ -7,6 +7,7 @@
 
 #include "boyboy/emulator.h"
 
+#include "boyboy/cart/cartridge_loader.h"
 #include "boyboy/log/logging.h"
 
 namespace boyboy::emulator {
@@ -15,7 +16,7 @@ void Emulator::load(const std::string& path)
 {
     log::info("Loading ROM from {}", path);
 
-    cartridge_.load_rom(path);
+    cartridge_ = cart::CartridgeLoader::load(path);
     mmu_->map_rom(cartridge_);
 }
 
@@ -45,6 +46,10 @@ void Emulator::run()
     display_.set_button_cb([this](io::Button b, bool p) { on_button_event(b, p); });
 
     display_.init();
+
+    // Enable LCD: it seems that some games expect it to be on at start, probably because the boot
+    // ROM does it so we will enable it until we implement the boot ROM (if we ever do)
+    ppu_.enable_lcd(true);
 
     auto start = std::chrono::high_resolution_clock::now();
 
