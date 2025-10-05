@@ -81,10 +81,17 @@
             "inherits": "debug",
             "description": "Debug with optimizations (-Og -g)",
             "cacheVariables": {
-                "ENABLE_PROFILING": "ON",
                 "ENABLE_SANITIZERS": "OFF",
                 "BUILD_TESTING": "OFF",
                 "CMAKE_CXX_FLAGS_DEBUG": "-Og -g -Wall -Wextra -Wpedantic -DDEBUG"
+            }
+        },
+        {
+            "name": "debug-profiling",
+            "inherits": "debug-optimized",
+            "description": "Debug with optimizations and profiling enabled",
+            "cacheVariables": {
+                "ENABLE_PROFILING": "ON"
             }
         },
         {
@@ -92,7 +99,6 @@
             "inherits": "release",
             "description": "Release with debug symbols (-O2 -g)",
             "cacheVariables": {
-                "ENABLE_PROFILING": "ON",
                 "BUILD_TESTING": "OFF",
                 "CMAKE_FLAGS_RELEASE": "-O2 -g -DNDEBUG"
             }
@@ -103,6 +109,14 @@
             "description": "Release configuration without tests",
             "cacheVariables": {
                 "BUILD_TESTING": "OFF"
+            }
+        },
+        {
+            "name": "release-profiling",
+            "inherits": "release-symbols",
+            "description": "Release with debug symbols and profiling enabled",
+            "cacheVariables": {
+                "ENABLE_PROFILING": "ON"
             }
         }
     ],
