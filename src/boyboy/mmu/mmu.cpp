@@ -462,13 +462,14 @@ void Mmu::init_memory_map()
 [[nodiscard]] size_t Mmu::find_region_index(uint16_t addr) const
 {
     for (size_t i = 0; i < memory_map_.size(); i++) {
-        auto region = memory_map_.at(i);
+        const auto& region = memory_map_.at(i);
         if (addr >= region.start && addr <= region.end) {
             return i;
         }
     }
 #ifndef NDEBUG
-    throw std::out_of_range(std::format("Invalid memory access at {}", utils::PrettyHex(addr).to_string()));
+    throw std::out_of_range(
+        std::format("Invalid memory access at {}", utils::PrettyHex(addr).to_string()));
 #else
     return size_t(-1);
 #endif
