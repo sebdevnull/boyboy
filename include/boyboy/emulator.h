@@ -47,9 +47,8 @@ private:
     bool running_ = false;
 
     // Statistics
-    double frame_count_ = 0;
-    double instruction_count_ = 0;
-    double cycle_count_ = 0;
+    uint64_t instruction_count_ = 0;
+    uint64_t cycle_count_ = 0;
 };
 
 } // namespace boyboy::emulator

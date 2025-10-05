@@ -9,6 +9,7 @@
 
 #include "boyboy/cart/cartridge_loader.h"
 #include "boyboy/log/logging.h"
+#include "boyboy/profiling/profiler_utils.h"
 
 namespace boyboy::emulator {
 
@@ -26,13 +27,19 @@ void Emulator::step()
     mmu_->tick_dma(cycles);
     io_.tick(cycles);
 
+    // Update statistics before frame
+    instruction_count_++;
+    cycle_count_ += cycles;
+
     if (ppu_.frame_ready()) {
         display_.render_frame(ppu_.framebuffer());
         ppu_.consume_frame();
-        frame_count_++;
+
+        // Update and log frame statistics
+        BB_PROFILE_FRAME(instruction_count_, cycle_count_);
+        instruction_count_ = 0;
+        cycle_count_ = 0;
     }
-    instruction_count_++;
-    cycle_count_ += cycles;
 }
 
 void Emulator::run()
@@ -51,29 +58,15 @@ void Emulator::run()
     // ROM does it so we will enable it until we implement the boot ROM (if we ever do)
     ppu_.enable_lcd(true);
 
-    auto start = std::chrono::high_resolution_clock::now();
-
     // TODO: running uncapped for now, add frame limiting when we optimize performance
     running_ = true;
     while (running_) {
         step();
         display_.poll_events(running_);
-
-        // Simple FPS/IPS counter
-        auto now = std::chrono::high_resolution_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
-        if (elapsed >= 3) {
-            log::info("FPS: {:.2f}, IPS: {:.2f}, CPS: {:.2f}",
-                      frame_count_ / static_cast<double>(elapsed),
-                      instruction_count_ / static_cast<double>(elapsed),
-                      cycle_count_ / static_cast<double>(elapsed));
-            // Reset counters
-            frame_count_ = 0;
-            instruction_count_ = 0;
-            cycle_count_ = 0;
-            start = now;
-        }
     }
+
+    BB_PROFILE_REPORT();
+    BB_FRAME_PROFILE_REPORT();
 
     log::info("Stopping emulator...");
 

@@ -12,6 +12,7 @@
 #include "boyboy/cpu/instructions.h"
 #include "boyboy/cpu/instructions_table.h"
 #include "boyboy/log/logging.h"
+#include "boyboy/profiling/profiler_utils.h"
 
 namespace boyboy::cpu {
 
@@ -119,6 +120,8 @@ void Cpu::set_register(Reg16Name reg, uint16_t value)
 
 uint8_t Cpu::step()
 {
+    BB_PROFILE_SCOPE(profiling::FrameTimer::Cpu);
+
     interrupt_handler_.service();
 
     if (halted_) {
