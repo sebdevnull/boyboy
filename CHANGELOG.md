@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Added
+
+- Add profiling module to analyze performance bottlenecks and measure frame times.
+  - Profiler based on regular and scoped timers: `Profiler`, `Timer`, `ScopedTimer`.
+  - Hot profiler for critical and high-frequency code sections: `HotProfiler`.
+  - Frame profiler to measure frame times and FPS: `FrameProfiler`.
+  - Profiling API with optional macros: `profiler_utils.h`.
+  - Conditional compilation with `ENABLE_PROFILING` CMake option.
+
+### Changed
+
+- Refactor `Emulator` and more specifically the emulation loop
+  - Frame-based emulation loop
+  - Move `Display::poll_events` to start of each frame instead of calling every step
+  - Replace FPS/IPS/CPS counter in `emulator.cpp` for `FrameProfiler`
+- Replace `Mmu` loop-based region finding for O(1) lookup table and other optimizations
+
 ## [0.3.0] - 2025-10-04
 
 ### Added
@@ -79,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 - Set up CMake build system with presets.
 - Unit and integration tests for CPU instructions, interrupts, MMU, ROM loading, and I/O registers.
 
-[Unreleased]: https://github.com/sebdevnull/boyboy/compare/v0.3.0...develop
+[Unreleased]: https://github.com/sebdevnull/boyboy/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/sebdevnull/boyboy/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/sebdevnull/boyboy/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/sebdevnull/boyboy/releases/tag/v0.1.0
