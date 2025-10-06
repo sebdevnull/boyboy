@@ -89,8 +89,8 @@ private:
         IO,
         HRAM,
         IEReg,
-        NumRegions,
         OpenBus, // Invalid region
+        Count,
     };
 
     struct MemoryRegion {
@@ -144,46 +144,35 @@ private:
     bool rom_loaded_ = false;
 
     // Memory banks
-    std::array<uint8_t, ROMBankSize> cart_{}; // cartridge
-    std::array<uint8_t, VRAMSize> vram_{};    // video ram
-    std::array<uint8_t, ERAMSize> eram_{};    // external ram
-    std::array<uint8_t, WRAMSize> wram_{};    // work ram
-    std::array<uint8_t, OAMSize> oam_{};      // sprite attribute table
-    std::array<uint8_t, IOSize> ior_{};       // i/o registers
-    std::array<uint8_t, HRAMSize> hram_{};    // high ram
-    uint8_t ier_{};                           // interrupt enable register
+    std::array<uint8_t, VRAMSize> vram_{}; // video ram
+    std::array<uint8_t, WRAMSize> wram_{}; // work ram
+    std::array<uint8_t, OAMSize> oam_{};   // sprite attribute table
+    std::array<uint8_t, HRAMSize> hram_{}; // high ram
+    uint8_t ier_{};                        // interrupt enable register
 
-    // Fallback open bus region
-    uint8_t open_bus_{OpenBusValue};
-    MemoryRegion dummy_open_bus_{
-        .id = MemoryRegionID::OpenBus,
-        .start = 0x0000,
-        .end = 0x0000,
-        .data = {&open_bus_, 1},
-        .read_only = false,
-        .mirrored = false,
-        .io_register = false,
-        .read_handler = nullptr,
-        .write_handler = nullptr,
-    };
+    // Memory map table for region mapping
+    std::array<MemoryRegion, static_cast<size_t>(MemoryRegionID::Count)> memory_map_{};
 
-    // Memory map table for address mapping
-    std::array<MemoryRegion, static_cast<size_t>(MemoryRegionID::NumRegions)> memory_map_;
+    // Lookup table for fast region finding
+    std::array<MemoryRegion*, MemoryMapSize> region_lut_{};
 
     // Memory mapping helpers
-    MemoryRegion& map(MemoryRegionID idx) { return memory_map_.at(static_cast<size_t>(idx)); }
+    MemoryRegion& map(MemoryRegionID idx) { return memory_map_[static_cast<size_t>(idx)]; }
     [[nodiscard]] const MemoryRegion& map(MemoryRegionID idx) const
     {
-        return memory_map_.at(static_cast<size_t>(idx));
+        return memory_map_[static_cast<size_t>(idx)];
     }
 
-    // Initialize memory mappings
+    // Initialize memory map and lookup table
     void init_memory_map();
+    void init_region_lut();
 
-    // Memory region finding
-    [[nodiscard]] inline size_t find_region_index(uint16_t addr) const;
-    [[nodiscard]] inline MemoryRegion& find_region(uint16_t addr);
-    [[nodiscard]] inline const MemoryRegion& find_region(uint16_t addr) const;
+    // Memory region lookup
+    [[nodiscard]] MemoryRegion& region_lookup(uint16_t addr) { return *region_lut_[addr]; }
+    [[nodiscard]] const MemoryRegion& region_lookup(uint16_t addr) const
+    {
+        return *region_lut_[addr];
+    }
 
     // I/O read/write handlers
     void io_write(uint16_t addr, uint8_t value);

@@ -23,7 +23,7 @@ SpacesInAngles: false
 SpacesInParentheses: false
 
 # --- Alignment ---
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 
@@ -35,6 +35,7 @@ ReferenceAlignment: Left
 ColumnLimit: 100
 BinPackArguments: false
 BinPackParameters: false
+AllowAllArgumentsOnNextLine: false
 
 # --- Functions & Lambdas ---
 AllowShortFunctionsOnASingleLine: Inline

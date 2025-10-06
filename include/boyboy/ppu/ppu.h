@@ -13,6 +13,7 @@
 #include <ostream>
 
 #include "boyboy/common/utils.h"
+#include "boyboy/cpu/cpu_constants.h"
 #include "boyboy/io/iocomponent.h"
 #include "boyboy/io/registers.h"
 #include "boyboy/ppu/palettes.h"
@@ -73,6 +74,11 @@ static constexpr int TotalScanlines = VisibleScanlines + VBlankScanlines;
 static constexpr uint32_t CyclesPerFrame =
     ((Cycles::OAMScan + Cycles::Transfer + Cycles::HBlank) * VisibleScanlines) +
     (Cycles::VBlank * VBlankScanlines);
+
+// Frame rate (approx 59.73 Hz)
+static constexpr double FrameRate =
+    static_cast<double>(cpu::MasterClockFrequencyHz) / CyclesPerFrame; // Hz
+static constexpr double FrameDuration = 1.0 / FrameRate;               // seconds
 
 // Types definitions
 using Pixel = uint32_t; // RGBA format

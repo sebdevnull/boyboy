@@ -6,9 +6,9 @@
  */
 
 // clang-format off
- #define GLAD_GL_IMPLEMENTATION
- #include <glad/gl.h>
- #include <SDL2/SDL.h>
+#define GLAD_GL_IMPLEMENTATION
+#include <glad/gl.h>
+#include <SDL2/SDL.h>
 // clang-format on
 
 #include "boyboy/display.h"
@@ -19,6 +19,7 @@
 #include "boyboy/io/buttons.h"
 #include "boyboy/log/logging.h"
 #include "boyboy/ppu/ppu.h"
+#include "boyboy/profiling/profiler_utils.h"
 
 namespace boyboy::display {
 
@@ -151,6 +152,8 @@ void Display::handle_key_event(const SDL_Event& event, bool pressed)
 
 void Display::render_frame(const ppu::FrameBuffer& framebuffer)
 {
+    BB_PROFILE_SCOPE(profiling::FrameTimer::Render);
+
     glTexSubImage2D(
         GL_TEXTURE_2D, 0, 0, 0, width_, height_, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer.data());
 

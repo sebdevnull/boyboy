@@ -20,7 +20,8 @@
                 "BUILD_TESTING": "ON",
                 "ENABLE_CLANG_TIDY": "OFF",
                 "LOG_LEVEL": "INFO",
-                "DISASSEMBLY_LOG": "OFF"
+                "DISASSEMBLY_LOG": "OFF",
+                "ENABLE_PROFILING": "OFF"
             }
         },
         {
@@ -73,6 +74,49 @@
                 "ENABLE_CLANG_TIDY": "ON",
                 "BUILD_TESTING": "ON"
             }
+        },
+        {
+            "name": "debug-optimized",
+            "inherits": "debug",
+            "description": "Debug with optimizations (-Og -g)",
+            "cacheVariables": {
+                "ENABLE_SANITIZERS": "OFF",
+                "BUILD_TESTING": "OFF",
+                "CMAKE_CXX_FLAGS_DEBUG": "-Og -g -Wall -Wextra -Wpedantic -DDEBUG"
+            }
+        },
+        {
+            "name": "debug-profiling",
+            "inherits": "debug-optimized",
+            "description": "Debug with optimizations and profiling enabled",
+            "cacheVariables": {
+                "ENABLE_PROFILING": "ON"
+            }
+        },
+        {
+            "name": "release-symbols",
+            "inherits": "release",
+            "description": "Release with debug symbols (-O2 -g)",
+            "cacheVariables": {
+                "BUILD_TESTING": "OFF",
+                "CMAKE_FLAGS_RELEASE": "-O2 -g -DNDEBUG"
+            }
+        },
+        {
+            "name": "release-no-tests",
+            "inherits": "release",
+            "description": "Release configuration without tests",
+            "cacheVariables": {
+                "BUILD_TESTING": "OFF"
+            }
+        },
+        {
+            "name": "release-profiling",
+            "inherits": "release-symbols",
+            "description": "Release with debug symbols and profiling enabled",
+            "cacheVariables": {
+                "ENABLE_PROFILING": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -104,6 +148,31 @@
         {
             "name": "debug-tidy-tests",
             "configurePreset": "debug-tidy-tests",
+            "inherits": "default"
+        },
+        {
+            "name": "debug-optimized",
+            "configurePreset": "debug-optimized",
+            "inherits": "default"
+        },
+        {
+            "name": "debug-profiling",
+            "configurePreset": "debug-profiling",
+            "inherits": "default"
+        },
+        {
+            "name": "release-symbols",
+            "configurePreset": "release-symbols",
+            "inherits": "default"
+        },
+        {
+            "name": "release-no-tests",
+            "configurePreset": "release-no-tests",
+            "inherits": "default"
+        },
+        {
+            "name": "release-profiling",
+            "configurePreset": "release-profiling",
             "inherits": "default"
         }
     ],

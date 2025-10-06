@@ -76,6 +76,12 @@ if(DISASSEMBLY_LOG)
     add_compile_definitions(DISASSEMBLY_LOG)
 endif()
 
+option(ENABLE_PROFILING "Enable profiling" OFF)
+if(ENABLE_PROFILING)
+    message(NOTICE "[INFO] Profiling enabled")
+    add_compile_definitions(ENABLE_PROFILING)
+endif()
+
 # --- Library target ---
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE

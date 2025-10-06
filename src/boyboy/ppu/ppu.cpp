@@ -16,6 +16,7 @@
 #include "boyboy/log/logging.h"
 #include "boyboy/mmu/constants.h"
 #include "boyboy/ppu/registers.h"
+#include "boyboy/profiling/profiler_utils.h"
 
 namespace boyboy::ppu {
 
@@ -23,6 +24,8 @@ using io::IoReg;
 
 void Ppu::tick(uint16_t cycles)
 {
+    BB_PROFILE_SCOPE(profiling::FrameTimer::Ppu);
+
     if (lcd_off()) {
         return;
     }

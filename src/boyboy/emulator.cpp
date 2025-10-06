@@ -7,8 +7,13 @@
 
 #include "boyboy/emulator.h"
 
+#include <chrono>
+#include <thread>
+
 #include "boyboy/cart/cartridge_loader.h"
 #include "boyboy/log/logging.h"
+#include "boyboy/ppu/ppu.h"
+#include "boyboy/profiling/profiler_utils.h"
 
 namespace boyboy::emulator {
 
@@ -20,23 +25,13 @@ void Emulator::load(const std::string& path)
     mmu_->map_rom(cartridge_);
 }
 
-void Emulator::step()
+void Emulator::start()
 {
-    auto cycles = cpu_.step();
-    mmu_->tick_dma(cycles);
-    io_.tick(cycles);
-
-    if (ppu_.frame_ready()) {
-        display_.render_frame(ppu_.framebuffer());
-        ppu_.consume_frame();
-        frame_count_++;
+    if (started_) {
+        log::warn("Emulator already started");
+        return;
     }
-    instruction_count_++;
-    cycle_count_ += cycles;
-}
 
-void Emulator::run()
-{
     log::info("Starting emulator...");
 
     // Hook system callbacks
@@ -51,33 +46,57 @@ void Emulator::run()
     // ROM does it so we will enable it until we implement the boot ROM (if we ever do)
     ppu_.enable_lcd(true);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    started_ = true;
+}
 
-    // TODO: running uncapped for now, add frame limiting when we optimize performance
-    running_ = true;
-    while (running_) {
-        step();
-        display_.poll_events(running_);
-
-        // Simple FPS/IPS counter
-        auto now = std::chrono::high_resolution_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
-        if (elapsed >= 3) {
-            log::info("FPS: {:.2f}, IPS: {:.2f}, CPS: {:.2f}",
-                      frame_count_ / static_cast<double>(elapsed),
-                      instruction_count_ / static_cast<double>(elapsed),
-                      cycle_count_ / static_cast<double>(elapsed));
-            // Reset counters
-            frame_count_ = 0;
-            instruction_count_ = 0;
-            cycle_count_ = 0;
-            start = now;
-        }
+void Emulator::stop()
+{
+    if (!started_) {
+        log::warn("Emulator not started");
+        return;
     }
 
     log::info("Stopping emulator...");
 
+    BB_PROFILE_REPORT();
+    BB_HOT_PROFILE_REPORT();
+    BB_FRAME_PROFILE_REPORT();
+
     display_.shutdown();
+    started_ = false;
+}
+
+void Emulator::run()
+{
+    start();
+
+    using clock = std::chrono::steady_clock;
+    auto next_frame_time = clock::now();
+    constexpr auto FrameDuration = std::chrono::duration_cast<clock::duration>(
+        std::chrono::duration<double>(ppu::FrameDuration));
+
+    // TODO: allow configurable frame rate for high refresh rate monitors and "turbo" mode.
+    // For now we run at the native frame rate (59.73Hz)
+    running_ = true;
+    while (running_) {
+        display_.poll_events(running_);
+        emulate_frame();
+        render_frame();
+
+        // Frame limiting (if needed) at 59.73Hz
+        if (frame_rate_limited_) {
+            next_frame_time += FrameDuration;
+            auto now = clock::now();
+            if (now < next_frame_time) {
+                std::this_thread::sleep_until(next_frame_time);
+            }
+            else {
+                next_frame_time = now;
+            }
+        }
+    }
+
+    stop();
 }
 
 void Emulator::reset()
@@ -96,6 +115,37 @@ void Emulator::on_button_event(io::Button button, bool pressed)
     else {
         joypad_.release(button);
     }
+}
+
+void Emulator::emulate_frame()
+{
+    while (!ppu_.frame_ready()) {
+        auto cycles = cpu_.step();
+        instruction_count_++;
+        cycle_count_ += cycles;
+
+        mmu_->tick_dma(cycles);
+        io_.tick(cycles);
+    }
+
+    // Check if there is any drift in the cycle count
+    constexpr int CycleDriftTolerance = 8;
+    int64_t cycle_diff =
+        static_cast<int64_t>(cycle_count_) - static_cast<int64_t>(ppu::CyclesPerFrame);
+    if (std::abs(cycle_diff) > CycleDriftTolerance) {
+        log::warn("Frame cycle count drift detected: {} cycles", cycle_diff);
+    }
+}
+
+void Emulator::render_frame()
+{
+    display_.render_frame(ppu_.framebuffer());
+    ppu_.consume_frame();
+
+    // Update and log frame statistics
+    BB_PROFILE_FRAME(instruction_count_, cycle_count_);
+    instruction_count_ = 0;
+    cycle_count_ = 0;
 }
 
 } // namespace boyboy::emulator

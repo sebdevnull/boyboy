@@ -12,6 +12,7 @@
 #include "boyboy/cpu/instructions.h"
 #include "boyboy/cpu/instructions_table.h"
 #include "boyboy/log/logging.h"
+#include "boyboy/profiling/profiler_utils.h"
 
 namespace boyboy::cpu {
 
@@ -119,6 +120,8 @@ void Cpu::set_register(Reg16Name reg, uint16_t value)
 
 uint8_t Cpu::step()
 {
+    BB_PROFILE_SCOPE(profiling::FrameTimer::Cpu);
+
     interrupt_handler_.service();
 
     if (halted_) {
@@ -154,7 +157,10 @@ uint8_t Cpu::step()
 
 uint8_t Cpu::fetch()
 {
-    return read_byte(registers_.pc++);
+    BB_PROFILE_START(profiling::HotSection::CpuFetch);
+    uint8_t result = read_byte(registers_.pc++);
+    BB_PROFILE_STOP(profiling::HotSection::CpuFetch);
+    return result;
 }
 
 [[nodiscard]] uint8_t Cpu::peek() const
@@ -164,9 +170,11 @@ uint8_t Cpu::fetch()
 
 uint8_t Cpu::execute(uint8_t opcode, InstructionType instr_type)
 {
+    BB_PROFILE_START(profiling::HotSection::CpuExecute);
     const auto& instr = InstructionTable::get_instruction(instr_type, opcode);
     (this->*instr.execute)();
     cycles_ += instr.cycles;
+    BB_PROFILE_STOP(profiling::HotSection::CpuExecute);
     return instr.cycles;
 }
 

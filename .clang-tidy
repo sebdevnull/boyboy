@@ -14,7 +14,8 @@ Checks: >
   -cppcoreguidelines-pro-type-union-access,
   -readability-magic-numbers,
   -cppcoreguidelines-avoid-magic-numbers,
-  -bugprone-easily-swappable-parameters
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-pro-bounds-constant-array-index
 # -readability-convert-member-functions-to-static,
 # -performance-enum-size
 
