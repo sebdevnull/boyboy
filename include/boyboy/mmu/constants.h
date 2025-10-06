@@ -13,6 +13,8 @@
 namespace boyboy::mmu {
 
 // --- MMU memory map constants ---
+static constexpr uint32_t MemoryMapSize = (1 << 16); // 16-bit address space (64KB)
+
 static constexpr uint16_t ROMBank0Start = 0x0000;
 static constexpr uint16_t ROMBank0End = 0x3FFF;
 static constexpr uint16_t ROMBank1Start = 0x4000;

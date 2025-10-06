@@ -8,12 +8,11 @@
 // TODO: handle better mirrored memory sections
 //       We actually only have one (ECHO -> WRAM) and it behaves differently depending on the
 //       cartridge type and GB HW version (DMG/CGB). Check "The Cycle-Accurate Game Boy Docs"
-
-// TODO: map cartridge RAM
-// TODO: "find_region" is probably a performance bottleneck, as it is called on EVERY memory access
+// TODO: read/write word and copy are only used in tests. Consider removing them.
 
 #include "boyboy/mmu/mmu.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
@@ -25,17 +24,15 @@
 #include "boyboy/common/utils.h"
 #include "boyboy/log/logging.h"
 #include "boyboy/mmu/constants.h"
+#include "boyboy/profiling/profiler_utils.h"
 
 namespace boyboy::mmu {
 
 void Mmu::reset()
 {
-    cart_.fill(0);
     vram_.fill(0);
-    eram_.fill(0);
     wram_.fill(0);
     oam_.fill(0);
-    ior_.fill(0);
     hram_.fill(0);
     ier_ = 0;
 
@@ -77,43 +74,48 @@ void Mmu::map_rom(cart::Cartridge& cart)
 
 uint8_t Mmu::read_byte(uint16_t addr) const
 {
-    const auto& region = find_region(addr);
+    BB_PROFILE_START(profiling::HotSection::MmuRead);
 
-    if (&region == &dummy_open_bus_) {
-        log::warn("Read from open bus at {}", utils::PrettyHex(addr).to_string());
-        return open_bus_;
-    }
+    const auto& region = region_lookup(addr);
 
     if (region.mirrored) {
         if (!region.mirror) {
+            BB_PROFILE_STOP(profiling::HotSection::MmuRead);
+
             throw std::runtime_error("Mirrored region missing mirror target");
         }
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
 
-        log::debug("Read from mirrored region at {}: [{}] (mirrored to {})",
-                   utils::PrettyHex(addr).to_string(),
-                   utils::PrettyHex(mirror.data[addr - region.start]).to_string(),
-                   utils::PrettyHex(mirror_addr).to_string());
+        log::debug(
+            "Read from mirrored region at {}: [{}] (mirrored to {})",
+            utils::PrettyHex(addr).to_string(),
+            utils::PrettyHex(mirror.data[addr - region.start]).to_string(),
+            utils::PrettyHex(mirror_addr).to_string()
+        );
 
-        return read_byte(mirror_addr);
+        uint8_t result = read_byte(mirror_addr);
+        BB_PROFILE_STOP(profiling::HotSection::MmuRead);
+
+        return result;
     }
 
     if (region.read_handler) {
-        return region.read_handler(addr);
+        uint8_t result = region.read_handler(addr);
+        BB_PROFILE_STOP(profiling::HotSection::MmuRead);
+
+        return result;
     }
 
-    return region.data[addr - region.start];
+    uint8_t result = region.data[addr - region.start];
+    BB_PROFILE_STOP(profiling::HotSection::MmuRead);
+
+    return result;
 }
 
 uint16_t Mmu::read_word(uint16_t addr) const
 {
-    const auto& region = find_region(addr);
-
-    if (&region == &dummy_open_bus_) {
-        log::warn("Read from open bus at {}", utils::PrettyHex(addr).to_string());
-        return open_bus_;
-    }
+    const auto& region = region_lookup(addr);
 
     if (region.mirrored) {
         if (!region.mirror) {
@@ -122,9 +124,11 @@ uint16_t Mmu::read_word(uint16_t addr) const
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
 
-        log::debug("Read from mirrored region at {} (mirrored to {})",
-                   utils::PrettyHex(addr).to_string(),
-                   utils::PrettyHex(mirror_addr).to_string());
+        log::debug(
+            "Read from mirrored region at {} (mirrored to {})",
+            utils::PrettyHex(addr).to_string(),
+            utils::PrettyHex(mirror_addr).to_string()
+        );
 
         return read_word(mirror_addr);
     }
@@ -140,60 +144,68 @@ uint16_t Mmu::read_word(uint16_t addr) const
 
 void Mmu::write_byte(uint16_t addr, uint8_t value)
 {
-    auto& region = find_region(addr);
+    BB_PROFILE_START(profiling::HotSection::MmuWrite);
+
+    if (dma_.active && addr >= OAMStart && addr <= OAMEnd) {
+        // Ignore writes to OAM during DMA transfer
+        log::warn(
+            "Attempted write to OAM during DMA transfer at {}",
+            utils::PrettyHex(addr).to_string()
+        );
+        BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
+
+        return;
+    }
+
+    auto& region = region_lookup(addr);
 
     if (region.read_only) {
         log::warn("Attempted write to read-only memory at {}", utils::PrettyHex(addr).to_string());
-        return;
-    }
+        BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
 
-    if (dma_.active && addr >= OAMStart && addr < OAMEnd) {
-        // Ignore writes to OAM during DMA transfer
-        log::warn("Attempted write to OAM during DMA transfer at {}",
-                  utils::PrettyHex(addr).to_string());
-        return;
-    }
-
-    if (&region == &dummy_open_bus_) {
-        log::warn("Attempted write to open bus at {}", utils::PrettyHex(addr).to_string());
         return;
     }
 
     if (region.mirrored) {
         if (!region.mirror) {
+            BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
+
             throw std::runtime_error("Mirrored region missing mirror target");
         }
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
 
-        log::debug("Write to mirrored region at {}: [{}] (mirrored to {})",
-                   utils::PrettyHex(addr).to_string(),
-                   utils::PrettyHex(value).to_string(),
-                   utils::PrettyHex(mirror_addr).to_string());
+        log::debug(
+            "Write to mirrored region at {}: [{}] (mirrored to {})",
+            utils::PrettyHex(addr).to_string(),
+            utils::PrettyHex(value).to_string(),
+            utils::PrettyHex(mirror_addr).to_string()
+        );
 
+        BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
         write_byte(mirror_addr, value);
+
         return;
     }
 
     if (region.write_handler) {
         region.write_handler(addr, value);
+        BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
+
         return;
     }
 
     region.data[addr - region.start] = value;
+
+    BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
 }
 
 void Mmu::write_word(uint16_t addr, uint16_t value)
 {
-    auto& region = find_region(addr);
+    auto& region = region_lookup(addr);
 
     if (region.read_only) {
         log::warn("Attempted write to read-only memory at {}", utils::PrettyHex(addr).to_string());
-        return;
-    }
-
-    if (&region == &dummy_open_bus_) {
-        log::warn("Attempted write to open bus at {}", utils::PrettyHex(addr).to_string());
         return;
     }
 
@@ -204,9 +216,11 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (addr - region.start);
 
-        log::debug("Write to mirrored region at {} (mirrored to {})",
-                   utils::PrettyHex(addr).to_string(),
-                   utils::PrettyHex(mirror_addr).to_string());
+        log::debug(
+            "Write to mirrored region at {} (mirrored to {})",
+            utils::PrettyHex(addr).to_string(),
+            utils::PrettyHex(mirror_addr).to_string()
+        );
 
         write_word(mirror_addr, value);
         return;
@@ -224,16 +238,13 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
 
 void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
 {
-    auto& region = find_region(dst_addr);
+    auto& region = region_lookup(dst_addr);
 
     if (region.read_only) {
-        log::warn("Attempted copy to read-only memory at {}",
-                  utils::PrettyHex(dst_addr).to_string());
-        return;
-    }
-
-    if (&region == &dummy_open_bus_) {
-        log::warn("Attempted copy to open bus at {}", utils::PrettyHex(dst_addr).to_string());
+        log::warn(
+            "Attempted copy to read-only memory at {}",
+            utils::PrettyHex(dst_addr).to_string()
+        );
         return;
     }
 
@@ -244,9 +255,11 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
         const auto& mirror = map(*region.mirror);
         uint16_t mirror_addr = mirror.start + (dst_addr - region.start);
 
-        log::debug("Copy to mirrored region at {} (mirrored to {})",
-                   utils::PrettyHex(dst_addr).to_string(),
-                   utils::PrettyHex(mirror_addr).to_string());
+        log::debug(
+            "Copy to mirrored region at {} (mirrored to {})",
+            utils::PrettyHex(dst_addr).to_string(),
+            utils::PrettyHex(mirror_addr).to_string()
+        );
 
         copy(mirror_addr, src);
         return;
@@ -357,18 +370,22 @@ void Mmu::init_memory_map()
         return OpenBusValue;
     };
     auto unloaded_rom_write = [](uint16_t addr, uint8_t value) {
-        log::warn("Write to ROM before ROM loaded at {}: {}",
-                  utils::PrettyHex(addr).to_string(),
-                  utils::PrettyHex(value).to_string());
+        log::warn(
+            "Write to ROM before ROM loaded at {}: {}",
+            utils::PrettyHex(addr).to_string(),
+            utils::PrettyHex(value).to_string()
+        );
     };
     auto unloaded_eram_read = [](uint16_t addr) -> uint8_t {
         log::warn("Read from ERAM before ROM loaded at {}", utils::PrettyHex(addr).to_string());
         return OpenBusValue;
     };
     auto unloaded_eram_write = [](uint16_t addr, uint8_t value) {
-        log::warn("Write to ERAM before ROM loaded at {}: {}",
-                  utils::PrettyHex(addr).to_string(),
-                  utils::PrettyHex(value).to_string());
+        log::warn(
+            "Write to ERAM before ROM loaded at {}: {}",
+            utils::PrettyHex(addr).to_string(),
+            utils::PrettyHex(value).to_string()
+        );
     };
 
     map(MemoryRegionID::ROMBank0) = {
@@ -440,7 +457,7 @@ void Mmu::init_memory_map()
         .id = MemoryRegionID::IO,
         .start = IOStart,
         .end = IOEnd,
-        .data = ior_,
+        .data = {},
         .io_register = true,
         .read_handler = [&](uint16_t addr) -> uint8_t { return io_read(addr); },
         .write_handler = [&](uint16_t addr, uint8_t value) { io_write(addr, value); },
@@ -457,33 +474,67 @@ void Mmu::init_memory_map()
         .end = IEAddr,
         .data = {&ier_, 1},
     };
-}
 
-[[nodiscard]] size_t Mmu::find_region_index(uint16_t addr) const
-{
-    for (size_t i = 0; i < memory_map_.size(); i++) {
-        const auto& region = memory_map_.at(i);
-        if (addr >= region.start && addr <= region.end) {
-            return i;
-        }
-    }
-#ifndef NDEBUG
-    throw std::out_of_range(
-        std::format("Invalid memory access at {}", utils::PrettyHex(addr).to_string()));
+    // Fallback for unmapped addresses (open bus)
+    map(MemoryRegionID::OpenBus) = {
+        .id = MemoryRegionID::OpenBus,
+        .start = 0x0000,
+        .end = 0x0000,
+        .data = {},
+        .read_only = false,
+        .mirrored = false,
+        .io_register = false,
+        .read_handler = [&](uint16_t addr) -> uint8_t {
+#ifdef DEBUG
+            // In debug mode, throw for easier debugging
+            throw std::out_of_range(
+                std::format("Read from unmapped memory at {}", utils::PrettyHex(addr).to_string())
+            );
 #else
-    return size_t(-1);
+            // In release mode, log a warning and return open bus value
+            log::warn("Read from unmapped memory at {}", utils::PrettyHex(addr).to_string());
+            return OpenBusValue;
 #endif
+        },
+        .write_handler =
+            [&](uint16_t addr, uint8_t value) {
+#ifdef DEBUG
+                // In debug mode, throw for easier debugging
+                throw std::out_of_range(std::format(
+                    "Write to unmapped memory at {}: {}",
+                    utils::PrettyHex(addr).to_string(),
+                    utils::PrettyHex(value).to_string()
+                ));
+#else
+                // In release mode, log a warning
+                log::warn(
+                    "Write to unmapped memory at {}: {}",
+                    utils::PrettyHex(addr).to_string(),
+                    utils::PrettyHex(value).to_string()
+                );
+#endif
+            },
+    };
+
+    init_region_lut();
 }
 
-Mmu::MemoryRegion& Mmu::find_region(uint16_t addr)
+void Mmu::init_region_lut()
 {
-    size_t idx = find_region_index(addr);
-    return (idx == size_t(-1)) ? dummy_open_bus_ : memory_map_.at(idx);
-}
-const Mmu::MemoryRegion& Mmu::find_region(uint16_t addr) const
-{
-    size_t idx = find_region_index(addr);
-    return (idx == size_t(-1)) ? dummy_open_bus_ : memory_map_.at(idx);
+    // Initialize all entries to point to OpenBus region
+    region_lut_.fill(&map(MemoryRegionID::OpenBus));
+
+    // Populate the lookup table with actual memory regions
+    for (auto& region : memory_map_) {
+        if (region.id == MemoryRegionID::OpenBus) {
+            continue;
+        }
+        std::ranges::fill(
+            region_lut_.begin() + region.start,
+            region_lut_.begin() + region.end + 1,
+            &region
+        );
+    }
 }
 
 void Mmu::io_write(uint16_t addr, uint8_t value)
