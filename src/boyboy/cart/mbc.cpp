@@ -102,14 +102,14 @@ void Mbc::write(uint16_t addr, uint8_t value)
         // enable only on 0x0A, disable otherwise
         // discard upper 4 bits
         ram_enable_ = (value & 0x0F) == 0x0A;
-        log::debug("RAM enable set to {}", ram_enable_);
+        log::trace("RAM enable set to {}", ram_enable_);
     }
     else if (addr >= ROMBankNumberStart && addr <= ROMBankNumberEnd) {
         // Mask value to max number of banks or 5-bits max
         // e.g. 16 banks (0x10) masked to 4 bits (0x0F)
         value &= std::min((rom_bank_cnt_ - 1), 0x1F);
         rom_bank_select_ = value == 0 ? 1 : value; // if 0 always set to 1
-        log::debug("ROM bank selected: {}", rom_bank_select_);
+        log::trace("ROM bank selected: {}", rom_bank_select_);
     }
     else if (addr >= RAMBankNumberStart && addr <= RAMBankNumberEnd) {
         // 2 bit register
@@ -127,7 +127,7 @@ void Mbc::write(uint16_t addr, uint8_t value)
                 }
             }
 
-            log::debug("ROM/RAM banking mode 0: ROM bank selected: {}, RAM bank selected: {}",
+            log::trace("ROM/RAM banking mode 0: ROM bank selected: {}, RAM bank selected: {}",
                        rom_bank_select_,
                        ram_bank_select_);
         }
@@ -141,7 +141,7 @@ void Mbc::write(uint16_t addr, uint8_t value)
                 ram_bank_select_ %= ram_bank_cnt_;
             }
 
-            log::debug("ROM/RAM banking mode 1: ROM bank selected: {}, RAM bank selected: {}",
+            log::trace("ROM/RAM banking mode 1: ROM bank selected: {}, RAM bank selected: {}",
                        rom_bank_select_,
                        ram_bank_select_);
         }
@@ -149,7 +149,7 @@ void Mbc::write(uint16_t addr, uint8_t value)
     else if (addr >= BankingModeSelectStart && addr <= BankingModeSelectEnd) {
         // 1 bit register
         banking_mode_ = value & 0x01;
-        log::debug("Banking mode set to {}", banking_mode_);
+        log::trace("Banking mode set to {}", banking_mode_);
     }
     else if (addr >= mmu::ERAMStart && addr <= mmu::ERAMEnd && ram_bank_cnt_ > 0) {
         // write to RAM bank if any
