@@ -10,6 +10,7 @@
 
 #pragma once
 #include "boyboy/profiling/frame_profiler.h"
+#include "boyboy/profiling/hot_profiler.h"
 #include "boyboy/profiling/profiler.h"
 
 namespace boyboy::profiling {
@@ -54,13 +55,20 @@ using ActiveProfiler = Profiler;
  * @brief Output a profiling report for all timers.
  */
 #define BB_PROFILE_REPORT() boyboy::profiling::profile_report()
+
+/**
+ * @brief Output a hot profiler report.
+ */
+#define BB_HOT_PROFILE_REPORT() boyboy::profiling::hot_profile_report()
+
 #else
 using ActiveProfiler = NullProfiler;
 
 #define BB_PROFILE_START(name)
 #define BB_PROFILE_STOP(name)
-#define BB_PROFILE_REPORT()
 #define BB_PROFILE_SCOPE(name)
+#define BB_PROFILE_REPORT()
+#define BB_HOT_PROFILE_REPORT()
 #endif
 
 /**
@@ -77,6 +85,22 @@ using ActiveProfiler = NullProfiler;
 
 /** @} */
 // NOLINTEND(cppcoreguidelines-macro-usage)
+
+/**
+ * @brief Get the string ID for a FrameTimer enum value.
+ * @param timer FrameTimer value.
+ * @return String ID (e.g. "Frame::Cpu").
+ */
+inline std::string_view frame_timer_id(FrameTimer timer)
+{
+    constexpr std::array<std::string_view, static_cast<size_t>(FrameTimer::Count)> Ids =
+        {"Frame::Cpu", "Frame::Ppu", "Frame::Render"};
+    auto idx = static_cast<size_t>(timer);
+    if (idx < Ids.size()) {
+        return Ids[idx];
+    }
+    return "Frame::Unknown";
+}
 
 /**
  * @brief Get the global profiler instance.
@@ -99,6 +123,16 @@ inline FrameProfiler& get_frame_profiler()
 }
 
 /**
+ * @brief Get the global hot profiler instance.
+ * @return Reference to the hot profiler.
+ */
+inline HotProfiler& get_hot_profiler()
+{
+    static HotProfiler hot_profiler;
+    return hot_profiler;
+}
+
+/**
  * @brief Start a named profiling timer (string).
  * @param name Timer name.
  */
@@ -113,7 +147,16 @@ inline void profile_start(const std::string& name)
  */
 inline void profile_start(FrameTimer timer)
 {
-    get_profiler().start(to_string(timer));
+    get_profiler().start(std::string(frame_timer_id(timer)));
+}
+
+/**
+ * @brief Start a named hot profiling timer (enum).
+ * @param section HotSection enum value.
+ */
+inline void profile_start(HotSection section)
+{
+    get_hot_profiler().start(section);
 }
 
 /**
@@ -131,7 +174,16 @@ inline void profile_stop(const std::string& name)
  */
 inline void profile_stop(FrameTimer timer)
 {
-    get_profiler().stop(to_string(timer));
+    get_profiler().stop(std::string(frame_timer_id(timer)));
+}
+
+/**
+ * @brief Stop a named hot profiling timer (enum).
+ * @param section HotSection enum value.
+ */
+inline void profile_stop(HotSection section)
+{
+    get_hot_profiler().stop(section);
 }
 
 /**
@@ -151,7 +203,7 @@ inline auto profile_scope(const std::string& name)
  */
 inline auto profile_scope(FrameTimer timer)
 {
-    return get_profiler().scoped(to_string(timer));
+    return get_profiler().scoped(std::string(frame_timer_id(timer)));
 }
 
 /**
@@ -175,8 +227,9 @@ inline void profile_frame(uint64_t instructions, uint64_t cycles)
 
     FrameTimes current_times;
     for (size_t i = 0; i < static_cast<size_t>(FrameTimer::Count); ++i) {
-        current_times.at(i) =
-            get_profiler().timer().get_time_us(to_string(static_cast<FrameTimer>(i)));
+        current_times.at(i) = get_profiler().timer().get_time_us(
+            std::string(frame_timer_id(static_cast<FrameTimer>(i)))
+        );
     }
 
     FrameTimes deltas;
@@ -204,6 +257,14 @@ inline void profile_report()
 inline void frame_profile_report()
 {
     get_frame_profiler().report();
+}
+
+/**
+ * @brief Output a hot profiler report.
+ */
+inline void hot_profile_report()
+{
+    get_hot_profiler().report();
 }
 
 } // namespace boyboy::profiling
