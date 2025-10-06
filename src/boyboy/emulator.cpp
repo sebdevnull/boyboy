@@ -59,6 +59,7 @@ void Emulator::stop()
     log::info("Stopping emulator...");
 
     BB_PROFILE_REPORT();
+    BB_HOT_PROFILE_REPORT();
     BB_FRAME_PROFILE_REPORT();
 
     display_.shutdown();
