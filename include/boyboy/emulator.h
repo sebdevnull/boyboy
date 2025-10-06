@@ -24,14 +24,19 @@ public:
 
     // Emulator operations
     void load(const std::string& path);
-    void step();
+    void start();
+    void stop();
     void run();
     void reset();
 
+    // State accessors
+    [[nodiscard]] bool is_running() const { return running_; }
+    [[nodiscard]] bool is_started() const { return started_; }
+    void limit_frame_rate(bool limit) { frame_rate_limited_ = limit; }
+    [[nodiscard]] bool is_frame_rate_limited() const { return frame_rate_limited_; }
+
     // Button event handler
     void on_button_event(io::Button button, bool pressed);
-
-    [[nodiscard]] const display::Display& get_display() const { return display_; }
 
 private:
     // System components
@@ -45,10 +50,15 @@ private:
 
     // Emulator state
     bool running_ = false;
+    bool started_ = false;
+    bool frame_rate_limited_ = true;
 
     // Statistics
     uint64_t instruction_count_ = 0;
     uint64_t cycle_count_ = 0;
+
+    void emulate_frame();
+    void render_frame();
 };
 
 } // namespace boyboy::emulator
