@@ -36,8 +36,7 @@
                 "TEST_CPU_STUBS": "ON",
                 "BOYBOY_DEBUG": "ON",
                 "LOG_LEVEL": "DEBUG",
-                "DISASSEMBLY_LOG": "OFF",
-                "ENABLE_PROFILING": "ON"
+                "DISASSEMBLY_LOG": "OFF"
             }
         },
         {
@@ -157,6 +156,11 @@
             "inherits": "default"
         },
         {
+            "name": "debug-profiling",
+            "configurePreset": "debug-profiling",
+            "inherits": "default"
+        },
+        {
             "name": "release-symbols",
             "configurePreset": "release-symbols",
             "inherits": "default"
@@ -164,6 +168,11 @@
         {
             "name": "release-no-tests",
             "configurePreset": "release-no-tests",
+            "inherits": "default"
+        },
+        {
+            "name": "release-profiling",
+            "configurePreset": "release-profiling",
             "inherits": "default"
         }
     ],
