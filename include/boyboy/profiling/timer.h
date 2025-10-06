@@ -107,7 +107,7 @@ public:
         }
         std::ranges::sort(names);
 
-        log::info("---- Profiling Report ----");
+        log::info("----- Profiler Report -----");
         for (const auto& name : names) {
             uint64_t total_time = accumulated_times_[name];
             uint64_t count = call_counts_[name];
@@ -115,7 +115,7 @@ public:
             log::info(
                 "[{}]: total={}us, calls={}, avg={:.2f}us", name, total_time, count, avg_time);
         }
-        log::info("--------------------------");
+        log::info("---------------------------");
 
         start_times_.clear();
         accumulated_times_.clear();

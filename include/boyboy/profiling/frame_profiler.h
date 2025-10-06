@@ -214,9 +214,9 @@ public:
             }
         }
 
-        log::info("----- Frame Profiling Report -----");
+        log::info("----- Frame Profiler Report -----");
         log::info("{}", log_msg);
-        log::info("----------------------------------");
+        log::info("---------------------------------");
     }
 
     /**
