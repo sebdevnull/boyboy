@@ -23,4 +23,7 @@ constexpr uint8_t CBInstructionPrefix = 0xCB;
 
 constexpr uint16_t HighRAMOffset = 0xFF00;
 
+constexpr uint64_t MasterClockFrequencyHz = 4'194'304;                  // 4.194304 MHz
+constexpr uint64_t SystemClockFrequencyHz = MasterClockFrequencyHz / 4; // 1.048576 MHz
+
 } // namespace boyboy::cpu
