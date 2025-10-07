@@ -50,4 +50,4 @@ jobs:
             artifact/boyboy-${{ github.ref_name }}.tar.gz
             artifact/boyboy-${{ github.ref_name }}.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BB_RELEASE_TOKEN }}
