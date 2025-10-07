@@ -3,6 +3,8 @@
 [![C++23](https://img.shields.io/badge/C++-23-blue.svg)](https://isocpp.org/)
 [![Linux](https://img.shields.io/badge/Linux-supported-brightgreen.svg)](https://www.linux.org/)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+![Tests](https://github.com/sebdevnull/boyboy/actions/workflows/tests.yml/badge.svg)
+[![Latest Release](https://img.shields.io/github/v/release/sebdevnull/boyboy?color=blue&label=version)](https://github.com/sebdevnull/boyboy/releases/latest)
 
 **BoyBoy** is a work-in-progress **Game Boy emulator** written in C++23, designed to be accurate, maintainable, and easy for developers to explore and extend.  
 It implements a complete CPU core, memory management, and a functional PPU for graphics rendering.  
