@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org).
   - Replace FPS/IPS/CPS counter in `emulator.cpp` for `FrameProfiler`
 - Replace `Mmu` loop-based region finding for O(1) lookup table and other optimizations
 
+### Chores
+
+- Update `.clang-format` formatting rules for better readability
+- Add `scripts/format.py` to check and apply clang-format to the codebase
+
 ## [0.3.0] - 2025-10-04
 
 ### Added
