@@ -19,10 +19,10 @@ jobs:
           sudo apt-get install -y ninja-build cmake libsdl2-dev libopengl-dev
 
       - name: Configure
-        run: cmake --preset release
+        run: cmake --preset release-no-tests
 
       - name: Build
-        run: cmake --build --preset release
+        run: cmake --build --preset release-no-tests
 
       - name: Package artifact
         run: |
@@ -36,7 +36,9 @@ jobs:
         run: |
           TAG=0.3.0
           BODY=$(awk "/## \\[$TAG\\]/,/^---/" CHANGELOG.md | sed '$d')
-          echo "body=$BODY" >> $GITHUB_OUTPUT
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
