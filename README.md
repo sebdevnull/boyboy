@@ -63,9 +63,10 @@ The following features are planned for future releases, in rough order of priori
 
 ### Core
 
-- **Performance** – Smoother emulation and rendering  
 - **Save states** – Save and restore game state
 - **Boot ROM** – Authentic startup sequence  
+- **Timing accuracy** – More accurate CPU and PPU timing
+- **Optimizations** – Further performance improvements
 
 ### Hardware
 
@@ -80,8 +81,8 @@ The following features are planned for future releases, in rough order of priori
 
 ### Other
 
-- **Cross-platform** – Windows and macOS support  
 - **Testing** – Additional test ROMs to verify compatibility
+- **Cross-platform** – Windows and macOS support  
 
 ## Resources
 
