@@ -1,0 +1,52 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake libsdl2-dev libopengl-dev
+
+      - name: Configure
+        run: cmake --preset release
+
+      - name: Build
+        run: cmake --build --preset release
+
+      - name: Package artifact
+        run: |
+          mkdir -p artifact
+          cp bin/release/boyboy artifact/
+          tar -czf artifact/boyboy-${{ github.ref_name }}.tar.gz -C artifact boyboy
+          zip -j artifact/boyboy-${{ github.ref_name }}.zip artifact/boyboy
+
+      - name: Extract changelog entry (test)
+        id: changelog
+        run: |
+          # TAG=${GITHUB_REF_NAME#v}
+          TAG=0.3.0
+          BODY=$(awk "/## \\[$TAG\\]/,/^---/" CHANGELOG.md | sed '$d')
+          echo "body=$BODY" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: BoyBoy ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.body }}
+          files: |
+            artifact/boyboy-${{ github.ref_name }}.tar.gz
+            artifact/boyboy-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
