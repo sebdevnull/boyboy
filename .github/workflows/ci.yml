@@ -10,10 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        preset: [debug, release]
+        preset: [release]
 
     steps:
-      - name: Show Git info
+      - name: Workflow info
         run: |
           echo "Triggered by branch: $GITHUB_REF"
           echo "Commit SHA: $GITHUB_SHA"
