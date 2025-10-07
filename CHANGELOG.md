@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-10-07
+
 ### Added
 
 - Add profiling module to analyze performance bottlenecks and measure frame times.
@@ -101,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 - Set up CMake build system with presets.
 - Unit and integration tests for CPU instructions, interrupts, MMU, ROM loading, and I/O registers.
 
-[Unreleased]: https://github.com/sebdevnull/boyboy/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/sebdevnull/boyboy/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/sebdevnull/boyboy/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/sebdevnull/boyboy/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/sebdevnull/boyboy/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/sebdevnull/boyboy/releases/tag/v0.1.0

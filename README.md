@@ -37,7 +37,7 @@ The project is designed to:
 
 **BoyBoy** is currently in active development.  
 
-**Current version:** [`v0.3.0`](CHANGELOG.md#030---2025-10-04)  
+**Current version:** [`v0.4.0`](CHANGELOG.md#040---2025-10-07)  
 
 **Development stage:** Ongoing improvements and feature implementation.
 
