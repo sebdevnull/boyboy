@@ -1,4 +1,4 @@
-name: Release Build
+name: Release
 
 on:
   push:
@@ -34,7 +34,6 @@ jobs:
       - name: Extract changelog entry (test)
         id: changelog
         run: |
-          # TAG=${GITHUB_REF_NAME#v}
           TAG=0.3.0
           BODY=$(awk "/## \\[$TAG\\]/,/^---/" CHANGELOG.md | sed '$d')
           echo "body=$BODY" >> $GITHUB_OUTPUT
