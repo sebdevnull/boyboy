@@ -13,8 +13,9 @@ Io::Io()
 {
     // Initialize components' interrupt callbacks
     for (auto* component : components_) {
-        component->set_interrupt_cb(
-            [this](uint8_t interrupt) { this->write(IoReg::Interrupts::IF, interrupt); });
+        component->set_interrupt_cb([this](uint8_t interrupt) {
+            this->write(IoReg::Interrupts::IF, interrupt);
+        });
     }
 }
 

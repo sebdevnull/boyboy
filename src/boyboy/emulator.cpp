@@ -73,7 +73,8 @@ void Emulator::run()
     using clock = std::chrono::steady_clock;
     auto next_frame_time = clock::now();
     constexpr auto FrameDuration = std::chrono::duration_cast<clock::duration>(
-        std::chrono::duration<double>(ppu::FrameDuration));
+        std::chrono::duration<double>(ppu::FrameDuration)
+    );
 
     // TODO: allow configurable frame rate for high refresh rate monitors and "turbo" mode.
     // For now we run at the native frame rate (59.73Hz)
@@ -130,8 +131,8 @@ void Emulator::emulate_frame()
 
     // Check if there is any drift in the cycle count
     constexpr int CycleDriftTolerance = 8;
-    int64_t cycle_diff =
-        static_cast<int64_t>(cycle_count_) - static_cast<int64_t>(ppu::CyclesPerFrame);
+    int64_t cycle_diff = static_cast<int64_t>(cycle_count_) -
+                         static_cast<int64_t>(ppu::CyclesPerFrame);
     if (std::abs(cycle_diff) > CycleDriftTolerance) {
         log::warn("Frame cycle count drift detected: {} cycles", cycle_diff);
     }

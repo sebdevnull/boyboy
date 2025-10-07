@@ -24,8 +24,9 @@ void Mbc::load_banks(const Cartridge& cart)
     type_ = mbc_type(cart);
     if (type_ != MbcType::None && type_ != MbcType::MBC1) {
         // Currently only ROM_ONLY and MBC1 are supported
-        throw std::runtime_error(std::format("Unsupported MBC type: {}",
-                                             cart::to_string(cart.get_header().cartridge_type)));
+        throw std::runtime_error(std::format(
+            "Unsupported MBC type: {}", cart::to_string(cart.get_header().cartridge_type)
+        ));
     }
 
     // Unload any existing banks first and reset state
@@ -38,8 +39,9 @@ void Mbc::load_banks(const Cartridge& cart)
     rom_banks_.resize(rom_bank_cnt_);
 
     // Transform std::byte vector to uint8_t view
-    auto bytes_to_uint8 =
-        std::views::transform([](std::byte b) { return static_cast<uint8_t>(b); });
+    auto bytes_to_uint8 = std::views::transform([](std::byte byte) {
+        return static_cast<uint8_t>(byte);
+    });
 
     // Split ROM into 16KB chunks and copy into rom_banks_
     auto rom_chunks = cart.get_rom_data() | bytes_to_uint8 | std::views::chunk(RomBankSize);
@@ -52,10 +54,12 @@ void Mbc::load_banks(const Cartridge& cart)
     // Initialize RAM banks to 0
     ram_banks_.resize(ram_bank_cnt_, {0});
 
-    log::info("MBC initialized: type={}, ROM banks={}, RAM banks={}",
-              to_string(type_),
-              rom_bank_cnt_,
-              ram_bank_cnt_);
+    log::info(
+        "MBC initialized: type={}, ROM banks={}, RAM banks={}",
+        to_string(type_),
+        rom_bank_cnt_,
+        ram_bank_cnt_
+    );
 }
 
 void Mbc::unload_banks()
@@ -92,9 +96,11 @@ void Mbc::write(uint16_t addr, uint8_t value)
 {
     if (type_ != MbcType::MBC1) {
         // Currently only MBC1 is supported
-        log::warn("Ignoring write to unsupported MBC type at {}: {}",
-                  utils::PrettyHex(addr).to_string(),
-                  utils::PrettyHex(value).to_string());
+        log::warn(
+            "Ignoring write to unsupported MBC type at {}: {}",
+            utils::PrettyHex(addr).to_string(),
+            utils::PrettyHex(value).to_string()
+        );
         return;
     }
 
@@ -127,9 +133,11 @@ void Mbc::write(uint16_t addr, uint8_t value)
                 }
             }
 
-            log::trace("ROM/RAM banking mode 0: ROM bank selected: {}, RAM bank selected: {}",
-                       rom_bank_select_,
-                       ram_bank_select_);
+            log::trace(
+                "ROM/RAM banking mode 0: ROM bank selected: {}, RAM bank selected: {}",
+                rom_bank_select_,
+                ram_bank_select_
+            );
         }
         else {
             // in mode 1 select RAM bank
@@ -141,9 +149,11 @@ void Mbc::write(uint16_t addr, uint8_t value)
                 ram_bank_select_ %= ram_bank_cnt_;
             }
 
-            log::trace("ROM/RAM banking mode 1: ROM bank selected: {}, RAM bank selected: {}",
-                       rom_bank_select_,
-                       ram_bank_select_);
+            log::trace(
+                "ROM/RAM banking mode 1: ROM bank selected: {}, RAM bank selected: {}",
+                rom_bank_select_,
+                ram_bank_select_
+            );
         }
     }
     else if (addr >= BankingModeSelectStart && addr <= BankingModeSelectEnd) {
@@ -161,58 +171,58 @@ void Mbc::write(uint16_t addr, uint8_t value)
 MbcType Mbc::mbc_type(const Cartridge& cart)
 {
     switch (cart.get_header().cartridge_type) {
-    case CartridgeType::ROMOnly:
-        return MbcType::None;
-    case CartridgeType::MBC1:
-    case CartridgeType::MBC1RAM:
-    case CartridgeType::MBC1RAMBattery:
-        return MbcType::MBC1;
-    case CartridgeType::MBC2:
-    case CartridgeType::MBC2RAMBattery:
-        return MbcType::MBC2;
-    case CartridgeType::MBC3:
-    case CartridgeType::MBC3RAM:
-    case CartridgeType::MBC3RAMBattery:
-    case CartridgeType::MBC3TimerBattery:
-    case CartridgeType::MBC3TimerRAMBattery:
-        return MbcType::MBC3;
-    case CartridgeType::MBC5:
-    case CartridgeType::MBC5RAM:
-    case CartridgeType::MBC5RAMBattery:
-    case CartridgeType::MBC5Rumble:
-    case CartridgeType::MBC5RumbleRAM:
-    case CartridgeType::MBC5RumbleRAMBattery:
-        return MbcType::MBC5;
-    case CartridgeType::MBC6RAMBattery:
-        return MbcType::MBC6;
-    case CartridgeType::MBC7RAMBatteryAccelerometer:
-        return MbcType::MBC7;
-    default:
-        return MbcType::Unsupported;
+        case CartridgeType::ROMOnly:
+            return MbcType::None;
+        case CartridgeType::MBC1:
+        case CartridgeType::MBC1RAM:
+        case CartridgeType::MBC1RAMBattery:
+            return MbcType::MBC1;
+        case CartridgeType::MBC2:
+        case CartridgeType::MBC2RAMBattery:
+            return MbcType::MBC2;
+        case CartridgeType::MBC3:
+        case CartridgeType::MBC3RAM:
+        case CartridgeType::MBC3RAMBattery:
+        case CartridgeType::MBC3TimerBattery:
+        case CartridgeType::MBC3TimerRAMBattery:
+            return MbcType::MBC3;
+        case CartridgeType::MBC5:
+        case CartridgeType::MBC5RAM:
+        case CartridgeType::MBC5RAMBattery:
+        case CartridgeType::MBC5Rumble:
+        case CartridgeType::MBC5RumbleRAM:
+        case CartridgeType::MBC5RumbleRAMBattery:
+            return MbcType::MBC5;
+        case CartridgeType::MBC6RAMBattery:
+            return MbcType::MBC6;
+        case CartridgeType::MBC7RAMBatteryAccelerometer:
+            return MbcType::MBC7;
+        default:
+            return MbcType::Unsupported;
     }
 }
 
 [[nodiscard]] const char* to_string(MbcType type)
 {
     switch (type) {
-    case MbcType::None:
-        return "None";
-    case MbcType::MBC1:
-        return "MBC1";
-    case MbcType::MBC2:
-        return "MBC2";
-    case MbcType::MBC3:
-        return "MBC3";
-    case MbcType::MBC5:
-        return "MBC5";
-    case MbcType::MBC6:
-        return "MBC6";
-    case MbcType::MBC7:
-        return "MBC7";
-    case MbcType::Unsupported:
-        return "Unsupported";
-    default:
-        return "Unknown";
+        case MbcType::None:
+            return "None";
+        case MbcType::MBC1:
+            return "MBC1";
+        case MbcType::MBC2:
+            return "MBC2";
+        case MbcType::MBC3:
+            return "MBC3";
+        case MbcType::MBC5:
+            return "MBC5";
+        case MbcType::MBC6:
+            return "MBC6";
+        case MbcType::MBC7:
+            return "MBC7";
+        case MbcType::Unsupported:
+            return "Unsupported";
+        default:
+            return "Unknown";
     }
 }
 

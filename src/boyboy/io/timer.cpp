@@ -45,36 +45,36 @@ void Timer::tick(uint16_t cycles)
 uint8_t Timer::read(uint16_t addr) const
 {
     switch (addr) {
-    case IoReg::Timer::DIV:
-        return div_;
-    case IoReg::Timer::TIMA:
-        return tima_;
-    case IoReg::Timer::TMA:
-        return tma_;
-    case IoReg::Timer::TAC:
-        return tac_;
-    default:
-        return 0xFF;
+        case IoReg::Timer::DIV:
+            return div_;
+        case IoReg::Timer::TIMA:
+            return tima_;
+        case IoReg::Timer::TMA:
+            return tma_;
+        case IoReg::Timer::TAC:
+            return tac_;
+        default:
+            return 0xFF;
     }
 }
 
 void Timer::write(uint16_t addr, uint8_t value)
 {
     switch (addr) {
-    case IoReg::Timer::DIV:
-        div_ = 0; // writing any value resets DIV
-        break;
-    case IoReg::Timer::TIMA:
-        tima_ = value;
-        break;
-    case IoReg::Timer::TMA:
-        tma_ = value;
-        break;
-    case IoReg::Timer::TAC:
-        tac_ = value & 0x07; // only lower 3 bits are used
-        break;
-    default:
-        break;
+        case IoReg::Timer::DIV:
+            div_ = 0; // writing any value resets DIV
+            break;
+        case IoReg::Timer::TIMA:
+            tima_ = value;
+            break;
+        case IoReg::Timer::TMA:
+            tma_ = value;
+            break;
+        case IoReg::Timer::TAC:
+            tac_ = value & 0x07; // only lower 3 bits are used
+            break;
+        default:
+            break;
     }
 }
 

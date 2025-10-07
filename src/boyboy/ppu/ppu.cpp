@@ -31,18 +31,22 @@ void Ppu::tick(uint16_t cycles)
     }
 
     if ((STAT_ & registers::STAT::PPUModeMask) != static_cast<uint8_t>(mode_)) {
-        log::warn("PPU mode out of sync! STAT={}, Mode={}",
-                  utils::PrettyHex(STAT_).to_string(),
-                  to_string(mode_));
+        log::warn(
+            "PPU mode out of sync! STAT={}, Mode={}",
+            utils::PrettyHex(STAT_).to_string(),
+            to_string(mode_)
+        );
         // Correct the mode in STAT
         STAT_ = (STAT_ & ~registers::STAT::PPUModeMask) | static_cast<uint8_t>(mode_);
     }
 
     if (((STAT_ & registers::STAT::LYCEqualsLY) != 0) != (LY_ == LYC_)) {
-        log::warn("PPU LYC=LY flag out of sync! STAT={}, LY={}, LYC={}",
-                  utils::PrettyHex(STAT_).to_string(),
-                  LY_,
-                  LYC_);
+        log::warn(
+            "PPU LYC=LY flag out of sync! STAT={}, LY={}, LYC={}",
+            utils::PrettyHex(STAT_).to_string(),
+            LY_,
+            LYC_
+        );
     }
 
     cycles_ += cycles;
@@ -52,55 +56,55 @@ void Ppu::tick(uint16_t cycles)
     previous_ly_ = LY_;
 
     switch (mode_) {
-    case Mode::OAMScan:
-        if (cycles_in_mode_ >= Cycles::OAMScan) {
-            cycles_in_mode_ -= Cycles::OAMScan;
-            set_mode(Mode::Transfer);
-        }
-        break;
-    case Mode::Transfer:
-        if (cycles_in_mode_ >= Cycles::Transfer) {
-            cycles_in_mode_ -= Cycles::Transfer;
-            set_mode(Mode::HBlank);
+        case Mode::OAMScan:
+            if (cycles_in_mode_ >= Cycles::OAMScan) {
+                cycles_in_mode_ -= Cycles::OAMScan;
+                set_mode(Mode::Transfer);
+            }
+            break;
+        case Mode::Transfer:
+            if (cycles_in_mode_ >= Cycles::Transfer) {
+                cycles_in_mode_ -= Cycles::Transfer;
+                set_mode(Mode::HBlank);
 
-            // Render the current scanline
-            render_scanline();
-        }
-        break;
-    case Mode::HBlank:
-        if (cycles_in_mode_ >= Cycles::HBlank) {
-            cycles_in_mode_ -= Cycles::HBlank;
-            // LY_++;
-            inc_ly();
-            // log::trace("PPU LY incremented to {}", LY_);
-            if (LY_ == VisibleScanlines) {
-                // Enter VBlank
-                set_mode(Mode::VBlank);
-                frame_ready_ = true;
-                frame_count_++;
-                window_line_counter_ = 0;
+                // Render the current scanline
+                render_scanline();
             }
-            else {
-                // Continue to next line in OAMScan mode
-                set_mode(Mode::OAMScan);
+            break;
+        case Mode::HBlank:
+            if (cycles_in_mode_ >= Cycles::HBlank) {
+                cycles_in_mode_ -= Cycles::HBlank;
+                // LY_++;
+                inc_ly();
+                // log::trace("PPU LY incremented to {}", LY_);
+                if (LY_ == VisibleScanlines) {
+                    // Enter VBlank
+                    set_mode(Mode::VBlank);
+                    frame_ready_ = true;
+                    frame_count_++;
+                    window_line_counter_ = 0;
+                }
+                else {
+                    // Continue to next line in OAMScan mode
+                    set_mode(Mode::OAMScan);
+                }
             }
-        }
-        break;
-    case Mode::VBlank:
-        if (cycles_in_mode_ >= Cycles::VBlank) {
-            cycles_in_mode_ -= Cycles::VBlank;
-            // LY_++;
-            inc_ly();
-            // log::trace("PPU LY incremented to {}", LY_);
-            if (LY_ >= TotalScanlines) {
-                // Restart scanning from line 0
-                // LY_ = 0;
-                set_ly(0);
-                window_line_counter_ = 0;
-                set_mode(Mode::OAMScan);
+            break;
+        case Mode::VBlank:
+            if (cycles_in_mode_ >= Cycles::VBlank) {
+                cycles_in_mode_ -= Cycles::VBlank;
+                // LY_++;
+                inc_ly();
+                // log::trace("PPU LY incremented to {}", LY_);
+                if (LY_ >= TotalScanlines) {
+                    // Restart scanning from line 0
+                    // LY_ = 0;
+                    set_ly(0);
+                    window_line_counter_ = 0;
+                    set_mode(Mode::OAMScan);
+                }
             }
-        }
-        break;
+            break;
     }
 
     // check_interrupts();
@@ -113,12 +117,14 @@ uint8_t Ppu::read(uint16_t addr) const
 
 void Ppu::write(uint16_t addr, uint8_t value)
 {
-    log::trace("PPU Write: {} <- {}, STAT={}, LY={}, Mode={}",
-               IoReg::Ppu::to_string(addr),
-               utils::PrettyHex(value).to_string(),
-               utils::PrettyHex(STAT_).to_string(),
-               LY_,
-               to_string(mode_));
+    log::trace(
+        "PPU Write: {} <- {}, STAT={}, LY={}, Mode={}",
+        IoReg::Ppu::to_string(addr),
+        utils::PrettyHex(value).to_string(),
+        utils::PrettyHex(STAT_).to_string(),
+        LY_,
+        to_string(mode_)
+    );
 
     if (addr == IoReg::Ppu::LY) {
         // LY is read-only
@@ -153,14 +159,18 @@ void Ppu::write(uint16_t addr, uint8_t value)
         // Only bits 3-6 are writable
         value &= 0b01111000;
         value |= STAT_ & 0b10000111;
-        log::trace("PPU STAT write, old value: {}, new value: {}",
-                   utils::PrettyHex(STAT_).to_string(),
-                   utils::PrettyHex(value).to_string());
+        log::trace(
+            "PPU STAT write, old value: {}, new value: {}",
+            utils::PrettyHex(STAT_).to_string(),
+            utils::PrettyHex(value).to_string()
+        );
     }
     else if (addr == IoReg::Ppu::LYC) {
-        log::trace("PPU LYC write, old value: {}, new value: {}",
-                   utils::PrettyHex(LYC_).to_string(),
-                   utils::PrettyHex(value).to_string());
+        log::trace(
+            "PPU LYC write, old value: {}, new value: {}",
+            utils::PrettyHex(LYC_).to_string(),
+            utils::PrettyHex(value).to_string()
+        );
         // Update LYC=LY flag immediately
         LYC_ = value;
         update_lyc();
@@ -330,8 +340,8 @@ void Ppu::render_window()
         uint8_t lsb = mem_read(tile_addr + (px_in_tile_y * 2));
         uint8_t msb = mem_read(tile_addr + (px_in_tile_y * 2) + 1);
 
-        uint8_t color_index =
-            ((msb >> (7 - px_in_tile_x)) & 0x1) << 1 | ((lsb >> (7 - px_in_tile_x)) & 0x1);
+        uint8_t color_index = ((msb >> (7 - px_in_tile_x)) & 0x1) << 1 |
+                              ((lsb >> (7 - px_in_tile_x)) & 0x1);
 
         framebuffer_.at((LY_ * LCDWidth) + x) = palette_color(color_index, BGP_);
         drawn = true;
@@ -364,8 +374,9 @@ void Ppu::render_sprites()
     }
 
     // Stable sort by X coordinate to preserve OAM order for sprites with same X
-    std::ranges::stable_sort(scanline_sprites,
-                             [](const Sprite& a, const Sprite& b) { return a.x < b.x; });
+    std::ranges::stable_sort(scanline_sprites, [](const Sprite& a, const Sprite& b) {
+        return a.x < b.x;
+    });
 
     // Track which X positions have been drawn
     std::array<bool, LCDWidth> x_drawn{false};
@@ -445,8 +456,8 @@ uint8_t Ppu::sprite_pixel_color(const Sprite& sprite, uint8_t y_in_sprite, uint8
     }
 
     // raw color index (0-3)
-    uint8_t color_index =
-        ((msb >> (7 - x_in_sprite)) & 0x1) << 1 | ((lsb >> (7 - x_in_sprite)) & 0x1);
+    uint8_t color_index = ((msb >> (7 - x_in_sprite)) & 0x1) << 1 |
+                          ((lsb >> (7 - x_in_sprite)) & 0x1);
     return color_index;
 }
 
@@ -513,27 +524,31 @@ void Ppu::request_interrupt(uint8_t interrupt)
         return;
     }
 
-    log::trace("PPU requested interrupt {}. Mode: {}->{}, LY: {}->{}",
-               interrupt,
-               to_string(previous_mode_),
-               to_string(mode_),
-               previous_ly_,
-               LY_);
-    log::trace("LCDC: {}, STAT: {}, SCY: {}, SCX: {}, LYC: {}, BGP: {}",
-               utils::PrettyHex(LCDC_).to_string(),
-               utils::PrettyHex(STAT_).to_string(),
-               utils::PrettyHex(SCY_).to_string(),
-               utils::PrettyHex(SCX_).to_string(),
-               utils::PrettyHex(LYC_).to_string(),
-               utils::PrettyHex(BGP_).to_string());
+    log::trace(
+        "PPU requested interrupt {}. Mode: {}->{}, LY: {}->{}",
+        interrupt,
+        to_string(previous_mode_),
+        to_string(mode_),
+        previous_ly_,
+        LY_
+    );
+    log::trace(
+        "LCDC: {}, STAT: {}, SCY: {}, SCX: {}, LYC: {}, BGP: {}",
+        utils::PrettyHex(LCDC_).to_string(),
+        utils::PrettyHex(STAT_).to_string(),
+        utils::PrettyHex(SCY_).to_string(),
+        utils::PrettyHex(SCX_).to_string(),
+        utils::PrettyHex(LYC_).to_string(),
+        utils::PrettyHex(BGP_).to_string()
+    );
 
     request_interrupt_(interrupt);
 
     uint8_t ie_reg = mem_read(IoReg::Interrupts::IE);
     uint8_t if_reg = mem_read(IoReg::Interrupts::IF);
-    log::trace("IE: {}, IF: {}",
-               utils::PrettyHex(ie_reg).to_string(),
-               utils::PrettyHex(if_reg).to_string());
+    log::trace(
+        "IE: {}, IF: {}", utils::PrettyHex(ie_reg).to_string(), utils::PrettyHex(if_reg).to_string()
+    );
 }
 
 [[nodiscard]] uint8_t Ppu::mem_read(uint16_t addr) const

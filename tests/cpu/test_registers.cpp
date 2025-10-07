@@ -39,12 +39,16 @@ TEST_P(Register16Test, HighLowAccess)
     EXPECT_EQ(reg.low(), new_low);
 }
 
-INSTANTIATE_TEST_SUITE_P(Registers,
-                         Register16Test,
-                         ::testing::Values(Reg16TestParam{0x1234, 0x12, 0x34},
-                                           Reg16TestParam{0xABCD, 0xAB, 0xCD},
-                                           Reg16TestParam{0x0000, 0x00, 0x00},
-                                           Reg16TestParam{0xFFFF, 0xFF, 0xFF}));
+INSTANTIATE_TEST_SUITE_P(
+    Registers,
+    Register16Test,
+    ::testing::Values(
+        Reg16TestParam{0x1234, 0x12, 0x34},
+        Reg16TestParam{0xABCD, 0xAB, 0xCD},
+        Reg16TestParam{0x0000, 0x00, 0x00},
+        Reg16TestParam{0xFFFF, 0xFF, 0xFF}
+    )
+);
 
 // ===== Prefix and postfix 16-bit register operations test =====
 TEST(Register16Test, PrefixPostfixOperations)
@@ -86,40 +90,40 @@ TEST_P(AFRegisterFlagTest, FlagSetAndClear)
 
     // Set flag
     switch (flag) {
-    case Flag::Zero:
-        af.zero_flag(true);
-        break;
-    case Flag::Carry:
-        af.carry_flag(true);
-        break;
-    case Flag::Substract:
-        af.substract_flag(true);
-        break;
-    case Flag::HalfCarry:
-        af.half_carry_flag(true);
-        break;
-    default:
-        FAIL() << "Unknown flag";
+        case Flag::Zero:
+            af.zero_flag(true);
+            break;
+        case Flag::Carry:
+            af.carry_flag(true);
+            break;
+        case Flag::Substract:
+            af.substract_flag(true);
+            break;
+        case Flag::HalfCarry:
+            af.half_carry_flag(true);
+            break;
+        default:
+            FAIL() << "Unknown flag";
     }
 
     EXPECT_TRUE((af.low() & flag));
 
     // Clear flag
     switch (flag) {
-    case Flag::Zero:
-        af.zero_flag(false);
-        break;
-    case Flag::Carry:
-        af.carry_flag(false);
-        break;
-    case Flag::Substract:
-        af.substract_flag(false);
-        break;
-    case Flag::HalfCarry:
-        af.half_carry_flag(false);
-        break;
-    default:
-        FAIL() << "Unknown flag";
+        case Flag::Zero:
+            af.zero_flag(false);
+            break;
+        case Flag::Carry:
+            af.carry_flag(false);
+            break;
+        case Flag::Substract:
+            af.substract_flag(false);
+            break;
+        case Flag::HalfCarry:
+            af.half_carry_flag(false);
+            break;
+        default:
+            FAIL() << "Unknown flag";
     }
 
     EXPECT_FALSE((af.low() & flag));
@@ -140,7 +144,8 @@ INSTANTIATE_TEST_SUITE_P(
     Registers,
     AFRegisterFlagTest,
     ::testing::Values(Flag::Zero, Flag::Carry, Flag::Substract, Flag::HalfCarry),
-    FlagNameGenerator);
+    FlagNameGenerator
+);
 
 // ===== Parameterized test for convenience accessors =====
 struct RegTestParam {
@@ -170,36 +175,55 @@ TEST_P(RegistersAccessorTest, SetterGetterConsistency)
 INSTANTIATE_TEST_SUITE_P(
     All8BitRegisters,
     RegistersAccessorTest,
-    ::testing::Values(RegTestParam{"A",
-                                   [](Registers& r, uint8_t v) { r.a(v); },
-                                   [](const Registers& r) { return r.a(); },
-                                   0x12},
-                      RegTestParam{"B",
-                                   [](Registers& r, uint8_t v) { r.b(v); },
-                                   [](const Registers& r) { return r.b(); },
-                                   0x34},
-                      RegTestParam{"C",
-                                   [](Registers& r, uint8_t v) { r.c(v); },
-                                   [](const Registers& r) { return r.c(); },
-                                   0x56},
-                      RegTestParam{"D",
-                                   [](Registers& r, uint8_t v) { r.d(v); },
-                                   [](const Registers& r) { return r.d(); },
-                                   0x78},
-                      RegTestParam{"E",
-                                   [](Registers& r, uint8_t v) { r.e(v); },
-                                   [](const Registers& r) { return r.e(); },
-                                   0x9A},
-                      RegTestParam{"H",
-                                   [](Registers& r, uint8_t v) { r.h(v); },
-                                   [](const Registers& r) { return r.h(); },
-                                   0xBC},
-                      RegTestParam{"L",
-                                   [](Registers& r, uint8_t v) { r.l(v); },
-                                   [](const Registers& r) { return r.l(); },
-                                   0xDE},
-                      // F register — only upper nibble is valid, lower 4 bits always masked
-                      RegTestParam{"F",
-                                   [](Registers& r, uint8_t v) { r.f(v); },
-                                   [](const Registers& r) { return r.f(); },
-                                   0xF0}));
+    ::testing::Values(
+        RegTestParam{
+            "A",
+            [](Registers& r, uint8_t v) { r.a(v); },
+            [](const Registers& r) { return r.a(); },
+            0x12
+        },
+        RegTestParam{
+            "B",
+            [](Registers& r, uint8_t v) { r.b(v); },
+            [](const Registers& r) { return r.b(); },
+            0x34
+        },
+        RegTestParam{
+            "C",
+            [](Registers& r, uint8_t v) { r.c(v); },
+            [](const Registers& r) { return r.c(); },
+            0x56
+        },
+        RegTestParam{
+            "D",
+            [](Registers& r, uint8_t v) { r.d(v); },
+            [](const Registers& r) { return r.d(); },
+            0x78
+        },
+        RegTestParam{
+            "E",
+            [](Registers& r, uint8_t v) { r.e(v); },
+            [](const Registers& r) { return r.e(); },
+            0x9A
+        },
+        RegTestParam{
+            "H",
+            [](Registers& r, uint8_t v) { r.h(v); },
+            [](const Registers& r) { return r.h(); },
+            0xBC
+        },
+        RegTestParam{
+            "L",
+            [](Registers& r, uint8_t v) { r.l(v); },
+            [](const Registers& r) { return r.l(); },
+            0xDE
+        },
+        // F register — only upper nibble is valid, lower 4 bits always masked
+        RegTestParam{
+            "F",
+            [](Registers& r, uint8_t v) { r.f(v); },
+            [](const Registers& r) { return r.f(); },
+            0xF0
+        }
+    )
+);

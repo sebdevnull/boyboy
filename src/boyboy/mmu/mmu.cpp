@@ -149,8 +149,7 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
     if (dma_.active && addr >= OAMStart && addr <= OAMEnd) {
         // Ignore writes to OAM during DMA transfer
         log::warn(
-            "Attempted write to OAM during DMA transfer at {}",
-            utils::PrettyHex(addr).to_string()
+            "Attempted write to OAM during DMA transfer at {}", utils::PrettyHex(addr).to_string()
         );
         BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
 
@@ -242,8 +241,7 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
 
     if (region.read_only) {
         log::warn(
-            "Attempted copy to read-only memory at {}",
-            utils::PrettyHex(dst_addr).to_string()
+            "Attempted copy to read-only memory at {}", utils::PrettyHex(dst_addr).to_string()
         );
         return;
     }
@@ -530,9 +528,7 @@ void Mmu::init_region_lut()
             continue;
         }
         std::ranges::fill(
-            region_lut_.begin() + region.start,
-            region_lut_.begin() + region.end + 1,
-            &region
+            region_lut_.begin() + region.start, region_lut_.begin() + region.end + 1, &region
         );
     }
 }

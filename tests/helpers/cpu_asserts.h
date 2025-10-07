@@ -50,12 +50,14 @@ inline void expect_at_addr(const boyboy::cpu::Cpu& cpu, const InstrParam& p)
                 EXPECT_EQ(cpu.read_byte(tgt_addr), val) << "Register mismatch: " << p.name;
             }
             else if constexpr (std::is_same_v<T, uint16_t>) {
-                uint16_t mem_val =
-                    utils::to_u16(cpu.read_byte(tgt_addr + 1), cpu.read_byte(tgt_addr));
+                uint16_t mem_val = utils::to_u16(
+                    cpu.read_byte(tgt_addr + 1), cpu.read_byte(tgt_addr)
+                );
                 EXPECT_EQ(mem_val, val) << "Register mismatch: " << p.name;
             }
         },
-        p.expected_value);
+        p.expected_value
+    );
 }
 
 inline void expect_flags(const boyboy::cpu::Cpu& cpu, const InstrParam& p)

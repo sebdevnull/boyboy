@@ -5,7 +5,7 @@
  * @license GPLv3 (see LICENSE file)
  */
 
- #include <gtest/gtest.h>
+#include <gtest/gtest.h>
 
 // Helpers
 // #include "helpers/cpu_fixtures.h"

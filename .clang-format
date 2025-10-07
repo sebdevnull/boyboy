@@ -10,6 +10,7 @@ BreakBeforeBraces: Stroustrup
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
+IndentCaseLabels: true
 
 # --- Spacing ---
 SpaceBeforeParens: ControlStatements
@@ -35,7 +36,7 @@ ReferenceAlignment: Left
 ColumnLimit: 100
 BinPackArguments: false
 BinPackParameters: false
-AllowAllArgumentsOnNextLine: false
+AllowAllArgumentsOnNextLine: true
 
 # --- Functions & Lambdas ---
 AllowShortFunctionsOnASingleLine: Inline
@@ -54,6 +55,7 @@ ReflowComments: true
 NamespaceIndentation: None
 EmptyLineBeforeAccessModifier: Always
 AccessModifierOffset: -4
+PackConstructorInitializers: NextLine
 
 # --- Templates ---
 IndentRequiresClause: true
@@ -76,3 +78,7 @@ Cpp11BracedListStyle: true
 # --- Modern C++ Features ---
 SortUsingDeclarations: true
 FixNamespaceComments: true
+
+# --- Breaking Penalties ---
+PenaltyBreakAssignment: 100
+PenaltyBreakBeforeFirstCallParameter: 25

@@ -19,102 +19,102 @@ namespace boyboy::cpu {
 uint8_t Cpu::get_register(Reg8Name reg) const
 {
     switch (reg) {
-    case Reg8Name::A:
-        return registers_.a();
-    case Reg8Name::F:
-        return registers_.f();
-    case Reg8Name::B:
-        return registers_.b();
-    case Reg8Name::C:
-        return registers_.c();
-    case Reg8Name::D:
-        return registers_.d();
-    case Reg8Name::E:
-        return registers_.e();
-    case Reg8Name::H:
-        return registers_.h();
-    case Reg8Name::L:
-        return registers_.l();
-    default:
-        return 0;
+        case Reg8Name::A:
+            return registers_.a();
+        case Reg8Name::F:
+            return registers_.f();
+        case Reg8Name::B:
+            return registers_.b();
+        case Reg8Name::C:
+            return registers_.c();
+        case Reg8Name::D:
+            return registers_.d();
+        case Reg8Name::E:
+            return registers_.e();
+        case Reg8Name::H:
+            return registers_.h();
+        case Reg8Name::L:
+            return registers_.l();
+        default:
+            return 0;
     }
 }
 
 uint16_t Cpu::get_register(Reg16Name reg) const
 {
     switch (reg) {
-    case Reg16Name::AF:
-        return registers_.af;
-    case Reg16Name::BC:
-        return registers_.bc;
-    case Reg16Name::DE:
-        return registers_.de;
-    case Reg16Name::HL:
-        return registers_.hl;
-    case Reg16Name::SP:
-        return registers_.sp;
-    case Reg16Name::PC:
-        return registers_.pc;
-    default:
-        return 0;
+        case Reg16Name::AF:
+            return registers_.af;
+        case Reg16Name::BC:
+            return registers_.bc;
+        case Reg16Name::DE:
+            return registers_.de;
+        case Reg16Name::HL:
+            return registers_.hl;
+        case Reg16Name::SP:
+            return registers_.sp;
+        case Reg16Name::PC:
+            return registers_.pc;
+        default:
+            return 0;
     }
 }
 
 void Cpu::set_register(Reg8Name reg, uint8_t value)
 {
     switch (reg) {
-    case Reg8Name::A:
-        registers_.a(value);
-        break;
-    case Reg8Name::F:
-        registers_.f(value);
-        break;
-    case Reg8Name::B:
-        registers_.b(value);
-        break;
-    case Reg8Name::C:
-        registers_.c(value);
-        break;
-    case Reg8Name::D:
-        registers_.d(value);
-        break;
-    case Reg8Name::E:
-        registers_.e(value);
-        break;
-    case Reg8Name::H:
-        registers_.h(value);
-        break;
-    case Reg8Name::L:
-        registers_.l(value);
-        break;
-    default:
-        break;
+        case Reg8Name::A:
+            registers_.a(value);
+            break;
+        case Reg8Name::F:
+            registers_.f(value);
+            break;
+        case Reg8Name::B:
+            registers_.b(value);
+            break;
+        case Reg8Name::C:
+            registers_.c(value);
+            break;
+        case Reg8Name::D:
+            registers_.d(value);
+            break;
+        case Reg8Name::E:
+            registers_.e(value);
+            break;
+        case Reg8Name::H:
+            registers_.h(value);
+            break;
+        case Reg8Name::L:
+            registers_.l(value);
+            break;
+        default:
+            break;
     }
 }
 
 void Cpu::set_register(Reg16Name reg, uint16_t value)
 {
     switch (reg) {
-    case Reg16Name::AF:
-        registers_.af = value;
-        break;
-    case Reg16Name::BC:
-        registers_.bc = value;
-        break;
-    case Reg16Name::DE:
-        registers_.de = value;
-        break;
-    case Reg16Name::HL:
-        registers_.hl = value;
-        break;
-    case Reg16Name::SP:
-        registers_.sp = value;
-        break;
-    case Reg16Name::PC:
-        registers_.pc = value;
-        break;
-    default:
-        break;
+        case Reg16Name::AF:
+            registers_.af = value;
+            break;
+        case Reg16Name::BC:
+            registers_.bc = value;
+            break;
+        case Reg16Name::DE:
+            registers_.de = value;
+            break;
+        case Reg16Name::HL:
+            registers_.hl = value;
+            break;
+        case Reg16Name::SP:
+            registers_.sp = value;
+            break;
+        case Reg16Name::PC:
+            registers_.pc = value;
+            break;
+        default:
+            break;
     }
 }
 
@@ -182,11 +182,14 @@ void Cpu::trace() const
 {
     log::cpu_trace("--- CPU TRACE ---");
     log::cpu_trace(
-        "Instruction: {} ({})", disassemble(registers_.pc), utils::PrettyHex(peek()).to_string());
-    log::cpu_trace("Next bytes: {} {} {}",
-                   utils::PrettyHex(read_byte(registers_.pc + 1)).to_string(),
-                   utils::PrettyHex(read_byte(registers_.pc + 2)).to_string(),
-                   utils::PrettyHex(read_byte(registers_.pc + 3)).to_string());
+        "Instruction: {} ({})", disassemble(registers_.pc), utils::PrettyHex(peek()).to_string()
+    );
+    log::cpu_trace(
+        "Next bytes: {} {} {}",
+        utils::PrettyHex(read_byte(registers_.pc + 1)).to_string(),
+        utils::PrettyHex(read_byte(registers_.pc + 2)).to_string(),
+        utils::PrettyHex(read_byte(registers_.pc + 3)).to_string()
+    );
     log::cpu_trace(
         "CPU State: PC={}, SP={}, AF={}, BC={}, DE={}, HL={}, Flags=[Z={}, N={}, H={}, C={}], "
         "IME={}, HALT={}, Cycles={}",
@@ -202,7 +205,8 @@ void Cpu::trace() const
         get_flag(Flag::Carry) ? 1 : 0,
         ime_ ? "ENABLED" : "DISABLED",
         halted_ ? "HALTED" : "RUNNING",
-        cycles_);
+        cycles_
+    );
     log::cpu_trace("----------------");
 }
 
