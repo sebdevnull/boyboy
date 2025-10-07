@@ -178,8 +178,9 @@ TEST_F(PpuTest, StatInterrupts)
     }
     // Should trigger 1 mode switch interrupt from VBlank to OAMScan in the last line
     // Plus one LYC=LY interrupt when LY matches LYC
-    EXPECT_EQ(stat_irq_count, 2)
-        << "STAT interrupts should be triggered for VBlank->OAMScan and LYC=LY";
+    EXPECT_EQ(
+        stat_irq_count, 2
+    ) << "STAT interrupts should be triggered for VBlank->OAMScan and LYC=LY";
     EXPECT_EQ(vblank_irq_count, 0) << "No additional VBlank interrupts should be triggered";
     EXPECT_EQ(ppu_.ly(), 0) << "LY should reset to 0 after VBlank";
     EXPECT_EQ(ppu_.mode(), Mode::OAMScan) << "Should be back to OAMScan mode after VBlank";
@@ -231,8 +232,8 @@ TEST_F(PpuTest, BG4x4Tilemap)
         uint8_t lo         = mmu_.read_byte(tile_addr + (pixel_row * 2));
         uint8_t hi         = mmu_.read_byte(tile_addr + (pixel_row * 2) + 1);
 
-        uint8_t expected_color_index =
-            ((hi >> (7 - pixel_in_tile)) & 1) << 1 | ((lo >> (7 - pixel_in_tile)) & 1);
+        uint8_t expected_color_index = ((hi >> (7 - pixel_in_tile)) & 1) << 1 |
+                                       ((lo >> (7 - pixel_in_tile)) & 1);
 
         Pixel expected_px = Ppu::palette_color(expected_color_index, bgp);
         Pixel px          = framebuffer.at((pixel_row * LCDWidth) + x);
@@ -249,8 +250,8 @@ TEST_F(PpuTest, BG4x4Tilemap)
         uint8_t lo         = mmu_.read_byte(tile_addr + (pixel_row * 2));
         uint8_t hi         = mmu_.read_byte(tile_addr + (pixel_row * 2) + 1);
 
-        uint8_t expected_color_index =
-            ((hi >> (7 - pixel_in_tile)) & 1) << 1 | ((lo >> (7 - pixel_in_tile)) & 1);
+        uint8_t expected_color_index = ((hi >> (7 - pixel_in_tile)) & 1) << 1 |
+                                       ((lo >> (7 - pixel_in_tile)) & 1);
 
         Pixel expected_px = Ppu::palette_color(expected_color_index, bgp);
         Pixel px          = framebuffer.at((pixel_row * LCDWidth) + x);
@@ -315,8 +316,8 @@ TEST_F(PpuTest, BG4x4TilemapScroll)
         uint8_t lo = mmu_.read_byte(tile_addr + (pixel_in_tile_y * 2));
         uint8_t hi = mmu_.read_byte(tile_addr + (pixel_in_tile_y * 2) + 1);
 
-        uint8_t expected_color_index =
-            ((hi >> (7 - pixel_in_tile_x)) & 1) << 1 | ((lo >> (7 - pixel_in_tile_x)) & 1);
+        uint8_t expected_color_index = ((hi >> (7 - pixel_in_tile_x)) & 1) << 1 |
+                                       ((lo >> (7 - pixel_in_tile_x)) & 1);
         Pixel expected_px = Ppu::palette_color(expected_color_index, bgp);
 
         Pixel px = framebuffer.at(x); // first line in framebuffer

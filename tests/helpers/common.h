@@ -25,10 +25,14 @@ template <HasName ParamType>
 std::string param_name(const ::testing::TestParamInfo<ParamType>& info)
 {
     std::string name = info.param.name;
-    name.erase(std::remove_if(name.begin(),
-                              name.end(),
-                              [](char c) { return !std::isalnum(static_cast<unsigned char>(c)); }),
-               name.end());
+    name.erase(
+        std::remove_if(
+            name.begin(),
+            name.end(),
+            [](char c) { return !std::isalnum(static_cast<unsigned char>(c)); }
+        ),
+        name.end()
+    );
     return name;
 }
 

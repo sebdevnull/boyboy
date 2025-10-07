@@ -55,7 +55,9 @@ inline void init(const std::string& log_file = "logs/boyboy.log", bool async = t
         // Create sinks: console + file
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file, truncate);
-        auto cpu_file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/cpu.log", truncate);
+        auto cpu_file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+            "logs/cpu.log", truncate
+        );
 
         if (async) {
             // Thread pool: queue size 8192, 1 background thread
@@ -64,11 +66,13 @@ inline void init(const std::string& log_file = "logs/boyboy.log", bool async = t
                 "boyboy",
                 spdlog::sinks_init_list{console_sink, file_sink},
                 spdlog::thread_pool(),
-                spdlog::async_overflow_policy::block);
+                spdlog::async_overflow_policy::block
+            );
         }
         else {
             logger = std::make_shared<spdlog::logger>(
-                "boyboy", spdlog::sinks_init_list{console_sink, file_sink});
+                "boyboy", spdlog::sinks_init_list{console_sink, file_sink}
+            );
         }
 
         spdlog::set_default_logger(logger);

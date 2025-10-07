@@ -41,18 +41,18 @@ enum class OperandType : uint8_t {
 inline const char* to_string(OperandType op)
 {
     switch (op) {
-    case OperandType::Register:
-        return "Register";
-    case OperandType::Immediate:
-        return "Immediate";
-    case OperandType::Indirect:
-        return "Indirect";
-    case OperandType::Memory:
-        return "Memory";
-    case OperandType::HighRAM:
-        return "HighRAM";
-    default:
-        return "Unknown";
+        case OperandType::Register:
+            return "Register";
+        case OperandType::Immediate:
+            return "Immediate";
+        case OperandType::Indirect:
+            return "Indirect";
+        case OperandType::Memory:
+            return "Memory";
+        case OperandType::HighRAM:
+            return "HighRAM";
+        default:
+            return "Unknown";
     }
 }
 
@@ -60,9 +60,10 @@ inline std::ostream& operator<<(std::ostream& os, OperandType op) { return os <<
 
 // TODO: not used for now, but could be a cleaner alternative to RegParam
 struct Operand {
-    using Variant = std::variant<boyboy::cpu::Reg8Name,
-                                 boyboy::cpu::Reg16Name,
-                                 uint16_t>; // for immediates/addresses
+    using Variant = std::variant<
+        boyboy::cpu::Reg8Name,
+        boyboy::cpu::Reg16Name,
+        uint16_t>; // for immediates/addresses
 
     OperandType type             = OperandType::Register;
     std::optional<Variant> value = std::nullopt;
@@ -130,13 +131,17 @@ public:
         // Compare register 8-bit halves with 16-bit full
         if (std::holds_alternative<boyboy::cpu::Reg8Name>(value_) &&
             std::holds_alternative<boyboy::cpu::Reg16Name>(other.value_)) {
-            return half_matches(std::get<boyboy::cpu::Reg8Name>(value_),
-                                std::get<boyboy::cpu::Reg16Name>(other.value_));
+            return half_matches(
+                std::get<boyboy::cpu::Reg8Name>(value_),
+                std::get<boyboy::cpu::Reg16Name>(other.value_)
+            );
         }
         if (std::holds_alternative<boyboy::cpu::Reg16Name>(value_) &&
             std::holds_alternative<boyboy::cpu::Reg8Name>(other.value_)) {
-            return half_matches(std::get<boyboy::cpu::Reg8Name>(other.value_),
-                                std::get<boyboy::cpu::Reg16Name>(value_));
+            return half_matches(
+                std::get<boyboy::cpu::Reg8Name>(other.value_),
+                std::get<boyboy::cpu::Reg16Name>(value_)
+            );
         }
 
         // Both 8-bit
@@ -150,16 +155,16 @@ private:
     static bool half_matches(boyboy::cpu::Reg8Name r8, boyboy::cpu::Reg16Name r16)
     {
         switch (r16) {
-        case boyboy::cpu::Reg16Name::HL:
-            return (r8 == boyboy::cpu::Reg8Name::H || r8 == boyboy::cpu::Reg8Name::L);
-        case boyboy::cpu::Reg16Name::BC:
-            return (r8 == boyboy::cpu::Reg8Name::B || r8 == boyboy::cpu::Reg8Name::C);
-        case boyboy::cpu::Reg16Name::DE:
-            return (r8 == boyboy::cpu::Reg8Name::D || r8 == boyboy::cpu::Reg8Name::E);
-        case boyboy::cpu::Reg16Name::AF:
-            return (r8 == boyboy::cpu::Reg8Name::A /* || r8 == Reg8Name::F */);
-        default:
-            return false;
+            case boyboy::cpu::Reg16Name::HL:
+                return (r8 == boyboy::cpu::Reg8Name::H || r8 == boyboy::cpu::Reg8Name::L);
+            case boyboy::cpu::Reg16Name::BC:
+                return (r8 == boyboy::cpu::Reg8Name::B || r8 == boyboy::cpu::Reg8Name::C);
+            case boyboy::cpu::Reg16Name::DE:
+                return (r8 == boyboy::cpu::Reg8Name::D || r8 == boyboy::cpu::Reg8Name::E);
+            case boyboy::cpu::Reg16Name::AF:
+                return (r8 == boyboy::cpu::Reg8Name::A /* || r8 == Reg8Name::F */);
+            default:
+                return false;
         }
     }
 };

@@ -83,10 +83,10 @@ public:
         auto end_time = std::chrono::high_resolution_clock::now();
         auto it = start_times_.find(name);
         if (it != start_times_.end()) {
-            auto duration =
-                std::chrono::duration_cast<std::chrono::microseconds>(end_time - it->second)
-                    .count();
-            accumulated_times_[name] += duration;
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                end_time - it->second
+            );
+            accumulated_times_[name] += duration.count();
             call_counts_[name]++;
             start_times_.erase(it);
         }
@@ -113,7 +113,8 @@ public:
             uint64_t count = call_counts_[name];
             double avg_time = static_cast<double>(total_time) / static_cast<double>(count);
             log::info(
-                "[{}]: total={}us, calls={}, avg={:.2f}us", name, total_time, count, avg_time);
+                "[{}]: total={}us, calls={}, avg={:.2f}us", name, total_time, count, avg_time
+            );
         }
         log::info("---------------------------");
 

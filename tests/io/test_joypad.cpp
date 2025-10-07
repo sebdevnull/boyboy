@@ -201,9 +201,10 @@ TEST_F(IoJoypadTest, SelectBothGroups)
     assert_button(Button::B, false, true, "Shares mask with Left");
     assert_button(Button::Right, false, true, "Still pressed because A is pressed");
     assert_button(Button::Left, true, true);
-    EXPECT_EQ((read_p1() & ButtonMask::AllButtons) | ~ButtonMask::AllButtons,
-              ~(ButtonMask::A | ButtonMask::Left))
-        << " A and Left pressed";
+    EXPECT_EQ(
+        (read_p1() & ButtonMask::AllButtons) | ~ButtonMask::AllButtons,
+        ~(ButtonMask::A | ButtonMask::Left)
+    ) << " A and Left pressed";
 
     // Release A button
     joypad_.release(Button::A);
@@ -281,8 +282,9 @@ TEST_F(IoJoypadTest, InterruptOnPress)
     // Press B button, should not trigger another interrupt because A is still pressed
     joypad_.press(Button::B);
     assert_button(Button::B, true, true);
-    EXPECT_EQ(irq_count, 1)
-        << "Interrupt should not be triggered when another button is pressed while one is held";
+    EXPECT_EQ(
+        irq_count, 1
+    ) << "Interrupt should not be triggered when another button is pressed while one is held";
 
     // Reset for next test
     irq_count = 0;
@@ -326,8 +328,9 @@ TEST_F(IoJoypadTest, InterruptOnMultiplePresses)
     assert_button(Button::Left, true, true);
     assert_button(Button::Down, true, true);
     assert_button(Button::A, true, true);
-    EXPECT_EQ(irq_count, 2)
-        << "Interrupt should not be triggered when another button is pressed while one is held";
+    EXPECT_EQ(
+        irq_count, 2
+    ) << "Interrupt should not be triggered when another button is pressed while one is held";
 
     // Release both buttons
     joypad_.release(Button::Right);
@@ -388,14 +391,16 @@ TEST_F(IoJoypadTest, InterruptMixedSelect)
     // Press B button, should trigger interrupt
     joypad_.press(Button::B);
     assert_button(Button::B, true, true);
-    EXPECT_EQ(irq_count, 1)
-        << "Interrupt should be triggered on button press with both groups selected";
+    EXPECT_EQ(
+        irq_count, 1
+    ) << "Interrupt should be triggered on button press with both groups selected";
 
     // Press Right button while B is still pressed, should not trigger another interrupt
     joypad_.press(Button::Right);
     assert_button(Button::Right, true, true);
-    EXPECT_EQ(irq_count, 1)
-        << "Interrupt should not be triggered when another button is pressed while one is held";
+    EXPECT_EQ(
+        irq_count, 1
+    ) << "Interrupt should not be triggered when another button is pressed while one is held";
 
     // Release Right and B buttons
     joypad_.release(Button::Right);

@@ -81,17 +81,15 @@ struct MBCParam {
 
 class FakeROMTest : public ::testing::Test {
 protected:
-    static cart::RomData make_fake_rom(cart::CartridgeType type,
-                                       uint16_t rom_banks,
-                                       uint8_t ram_banks,
-                                       std::string title = "");
+    static cart::RomData make_fake_rom(
+        cart::CartridgeType type, uint16_t rom_banks, uint8_t ram_banks, std::string title = ""
+    );
 
     cart::RomData rom_data;
     std::unique_ptr<cart::Cartridge> cart;
 };
 
-class MBCParamTest : public FakeROMTest,
-                     public ::testing::WithParamInterface<MBCParam> {
+class MBCParamTest : public FakeROMTest, public ::testing::WithParamInterface<MBCParam> {
 protected:
     void SetUp() override;
 };

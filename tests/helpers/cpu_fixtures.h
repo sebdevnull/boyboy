@@ -143,21 +143,21 @@ private:
         // Setup source depending on operand type
         if (param.src_op_type && param.src_value) {
             switch (*param.src_op_type) {
-            case OperandType::Register:
-                setup_register_source(param);
-                break;
-            case OperandType::Immediate:
-                setup_immediate_source(param);
-                break;
-            case OperandType::Indirect:
-                setup_indirect_source(param);
-                break;
-            case OperandType::Memory:
-                setup_memory_source(param);
-                break;
-            case OperandType::HighRAM:
-                setup_high_ram_source(param);
-                break;
+                case OperandType::Register:
+                    setup_register_source(param);
+                    break;
+                case OperandType::Immediate:
+                    setup_immediate_source(param);
+                    break;
+                case OperandType::Indirect:
+                    setup_indirect_source(param);
+                    break;
+                case OperandType::Memory:
+                    setup_memory_source(param);
+                    break;
+                case OperandType::HighRAM:
+                    setup_high_ram_source(param);
+                    break;
             }
         }
     }
@@ -193,7 +193,8 @@ private:
                     cpu.write_byte(pc + 2, boyboy::utils::msb(val));
                 }
             },
-            *param.src_value);
+            *param.src_value
+        );
     }
 
     void setup_indirect_source(const InstrParam& param)
@@ -231,7 +232,8 @@ private:
                     cpu.write_byte(*param.src_addr + 1, boyboy::utils::msb(val));
                 }
             },
-            *param.src_value);
+            *param.src_value
+        );
     }
 
     void setup_high_ram_source(const InstrParam& param)
@@ -254,31 +256,31 @@ private:
         // Setup destination as needed
         if (param.dst_op_type) {
             switch (*param.dst_op_type) {
-            case OperandType::Indirect:
-                // Setup only if we have a dst address
-                if (param.dst && param.dst->is_r16() && param.dst_addr) {
-                    cpu.set_register(param.dst->get_r16(), *param.dst_addr);
+                case OperandType::Indirect:
+                    // Setup only if we have a dst address
+                    if (param.dst && param.dst->is_r16() && param.dst_addr) {
+                        cpu.set_register(param.dst->get_r16(), *param.dst_addr);
+                    }
+                    break;
+                case OperandType::Memory: {
+                    // Set the imm 16-bit dst address
+                    uint16_t addr = *param.dst_addr;
+                    cpu.write_byte(cpu.get_pc() + 1, boyboy::utils::lsb(addr));
+                    cpu.write_byte(cpu.get_pc() + 2, boyboy::utils::msb(addr));
+                    break;
                 }
-                break;
-            case OperandType::Memory: {
-                // Set the imm 16-bit dst address
-                uint16_t addr = *param.dst_addr;
-                cpu.write_byte(cpu.get_pc() + 1, boyboy::utils::lsb(addr));
-                cpu.write_byte(cpu.get_pc() + 2, boyboy::utils::msb(addr));
-                break;
-            }
-            case OperandType::HighRAM: {
-                uint8_t addr_lsb = boyboy::utils::lsb(*param.dst_addr);
-                if (param.dst) {
-                    cpu.set_register(param.dst->get_r8(), addr_lsb);
+                case OperandType::HighRAM: {
+                    uint8_t addr_lsb = boyboy::utils::lsb(*param.dst_addr);
+                    if (param.dst) {
+                        cpu.set_register(param.dst->get_r8(), addr_lsb);
+                    }
+                    else {
+                        cpu.write_byte(cpu.get_pc() + 1, addr_lsb);
+                    }
+                    break;
                 }
-                else {
-                    cpu.write_byte(cpu.get_pc() + 1, addr_lsb);
-                }
-                break;
-            }
-            default:
-                break;
+                default:
+                    break;
             }
         }
     }
@@ -299,15 +301,15 @@ private:
 
         OperandType op = param.target_operand();
         switch (op) {
-        case OperandType::Register:
-        case OperandType::Immediate:
-            expect_r(cpu, param);
-            break;
-        case OperandType::Indirect:
-        case OperandType::Memory:
-        case OperandType::HighRAM:
-            expect_at_addr(cpu, param);
-            break;
+            case OperandType::Register:
+            case OperandType::Immediate:
+                expect_r(cpu, param);
+                break;
+            case OperandType::Indirect:
+            case OperandType::Memory:
+            case OperandType::HighRAM:
+                expect_at_addr(cpu, param);
+                break;
         }
 
         expect_flags(cpu, param);

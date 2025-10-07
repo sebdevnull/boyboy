@@ -10,7 +10,6 @@
 #include <cstdint>
 
 #include "boyboy/cpu/cpu.h"
-#include "boyboy/io/io.h"
 #include "boyboy/cpu/interrupts.h"
 
 namespace boyboy::cpu {

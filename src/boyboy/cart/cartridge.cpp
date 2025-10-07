@@ -38,10 +38,11 @@ void Cartridge::load_rom()
     if (!is_cart_supported()) {
         auto cart_type = header_.cartridge_type;
         unload_rom();
-        throw std::runtime_error(
-            std::format("Unsupported cartridge type: {} ({})",
-                        to_string(cart_type),
-                        utils::PrettyHex{static_cast<uint8_t>(cart_type)}.to_string()));
+        throw std::runtime_error(std::format(
+            "Unsupported cartridge type: {} ({})",
+            to_string(cart_type),
+            utils::PrettyHex{static_cast<uint8_t>(cart_type)}.to_string()
+        ));
     }
 
     if (auto cks = validate_rom_checksum(); cks != 0) {
@@ -66,47 +67,51 @@ void Cartridge::unload_rom()
 bool Cartridge::is_cart_supported() const
 {
     switch (header_.cartridge_type) {
-    case CartridgeType::ROMOnly:
-    case CartridgeType::MBC1:
-    case CartridgeType::MBC1RAM:
-    // TODO: support battery-backed RAM
-    case CartridgeType::MBC1RAMBattery:
-        return true;
-    case CartridgeType::MBC2:
-    case CartridgeType::MBC2RAMBattery:
-    case CartridgeType::ROMRAM:
-    case CartridgeType::ROMRAMBattery:
-    case CartridgeType::MBC3TimerBattery:
-    case CartridgeType::MBC3TimerRAMBattery:
-    case CartridgeType::MBC3:
-    case CartridgeType::MBC3RAM:
-    case CartridgeType::MBC3RAMBattery:
-    case CartridgeType::MBC5:
-    case CartridgeType::MBC5RAM:
-    case CartridgeType::MBC5RAMBattery:
-    case CartridgeType::MBC5Rumble:
-    case CartridgeType::MBC5RumbleRAM:
-    case CartridgeType::MBC5RumbleRAMBattery:
-    default:
-        return false;
+        case CartridgeType::ROMOnly:
+        case CartridgeType::MBC1:
+        case CartridgeType::MBC1RAM:
+        // TODO: support battery-backed RAM
+        case CartridgeType::MBC1RAMBattery:
+            return true;
+        case CartridgeType::MBC2:
+        case CartridgeType::MBC2RAMBattery:
+        case CartridgeType::ROMRAM:
+        case CartridgeType::ROMRAMBattery:
+        case CartridgeType::MBC3TimerBattery:
+        case CartridgeType::MBC3TimerRAMBattery:
+        case CartridgeType::MBC3:
+        case CartridgeType::MBC3RAM:
+        case CartridgeType::MBC3RAMBattery:
+        case CartridgeType::MBC5:
+        case CartridgeType::MBC5RAM:
+        case CartridgeType::MBC5RAMBattery:
+        case CartridgeType::MBC5Rumble:
+        case CartridgeType::MBC5RumbleRAM:
+        case CartridgeType::MBC5RumbleRAMBattery:
+        default:
+            return false;
     }
 }
 
 uint8_t Cartridge::header_checksum(const RomData& rom_data)
 {
-    return std::accumulate(rom_data.begin() + Header::HeaderStart,
-                           rom_data.begin() + Header::HeaderEnd + 1,
-                           uint8_t{0},
-                           [](uint8_t acc, std::byte b) { return acc - (utils::to_u8(b) + 1); });
+    return std::accumulate(
+        rom_data.begin() + Header::HeaderStart,
+        rom_data.begin() + Header::HeaderEnd + 1,
+        uint8_t{0},
+        [](uint8_t acc, std::byte b) { return acc - (utils::to_u8(b) + 1); }
+    );
 }
 
 uint16_t Cartridge::rom_checksum(const RomData& rom_data)
 {
     uint16_t cks = 0;
-    cks = std::accumulate(rom_data.begin(),
-                          rom_data.end(),
-                          uint16_t{0},
-                          [](uint16_t acc, std::byte b) { return acc + utils::to_u8(b); });
+    cks = std::accumulate(
+        rom_data.begin(),
+        rom_data.end(),
+        uint16_t{0},
+        [](uint16_t acc, std::byte b) { return acc + utils::to_u8(b); }
+    );
 
     // Don't compute the checksum bytes
     cks -= utils::to_u8(rom_data.at(Header::ChecksumPos));
@@ -126,9 +131,11 @@ uint8_t Cartridge::validate_header_checksum()
 
     bool pass = cks == header_.header_checksum;
     if (!pass) {
-        log::warn("ROM header checksum mismatch: {} != {}",
-                  utils::PrettyHex{header_.header_checksum}.to_string(),
-                  utils::PrettyHex{cks}.to_string());
+        log::warn(
+            "ROM header checksum mismatch: {} != {}",
+            utils::PrettyHex{header_.header_checksum}.to_string(),
+            utils::PrettyHex{cks}.to_string()
+        );
     }
 
     return pass ? 0 : cks;
@@ -145,9 +152,11 @@ uint16_t Cartridge::validate_rom_checksum()
 
     bool pass = cks == header_.checksum;
     if (!pass) {
-        log::warn("ROM checksum mismatch: {} != {}",
-                  utils::PrettyHex{header_.checksum}.to_string(),
-                  utils::PrettyHex{cks}.to_string());
+        log::warn(
+            "ROM checksum mismatch: {} != {}",
+            utils::PrettyHex{header_.checksum}.to_string(),
+            utils::PrettyHex{cks}.to_string()
+        );
     }
 
     return pass ? 0 : cks;
@@ -186,129 +195,131 @@ void Cartridge::parse_header()
 std::string_view to_string(CartridgeType type)
 {
     switch (type) {
-    case CartridgeType::ROMOnly:
-        return "ROM_ONLY";
-    case CartridgeType::MBC1:
-        return "MBC1";
-    case CartridgeType::MBC1RAM:
-        return "MBC1_RAM";
-    case CartridgeType::MBC1RAMBattery:
-        return "MBC1_RAM_BATTERY";
-    case CartridgeType::MBC2:
-        return "MBC2";
-    case CartridgeType::MBC2RAMBattery:
-        return "MBC2_BATTERY";
-    case CartridgeType::ROMRAM:
-        return "ROM_RAM";
-    case CartridgeType::ROMRAMBattery:
-        return "ROM_RAM_BATTERY";
-    case CartridgeType::MMM01:
-        return "MMM01";
-    case CartridgeType::MMM01RAM:
-        return "MMM01_RAM";
-    case CartridgeType::MMM01RAMBattery:
-        return "MMM01_RAM_BATTERY";
-    case CartridgeType::MBC3TimerBattery:
-        return "MBC3_TIMER_BATTERY";
-    case CartridgeType::MBC3TimerRAMBattery:
-        return "MBC3_TIMER_RAM_BATTERY";
-    case CartridgeType::MBC3:
-        return "MBC3";
-    case CartridgeType::MBC3RAM:
-        return "MBC3_RAM";
-    case CartridgeType::MBC3RAMBattery:
-        return "MBC3_RAM_BATTERY";
-    case CartridgeType::MBC5:
-        return "MBC5";
-    case CartridgeType::MBC5RAM:
-        return "MBC5_RAM";
-    case CartridgeType::MBC5RAMBattery:
-        return "MBC5_RAM_BATTERY";
-    case CartridgeType::MBC5Rumble:
-        return "MBC5_RUMBLE";
-    case CartridgeType::MBC5RumbleRAM:
-        return "MBC5_RUMBLE_RAM";
-    case CartridgeType::MBC5RumbleRAMBattery:
-        return "MBC5_RUMBLE_RAM_BATTERY";
-    case CartridgeType::MBC6RAMBattery:
-        return "MBC6_RAM_BATTERY";
-    case CartridgeType::MBC7RAMBatteryAccelerometer:
-        return "MBC7_RAM_BATTERY_ACCELEROMETER";
-    case CartridgeType::PocketCamera:
-        return "POCKET_CAMERA";
-    case CartridgeType::BandaiTama5:
-        return "BANDAI_TAMA5";
-    case CartridgeType::HUC3:
-        return "HUC3";
-    case CartridgeType::HUC1RAMBattery:
-        return "HUC1_RAM_BATTERY";
-    default:
-        return "UNKNOWN";
+        case CartridgeType::ROMOnly:
+            return "ROM_ONLY";
+        case CartridgeType::MBC1:
+            return "MBC1";
+        case CartridgeType::MBC1RAM:
+            return "MBC1_RAM";
+        case CartridgeType::MBC1RAMBattery:
+            return "MBC1_RAM_BATTERY";
+        case CartridgeType::MBC2:
+            return "MBC2";
+        case CartridgeType::MBC2RAMBattery:
+            return "MBC2_BATTERY";
+        case CartridgeType::ROMRAM:
+            return "ROM_RAM";
+        case CartridgeType::ROMRAMBattery:
+            return "ROM_RAM_BATTERY";
+        case CartridgeType::MMM01:
+            return "MMM01";
+        case CartridgeType::MMM01RAM:
+            return "MMM01_RAM";
+        case CartridgeType::MMM01RAMBattery:
+            return "MMM01_RAM_BATTERY";
+        case CartridgeType::MBC3TimerBattery:
+            return "MBC3_TIMER_BATTERY";
+        case CartridgeType::MBC3TimerRAMBattery:
+            return "MBC3_TIMER_RAM_BATTERY";
+        case CartridgeType::MBC3:
+            return "MBC3";
+        case CartridgeType::MBC3RAM:
+            return "MBC3_RAM";
+        case CartridgeType::MBC3RAMBattery:
+            return "MBC3_RAM_BATTERY";
+        case CartridgeType::MBC5:
+            return "MBC5";
+        case CartridgeType::MBC5RAM:
+            return "MBC5_RAM";
+        case CartridgeType::MBC5RAMBattery:
+            return "MBC5_RAM_BATTERY";
+        case CartridgeType::MBC5Rumble:
+            return "MBC5_RUMBLE";
+        case CartridgeType::MBC5RumbleRAM:
+            return "MBC5_RUMBLE_RAM";
+        case CartridgeType::MBC5RumbleRAMBattery:
+            return "MBC5_RUMBLE_RAM_BATTERY";
+        case CartridgeType::MBC6RAMBattery:
+            return "MBC6_RAM_BATTERY";
+        case CartridgeType::MBC7RAMBatteryAccelerometer:
+            return "MBC7_RAM_BATTERY_ACCELEROMETER";
+        case CartridgeType::PocketCamera:
+            return "POCKET_CAMERA";
+        case CartridgeType::BandaiTama5:
+            return "BANDAI_TAMA5";
+        case CartridgeType::HUC3:
+            return "HUC3";
+        case CartridgeType::HUC1RAMBattery:
+            return "HUC1_RAM_BATTERY";
+        default:
+            return "UNKNOWN";
     }
 }
 
 [[nodiscard]] std::string_view to_string(RomSize size)
 {
     switch (size) {
-    case RomSize::KB32:
-        return "32KB";
-    case RomSize::KB64:
-        return "64KB";
-    case RomSize::KB128:
-        return "128KB";
-    case RomSize::KB256:
-        return "256KB";
-    case RomSize::KB512:
-        return "512KB";
-    case RomSize::MB1:
-        return "1MB";
-    case RomSize::MB2:
-        return "2MB";
-    case RomSize::MB4:
-        return "4MB";
-    case RomSize::MB8:
-        return "8MB";
-    case RomSize::MB1d1:
-        return "1.1MB";
-    case RomSize::MB1d2:
-        return "1.2MB";
-    case RomSize::MB1d5:
-        return "1.5MB";
-    default:
-        return "Unknown";
+        case RomSize::KB32:
+            return "32KB";
+        case RomSize::KB64:
+            return "64KB";
+        case RomSize::KB128:
+            return "128KB";
+        case RomSize::KB256:
+            return "256KB";
+        case RomSize::KB512:
+            return "512KB";
+        case RomSize::MB1:
+            return "1MB";
+        case RomSize::MB2:
+            return "2MB";
+        case RomSize::MB4:
+            return "4MB";
+        case RomSize::MB8:
+            return "8MB";
+        case RomSize::MB1d1:
+            return "1.1MB";
+        case RomSize::MB1d2:
+            return "1.2MB";
+        case RomSize::MB1d5:
+            return "1.5MB";
+        default:
+            return "Unknown";
     }
 }
 
 [[nodiscard]] uint16_t rom_size_kb(RomSize size)
 {
     switch (size) {
-    case RomSize::KB32:
-        return 32;
-    case RomSize::KB64:
-        return 64;
-    case RomSize::KB128:
-        return 128;
-    case RomSize::KB256:
-        return 256;
-    case RomSize::KB512:
-        return 512;
-    case RomSize::MB1:
-        return 1024;
-    case RomSize::MB2:
-        return 2048;
-    case RomSize::MB4:
-        return 4096;
-    case RomSize::MB8:
-        return 8192;
-    case RomSize::MB1d1:
-        return 1152; // 1.1MB
-    case RomSize::MB1d2:
-        return 1280; // 1.2MB
-    case RomSize::MB1d5:
-        return 1536; // 1.5MB
-    default:
-        throw std::runtime_error(std::format(
-            "Unknown ROM size code: {}", utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()));
+        case RomSize::KB32:
+            return 32;
+        case RomSize::KB64:
+            return 64;
+        case RomSize::KB128:
+            return 128;
+        case RomSize::KB256:
+            return 256;
+        case RomSize::KB512:
+            return 512;
+        case RomSize::MB1:
+            return 1024;
+        case RomSize::MB2:
+            return 2048;
+        case RomSize::MB4:
+            return 4096;
+        case RomSize::MB8:
+            return 8192;
+        case RomSize::MB1d1:
+            return 1152; // 1.1MB
+        case RomSize::MB1d2:
+            return 1280; // 1.2MB
+        case RomSize::MB1d5:
+            return 1536; // 1.5MB
+        default:
+            throw std::runtime_error(std::format(
+                "Unknown ROM size code: {}",
+                utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()
+            ));
     }
 }
 
@@ -320,74 +331,76 @@ std::string_view to_string(CartridgeType type)
 [[nodiscard]] RomSize rom_size_from_banks(uint16_t banks)
 {
     switch (banks) {
-    case 2:
-        return RomSize::KB32;
-    case 4:
-        return RomSize::KB64;
-    case 8:
-        return RomSize::KB128;
-    case 16:
-        return RomSize::KB256;
-    case 32:
-        return RomSize::KB512;
-    case 64:
-        return RomSize::MB1;
-    case 128:
-        return RomSize::MB2;
-    case 256:
-        return RomSize::MB4;
-    case 512:
-        return RomSize::MB8;
-    case 72:
-        return RomSize::MB1d1; // 1.1MB
-    case 80:
-        return RomSize::MB1d2; // 1.2MB
-    case 96:
-        return RomSize::MB1d5; // 1.5MB
-    default:
-        throw std::runtime_error(std::format("Unsupported number of ROM banks: {}", banks));
+        case 2:
+            return RomSize::KB32;
+        case 4:
+            return RomSize::KB64;
+        case 8:
+            return RomSize::KB128;
+        case 16:
+            return RomSize::KB256;
+        case 32:
+            return RomSize::KB512;
+        case 64:
+            return RomSize::MB1;
+        case 128:
+            return RomSize::MB2;
+        case 256:
+            return RomSize::MB4;
+        case 512:
+            return RomSize::MB8;
+        case 72:
+            return RomSize::MB1d1; // 1.1MB
+        case 80:
+            return RomSize::MB1d2; // 1.2MB
+        case 96:
+            return RomSize::MB1d5; // 1.5MB
+        default:
+            throw std::runtime_error(std::format("Unsupported number of ROM banks: {}", banks));
     }
 }
 
 [[nodiscard]] std::string_view to_string(RamSize size)
 {
     switch (size) {
-    case RamSize::None:
-        return "None";
-    case RamSize::KB2:
-        return "2KB";
-    case RamSize::KB8:
-        return "8KB";
-    case RamSize::KB32:
-        return "32KB";
-    case RamSize::KB128:
-        return "128KB";
-    case RamSize::KB64:
-        return "64KB";
-    default:
-        return "Unknown";
+        case RamSize::None:
+            return "None";
+        case RamSize::KB2:
+            return "2KB";
+        case RamSize::KB8:
+            return "8KB";
+        case RamSize::KB32:
+            return "32KB";
+        case RamSize::KB128:
+            return "128KB";
+        case RamSize::KB64:
+            return "64KB";
+        default:
+            return "Unknown";
     }
 }
 
 [[nodiscard]] uint16_t ram_size_kb(RamSize size)
 {
     switch (size) {
-    case RamSize::None:
-        return 0;
-    case RamSize::KB2:
-        log::warn("Cartridge RAM size code 0x01 is unofficial, assuming 2KB RAM");
-        return 2; // Unused, but some carts use it to indicate 2KB RAM
-    case RamSize::KB8:
-        return 8;
-    case RamSize::KB32:
-        return 32;
-    case RamSize::KB128:
-        return 128;
-    case RamSize::KB64:
-        return 64;
-    default:
-        throw std::runtime_error(std::format(
-            "Unknown RAM size code: {}", utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()));
+        case RamSize::None:
+            return 0;
+        case RamSize::KB2:
+            log::warn("Cartridge RAM size code 0x01 is unofficial, assuming 2KB RAM");
+            return 2; // Unused, but some carts use it to indicate 2KB RAM
+        case RamSize::KB8:
+            return 8;
+        case RamSize::KB32:
+            return 32;
+        case RamSize::KB128:
+            return 128;
+        case RamSize::KB64:
+            return 64;
+        default:
+            throw std::runtime_error(std::format(
+                "Unknown RAM size code: {}",
+                utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()
+            ));
     }
 }
 
@@ -399,18 +412,18 @@ std::string_view to_string(CartridgeType type)
 [[nodiscard]] RamSize ram_size_from_banks(uint8_t banks)
 {
     switch (banks) {
-    case 0:
-        return RamSize::None;
-    case 1:
-        return RamSize::KB8;
-    case 4:
-        return RamSize::KB32;
-    case 16:
-        return RamSize::KB128;
-    case 8:
-        return RamSize::KB64;
-    default:
-        throw std::runtime_error(std::format("Unsupported number of RAM banks: {}", banks));
+        case 0:
+            return RamSize::None;
+        case 1:
+            return RamSize::KB8;
+        case 4:
+            return RamSize::KB32;
+        case 16:
+            return RamSize::KB128;
+        case 8:
+            return RamSize::KB64;
+        default:
+            throw std::runtime_error(std::format("Unsupported number of RAM banks: {}", banks));
     }
 }
 

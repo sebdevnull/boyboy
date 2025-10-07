@@ -39,10 +39,12 @@ void Joypad::write(uint16_t addr, uint8_t value)
 
     select_ = value & ButtonMask::SelectMask;
 
-    log::trace("Joypad Write: {} <- {}, P1={}",
-               utils::PrettyHex(addr).to_string(),
-               utils::PrettyHex(value).to_string(),
-               utils::PrettyHex(p1()).to_string());
+    log::trace(
+        "Joypad Write: {} <- {}, P1={}",
+        utils::PrettyHex(addr).to_string(),
+        utils::PrettyHex(value).to_string(),
+        utils::PrettyHex(p1()).to_string()
+    );
 }
 
 void Joypad::set_interrupt_cb(cpu::InterruptRequestCallback callback)
@@ -65,9 +67,11 @@ void Joypad::press(Button button)
     }
 
     if ((buttons_ & mask) == 0) {
-        log::trace("Button already pressed: {}, P1={}",
-                   to_string(button),
-                   utils::PrettyHex(p1()).to_string());
+        log::trace(
+            "Button already pressed: {}, P1={}",
+            to_string(button),
+            utils::PrettyHex(p1()).to_string()
+        );
         return;
     }
 
@@ -94,9 +98,11 @@ void Joypad::release(Button button)
     }
 
     if ((buttons_ & mask) != 0) {
-        log::debug("Button already released: {}, P1={}",
-                   to_string(button),
-                   utils::PrettyHex(p1()).to_string());
+        log::debug(
+            "Button already released: {}, P1={}",
+            to_string(button),
+            utils::PrettyHex(p1()).to_string()
+        );
         return;
     }
 
@@ -162,24 +168,24 @@ void Joypad::release(Button button)
 inline std::string to_string(Button button)
 {
     switch (button) {
-    case Button::A:
-        return "A";
-    case Button::B:
-        return "B";
-    case Button::Select:
-        return "Select";
-    case Button::Start:
-        return "Start";
-    case Button::Right:
-        return "Right";
-    case Button::Left:
-        return "Left";
-    case Button::Up:
-        return "Up";
-    case Button::Down:
-        return "Down";
-    default:
-        return "Unknown";
+        case Button::A:
+            return "A";
+        case Button::B:
+            return "B";
+        case Button::Select:
+            return "Select";
+        case Button::Start:
+            return "Start";
+        case Button::Right:
+            return "Right";
+        case Button::Left:
+            return "Left";
+        case Button::Up:
+            return "Up";
+        case Button::Down:
+            return "Down";
+        default:
+            return "Unknown";
     }
 }
 inline std::ostream& operator<<(std::ostream& os, Button button)

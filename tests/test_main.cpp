@@ -15,7 +15,6 @@ int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
 
-    
     // Initialize logging
     boyboy::log::init("logs/test_boyboy.log", true);
 

@@ -38,16 +38,16 @@ enum class Mode : uint8_t {
 inline const char* to_string(Mode mode)
 {
     switch (mode) {
-    case Mode::HBlank:
-        return "HBlank";
-    case Mode::VBlank:
-        return "VBlank";
-    case Mode::OAMScan:
-        return "OAMScan";
-    case Mode::Transfer:
-        return "Transfer";
-    default:
-        return "Unknown";
+        case Mode::HBlank:
+            return "HBlank";
+        case Mode::VBlank:
+            return "VBlank";
+        case Mode::OAMScan:
+            return "OAMScan";
+        case Mode::Transfer:
+            return "Transfer";
+        default:
+            return "Unknown";
     }
 }
 inline std::ostream& operator<<(std::ostream& os, Mode mode)
@@ -71,14 +71,14 @@ static constexpr int TotalScanlines = VisibleScanlines + VBlankScanlines;
 
 // Total cycles per frame (70224)
 // The number of cycles is fixed, but we derive it from mode cycles and scanlines for clarity
-static constexpr uint32_t CyclesPerFrame =
-    ((Cycles::OAMScan + Cycles::Transfer + Cycles::HBlank) * VisibleScanlines) +
-    (Cycles::VBlank * VBlankScanlines);
+static constexpr uint32_t CyclesPerFrame = ((Cycles::OAMScan + Cycles::Transfer + Cycles::HBlank) *
+                                            VisibleScanlines) +
+                                           (Cycles::VBlank * VBlankScanlines);
 
 // Frame rate (approx 59.73 Hz)
-static constexpr double FrameRate =
-    static_cast<double>(cpu::MasterClockFrequencyHz) / CyclesPerFrame; // Hz
-static constexpr double FrameDuration = 1.0 / FrameRate;               // seconds
+static constexpr double FrameRate = static_cast<double>(cpu::MasterClockFrequencyHz) /
+                                    CyclesPerFrame;      // Hz
+static constexpr double FrameDuration = 1.0 / FrameRate; // seconds
 
 // Types definitions
 using Pixel = uint32_t; // RGBA format

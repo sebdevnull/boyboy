@@ -17,8 +17,9 @@ using namespace boyboy::cpu;
 
 namespace {
 
-void check_unique_function_names(const std::array<Instruction, 256>& table,
-                                 const std::string& table_name)
+void check_unique_function_names(
+    const std::array<Instruction, 256>& table, const std::string& table_name
+)
 {
     std::set<std::string_view> func_names;
     for (const auto& instr : table) {
@@ -35,15 +36,9 @@ void check_mnemonic_contains(const Instruction& instr, const std::string& substr
 
 } // namespace
 
-TEST(InstructionTableTest, OpcodesSize)
-{
-    EXPECT_EQ(InstructionTable::Opcodes.size(), 256);
-}
+TEST(InstructionTableTest, OpcodesSize) { EXPECT_EQ(InstructionTable::Opcodes.size(), 256); }
 
-TEST(InstructionTableTest, CBOpcodesSize)
-{
-    EXPECT_EQ(InstructionTable::CBOpcodes.size(), 256);
-}
+TEST(InstructionTableTest, CBOpcodesSize) { EXPECT_EQ(InstructionTable::CBOpcodes.size(), 256); }
 
 TEST(InstructionTableTest, UniqueFunctionNames)
 {

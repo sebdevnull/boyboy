@@ -34,12 +34,14 @@ bool Display::init(const std::string& title)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    window_ = SDL_CreateWindow(title.c_str(),
-                               SDL_WINDOWPOS_CENTERED,
-                               SDL_WINDOWPOS_CENTERED,
-                               width_ * scale_,
-                               height_ * scale_,
-                               SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    window_ = SDL_CreateWindow(
+        title.c_str(),
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        width_ * scale_,
+        height_ * scale_,
+        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
+    );
 
     if (window_ == nullptr) {
         std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << "\n";
@@ -121,32 +123,32 @@ void Display::handle_key_event(const SDL_Event& event, bool pressed)
     }
 
     switch (event.key.keysym.sym) {
-    case SDLK_z:
-        button_cb_(io::Button::A, pressed);
-        break;
-    case SDLK_x:
-        button_cb_(io::Button::B, pressed);
-        break;
-    case SDLK_RETURN:
-        button_cb_(io::Button::Start, pressed);
-        break;
-    case SDLK_BACKSPACE:
-        button_cb_(io::Button::Select, pressed);
-        break;
-    case SDLK_UP:
-        button_cb_(io::Button::Up, pressed);
-        break;
-    case SDLK_DOWN:
-        button_cb_(io::Button::Down, pressed);
-        break;
-    case SDLK_LEFT:
-        button_cb_(io::Button::Left, pressed);
-        break;
-    case SDLK_RIGHT:
-        button_cb_(io::Button::Right, pressed);
-        break;
-    default:
-        break;
+        case SDLK_z:
+            button_cb_(io::Button::A, pressed);
+            break;
+        case SDLK_x:
+            button_cb_(io::Button::B, pressed);
+            break;
+        case SDLK_RETURN:
+            button_cb_(io::Button::Start, pressed);
+            break;
+        case SDLK_BACKSPACE:
+            button_cb_(io::Button::Select, pressed);
+            break;
+        case SDLK_UP:
+            button_cb_(io::Button::Up, pressed);
+            break;
+        case SDLK_DOWN:
+            button_cb_(io::Button::Down, pressed);
+            break;
+        case SDLK_LEFT:
+            button_cb_(io::Button::Left, pressed);
+            break;
+        case SDLK_RIGHT:
+            button_cb_(io::Button::Right, pressed);
+            break;
+        default:
+            break;
     }
 }
 
@@ -155,7 +157,8 @@ void Display::render_frame(const ppu::FrameBuffer& framebuffer)
     BB_PROFILE_SCOPE(profiling::FrameTimer::Render);
 
     glTexSubImage2D(
-        GL_TEXTURE_2D, 0, 0, 0, width_, height_, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer.data());
+        GL_TEXTURE_2D, 0, 0, 0, width_, height_, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer.data()
+    );
 
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -198,15 +201,23 @@ void Display::init_opengl()
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 sizeof(unsigned int) * indices.size(),
-                 indices.data(),
-                 GL_STATIC_DRAW);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(unsigned int) * indices.size(),
+        indices.data(),
+        GL_STATIC_DRAW
+    );
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(
-        1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float))); // NOLINT
+        1,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        4 * sizeof(float),
+        (void*)(2 * sizeof(float)) // NOLINT
+    );
     glEnableVertexAttribArray(1);
 
     // Shader sources

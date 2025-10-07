@@ -24,6 +24,7 @@
 namespace boyboy::test::rom {
 
 std::string SerialTestCapturer::get_output()
+
 {
     has_new_data_ = false;
     return buffer_.str();
@@ -50,7 +51,7 @@ void SerialTestCapturer::write_hook(uint16_t addr, uint8_t value)
     }
 }
 
-void ROMTest::SetUp()
+void ROMTest ::SetUp()
 {
     // We don't call CpuTest::SetUp() because we want "real" CPU initial state
     // (e.g. PC=0x0100, SP=0xFFFE, etc)
@@ -65,11 +66,13 @@ void ROMTest::SetUp()
     finished = false;
     passed   = false;
 
-    serial_capturer.set_new_line_callback(
-        [this](const std::string& line) { serial_new_line(line); });
+    serial_capturer.set_new_line_callback([this](const std::string& new_line) {
+        serial_new_line(new_line);
+    });
 
-    mmu->set_io_write_callback(
-        [this](uint16_t addr, uint8_t value) { serial_capturer.write_hook(addr, value); });
+    mmu->set_io_write_callback([this](uint16_t addr, uint8_t value) {
+        serial_capturer.write_hook(addr, value);
+    });
 }
 
 void ROMTest::TearDown()
@@ -116,9 +119,11 @@ void ROMTest::run()
         if (current_pc == last_pc) {
             repeat_count++;
             if (repeat_count >= LoopThreshold) {
-                log::warn("[ROM] Detected potential infinite loop at PC={}: {}",
-                          utils::PrettyHex(current_pc).to_string(),
-                          cpu.disassemble(current_pc));
+                log::warn(
+                    "[ROM] Detected potential infinite loop at PC={}: {}",
+                    utils::PrettyHex(current_pc).to_string(),
+                    cpu.disassemble(current_pc)
+                );
                 break;
             }
         }
@@ -151,8 +156,9 @@ void ROMTest::serial_new_line(const std::string& line)
     }
 
     serial_output += line;
-    log::info("[ROM] Serial Output new line received: {}",
-              line.substr(0, line.size() - 1)); // exclude newline character
+    log::info(
+        "[ROM] Serial Output new line received: {}", line.substr(0, line.size() - 1)
+    ); // exclude newline character
 
     for (const auto& state : TestStates) {
         if (line.find(state) != std::string::npos) {
@@ -164,11 +170,12 @@ void ROMTest::serial_new_line(const std::string& line)
     }
 }
 
-cart::RomData FakeROMTest::make_fake_rom(cart::CartridgeType type,
-                                         uint16_t rom_banks,
-                                         uint8_t ram_banks,
-                                         std::string title)
+cart::RomData FakeROMTest::make_fake_rom(
+    cart::CartridgeType type, uint16_t rom_banks, uint8_t ram_banks, std::string title
+)
 {
+    using boyboy::cart::Cartridge;
+
     // Minimum 2 rom_banks (no banking)
     rom_banks = std::max(rom_banks, uint16_t{2});
 
@@ -176,17 +183,17 @@ cart::RomData FakeROMTest::make_fake_rom(cart::CartridgeType type,
 
     // Fill each bank with its index
     for (long i = 0; i < rom_banks; i++) {
-        std::fill(rom_data.begin() + i * cart::mbc::RomBankSize,
-                  rom_data.begin() + (i + 1) * cart::mbc::RomBankSize,
-                  std::byte(i));
+        std::fill(
+            rom_data.begin() + i * cart::mbc::RomBankSize,
+            rom_data.begin() + (i + 1) * cart::mbc::RomBankSize,
+            std::byte(i)
+        );
     }
 
     // Header setup
-    rom_data.at(cart::Cartridge::Header::CartridgeTypePos) = std::byte(type);
-    rom_data.at(cart::Cartridge::Header::ROMSizePos) =
-        std::byte(cart::rom_size_from_banks(rom_banks));
-    rom_data.at(cart::Cartridge::Header::RAMSizePos) =
-        std::byte(cart::ram_size_from_banks(ram_banks));
+    rom_data.at(Cartridge::Header::CartridgeTypePos) = std::byte(type);
+    rom_data.at(Cartridge::Header::ROMSizePos) = std::byte(cart::rom_size_from_banks(rom_banks));
+    rom_data.at(Cartridge::Header::RAMSizePos) = std::byte(cart::ram_size_from_banks(ram_banks));
 
     // Title (max 16 chars)
     if (title.empty()) {
@@ -194,15 +201,15 @@ cart::RomData FakeROMTest::make_fake_rom(cart::CartridgeType type,
     }
     title = title.substr(0, 16);
     for (size_t i = 0; i < title.size(); i++) {
-        rom_data.at(cart::Cartridge::Header::TitlePos + i) = std::byte(title[i]);
+        rom_data.at(Cartridge::Header::TitlePos + i) = std::byte(title[i]);
     }
     for (size_t i = title.size(); i < 16; i++) {
-        rom_data.at(cart::Cartridge::Header::TitlePos + i) = std::byte(0);
+        rom_data.at(Cartridge::Header::TitlePos + i) = std::byte(0);
     }
 
     // Header checksum
-    uint8_t cks = cart::Cartridge::header_checksum(rom_data);
-    rom_data.at(cart::Cartridge::Header::HeaderChecksumPos) = std::byte(cks);
+    auto cks = static_cast<std::byte>(Cartridge::header_checksum(rom_data));
+    rom_data.at(Cartridge::Header::HeaderChecksumPos) = cks;
 
     return rom_data;
 }

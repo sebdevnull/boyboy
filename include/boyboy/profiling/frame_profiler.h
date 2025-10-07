@@ -35,14 +35,14 @@ enum class FrameTimer : uint8_t { Cpu, Ppu, Render, Count };
 inline std::string to_string(FrameTimer timer)
 {
     switch (timer) {
-    case FrameTimer::Cpu:
-        return "Cpu";
-    case FrameTimer::Ppu:
-        return "Ppu";
-    case FrameTimer::Render:
-        return "Render";
-    default:
-        return "Unknown";
+        case FrameTimer::Cpu:
+            return "Cpu";
+        case FrameTimer::Ppu:
+            return "Ppu";
+        case FrameTimer::Render:
+            return "Render";
+        default:
+            return "Unknown";
     }
 }
 
@@ -143,7 +143,8 @@ public:
      * @param log_interval Interval (in seconds) for periodic logging.
      */
     FrameProfiler(double log_interval = 1.0)
-        : log_interval_(log_interval), last_log_time_(std::chrono::high_resolution_clock::now()),
+        : log_interval_(log_interval),
+          last_log_time_(std::chrono::high_resolution_clock::now()),
           start_time_(last_log_time_)
     {
     }
@@ -197,12 +198,13 @@ public:
         double avg_ips = static_cast<double>(frame_data.instruction_count) / total_elapsed;
         double avg_cps = static_cast<double>(frame_data.cycle_count) / total_elapsed;
 
-        std::string log_msg =
-            std::format("Frames: {} | Avg FPS: {:.1f} | Avg IPS: {:.1f}k | Avg CPS: {:.1f}k",
-                        total_stats_.frame_count,
-                        avg_fps,
-                        avg_ips / 1e3,
-                        avg_cps / 1e3);
+        std::string log_msg = std::format(
+            "Frames: {} | Avg FPS: {:.1f} | Avg IPS: {:.1f}k | Avg CPS: {:.1f}k",
+            total_stats_.frame_count,
+            avg_fps,
+            avg_ips / 1e3,
+            avg_cps / 1e3
+        );
 
         // Component timing averaged per frame
         if (frame_data.times_us) {
@@ -210,7 +212,8 @@ public:
                 double avg_time = static_cast<double>((*frame_data.times_us).at(i)) /
                                   static_cast<double>(total_stats_.frame_count);
                 log_msg += std::format(
-                    " | Avg {}: {:.1f}us", to_string(static_cast<FrameTimer>(i)), avg_time);
+                    " | Avg {}: {:.1f}us", to_string(static_cast<FrameTimer>(i)), avg_time
+                );
             }
         }
 
@@ -248,16 +251,18 @@ private:
         double cps = static_cast<double>(frame_data.cycle_count) / elapsed;
 
         // Compose log message
-        std::string log_msg =
-            std::format("FPS: {:.1f} | IPS: {:.1f}k | CPS: {:.1f}k", fps, ips / 1e3, cps / 1e3);
+        std::string log_msg = std::format(
+            "FPS: {:.1f} | IPS: {:.1f}k | CPS: {:.1f}k", fps, ips / 1e3, cps / 1e3
+        );
 
         // Compose timing breakdown if available
         if (frame_data.times_us) {
             for (size_t i = 0; i < static_cast<size_t>(FrameTimer::Count); ++i) {
                 double avg_time = static_cast<double>((*frame_data.times_us).at(i)) /
                                   static_cast<double>(frame_stats_.frame_count);
-                log_msg +=
-                    std::format(" | {}: {:.1f}us", to_string(static_cast<FrameTimer>(i)), avg_time);
+                log_msg += std::format(
+                    " | {}: {:.1f}us", to_string(static_cast<FrameTimer>(i)), avg_time
+                );
             }
         }
 

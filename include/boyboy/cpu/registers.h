@@ -24,16 +24,16 @@ struct Flag {
     static std::string to_string(uint8_t flag)
     {
         switch (flag) {
-        case cpu::Flag::Carry:
-            return "Carry";
-        case cpu::Flag::HalfCarry:
-            return "Half Carry";
-        case cpu::Flag::Substract:
-            return "Substract";
-        case cpu::Flag::Zero:
-            return "Zero";
-        default:
-            return "Unknown Flag";
+            case cpu::Flag::Carry:
+                return "Carry";
+            case cpu::Flag::HalfCarry:
+                return "Half Carry";
+            case cpu::Flag::Substract:
+                return "Substract";
+            case cpu::Flag::Zero:
+                return "Zero";
+            default:
+                return "Unknown Flag";
         }
     }
 };
@@ -44,44 +44,44 @@ enum class Reg16Name : uint8_t { AF, BC, DE, HL, SP, PC };
 inline const char* to_string(Reg8Name r)
 {
     switch (r) {
-    case Reg8Name::A:
-        return "A";
-    case Reg8Name::F:
-        return "F";
-    case Reg8Name::B:
-        return "B";
-    case Reg8Name::C:
-        return "C";
-    case Reg8Name::D:
-        return "D";
-    case Reg8Name::E:
-        return "E";
-    case Reg8Name::H:
-        return "H";
-    case Reg8Name::L:
-        return "L";
-    default:
-        return "Unknown";
+        case Reg8Name::A:
+            return "A";
+        case Reg8Name::F:
+            return "F";
+        case Reg8Name::B:
+            return "B";
+        case Reg8Name::C:
+            return "C";
+        case Reg8Name::D:
+            return "D";
+        case Reg8Name::E:
+            return "E";
+        case Reg8Name::H:
+            return "H";
+        case Reg8Name::L:
+            return "L";
+        default:
+            return "Unknown";
     }
 }
 
 inline const char* to_string(Reg16Name r)
 {
     switch (r) {
-    case Reg16Name::AF:
-        return "AF";
-    case Reg16Name::BC:
-        return "BC";
-    case Reg16Name::DE:
-        return "DE";
-    case Reg16Name::HL:
-        return "HL";
-    case Reg16Name::SP:
-        return "SP";
-    case Reg16Name::PC:
-        return "PC";
-    default:
-        return "Unknown";
+        case Reg16Name::AF:
+            return "AF";
+        case Reg16Name::BC:
+            return "BC";
+        case Reg16Name::DE:
+            return "DE";
+        case Reg16Name::HL:
+            return "HL";
+        case Reg16Name::SP:
+            return "SP";
+        case Reg16Name::PC:
+            return "PC";
+        default:
+            return "Unknown";
     }
 }
 
@@ -95,8 +95,10 @@ inline std::ostream& operator<<(std::ostream& os, RegName r)
 }
 
 class Register16 {
-    static_assert(std::endian::native == std::endian::little,
-                  "This implementation assumes little-endian architecture");
+    static_assert(
+        std::endian::native == std::endian::little,
+        "This implementation assumes little-endian architecture"
+    );
 
 public:
     constexpr Register16(uint16_t val = 0) : value_(val) {}
@@ -181,7 +183,7 @@ public:
     [[nodiscard]] constexpr bool half_carry_flag() const { return get_flag(Flag::HalfCarry); }
     constexpr void half_carry_flag(bool set) { set_flag(Flag::HalfCarry, set); }
 
-// private:
+    // private:
     // Generic flag access
     [[nodiscard]] constexpr bool get_flag(uint8_t flag) const { return (get_value() & flag) != 0; }
     constexpr void set_flag(uint8_t flag, bool set)

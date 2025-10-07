@@ -48,8 +48,9 @@ using ActiveProfiler = Profiler;
  * @param name Timer name (string or FrameTimer enum).
  */
 #define BB_PROFILE_SCOPE(name)                                                                     \
-    [[maybe_unused]] auto BB_CONCAT(_bb_profile_scope_, __LINE__) =                                \
-        boyboy::profiling::profile_scope(name)
+    [[maybe_unused]] auto BB_CONCAT(                                                               \
+        _bb_profile_scope_, __LINE__                                                               \
+    ) = boyboy::profiling::profile_scope(name)
 
 /**
  * @brief Output a profiling report for all timers.
@@ -93,8 +94,9 @@ using ActiveProfiler = NullProfiler;
  */
 inline std::string_view frame_timer_id(FrameTimer timer)
 {
-    constexpr std::array<std::string_view, static_cast<size_t>(FrameTimer::Count)> Ids =
-        {"Frame::Cpu", "Frame::Ppu", "Frame::Render"};
+    constexpr std::array<std::string_view, static_cast<size_t>(FrameTimer::Count)> Ids = {
+        "Frame::Cpu", "Frame::Ppu", "Frame::Render"
+    };
     auto idx = static_cast<size_t>(timer);
     if (idx < Ids.size()) {
         return Ids[idx];

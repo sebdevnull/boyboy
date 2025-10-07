@@ -32,16 +32,20 @@ TEST_P(CpuRegister8Test, SetAndGetRegister8)
     EXPECT_EQ(cpu.get_register(reg), value);
 }
 
-INSTANTIATE_TEST_SUITE_P(Register8Tests,
-                         CpuRegister8Test,
-                         ::testing::Values(std::make_pair(Reg8Name::A, 0x12),
-                                           std::make_pair(Reg8Name::B, 0x34),
-                                           std::make_pair(Reg8Name::C, 0x56),
-                                           std::make_pair(Reg8Name::D, 0x78),
-                                           std::make_pair(Reg8Name::E, 0x9A),
-                                           std::make_pair(Reg8Name::H, 0xBC),
-                                           std::make_pair(Reg8Name::L, 0xDE),
-                                           std::make_pair(Reg8Name::F, 0xF0)));
+INSTANTIATE_TEST_SUITE_P(
+    Register8Tests,
+    CpuRegister8Test,
+    ::testing::Values(
+        std::make_pair(Reg8Name::A, 0x12),
+        std::make_pair(Reg8Name::B, 0x34),
+        std::make_pair(Reg8Name::C, 0x56),
+        std::make_pair(Reg8Name::D, 0x78),
+        std::make_pair(Reg8Name::E, 0x9A),
+        std::make_pair(Reg8Name::H, 0xBC),
+        std::make_pair(Reg8Name::L, 0xDE),
+        std::make_pair(Reg8Name::F, 0xF0)
+    )
+);
 
 class CpuRegister16Test : public CpuTest,
                           public ::testing::WithParamInterface<std::pair<Reg16Name, uint16_t>> {};
@@ -54,14 +58,18 @@ TEST_P(CpuRegister16Test, SetAndGetRegister16)
     EXPECT_EQ(cpu.get_register(reg), value);
 }
 
-INSTANTIATE_TEST_SUITE_P(Register16Tests,
-                         CpuRegister16Test,
-                         ::testing::Values(std::make_pair(Reg16Name::BC, 0x1234),
-                                           std::make_pair(Reg16Name::DE, 0x5678),
-                                           std::make_pair(Reg16Name::HL, 0x9ABC),
-                                           std::make_pair(Reg16Name::AF, 0xDEF0),
-                                           std::make_pair(Reg16Name::SP, 0xFFF0),
-                                           std::make_pair(Reg16Name::PC, 0xABCD)));
+INSTANTIATE_TEST_SUITE_P(
+    Register16Tests,
+    CpuRegister16Test,
+    ::testing::Values(
+        std::make_pair(Reg16Name::BC, 0x1234),
+        std::make_pair(Reg16Name::DE, 0x5678),
+        std::make_pair(Reg16Name::HL, 0x9ABC),
+        std::make_pair(Reg16Name::AF, 0xDEF0),
+        std::make_pair(Reg16Name::SP, 0xFFF0),
+        std::make_pair(Reg16Name::PC, 0xABCD)
+    )
+);
 
 // Flags tests
 class CpuFlagTest : public CpuTest,
@@ -75,13 +83,17 @@ TEST_P(CpuFlagTest, SetAndGetFlag)
     EXPECT_EQ(cpu.get_flag(flag), value);
 }
 
-INSTANTIATE_TEST_SUITE_P(FlagTests,
-                         CpuFlagTest,
-                         ::testing::Values(std::make_pair(Flag::Zero, true),
-                                           std::make_pair(Flag::Zero, false),
-                                           std::make_pair(Flag::Carry, true),
-                                           std::make_pair(Flag::Carry, false),
-                                           std::make_pair(Flag::Substract, true),
-                                           std::make_pair(Flag::Substract, false),
-                                           std::make_pair(Flag::HalfCarry, true),
-                                           std::make_pair(Flag::HalfCarry, false)));
+INSTANTIATE_TEST_SUITE_P(
+    FlagTests,
+    CpuFlagTest,
+    ::testing::Values(
+        std::make_pair(Flag::Zero, true),
+        std::make_pair(Flag::Zero, false),
+        std::make_pair(Flag::Carry, true),
+        std::make_pair(Flag::Carry, false),
+        std::make_pair(Flag::Substract, true),
+        std::make_pair(Flag::Substract, false),
+        std::make_pair(Flag::HalfCarry, true),
+        std::make_pair(Flag::HalfCarry, false)
+    )
+);

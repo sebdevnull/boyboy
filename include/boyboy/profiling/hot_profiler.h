@@ -42,18 +42,18 @@ enum class HotSection : uint8_t {
 inline const char* to_string(HotSection section)
 {
     switch (section) {
-    case HotSection::CpuFetch:
-        return "Cpu::fetch";
-    case HotSection::CpuExecute:
-        return "Cpu::execute";
-    case HotSection::MmuLookup:
-        return "Mmu::lookup";
-    case HotSection::MmuRead:
-        return "Mmu::read";
-    case HotSection::MmuWrite:
-        return "Mmu::write";
-    default:
-        return "Unknown";
+        case HotSection::CpuFetch:
+            return "Cpu::fetch";
+        case HotSection::CpuExecute:
+            return "Cpu::execute";
+        case HotSection::MmuLookup:
+            return "Mmu::lookup";
+        case HotSection::MmuRead:
+            return "Mmu::read";
+        case HotSection::MmuWrite:
+            return "Mmu::write";
+        default:
+            return "Unknown";
     }
 }
 

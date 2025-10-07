@@ -82,32 +82,32 @@ struct IoReg {
         static std::string to_string(uint16_t addr)
         {
             switch (addr) {
-            case LCDC:
-                return "LCDC";
-            case STAT:
-                return "STAT";
-            case SCY:
-                return "SCY";
-            case SCX:
-                return "SCX";
-            case LY:
-                return "LY";
-            case LYC:
-                return "LYC";
-            case DMA:
-                return "DMA";
-            case BGP:
-                return "BGP";
-            case OBP0:
-                return "OBP0";
-            case OBP1:
-                return "OBP1";
-            case WY:
-                return "WY";
-            case WX:
-                return "WX";
-            default:
-                return "Unknown PPU register";
+                case LCDC:
+                    return "LCDC";
+                case STAT:
+                    return "STAT";
+                case SCY:
+                    return "SCY";
+                case SCX:
+                    return "SCX";
+                case LY:
+                    return "LY";
+                case LYC:
+                    return "LYC";
+                case DMA:
+                    return "DMA";
+                case BGP:
+                    return "BGP";
+                case OBP0:
+                    return "OBP0";
+                case OBP1:
+                    return "OBP1";
+                case WY:
+                    return "WY";
+                case WX:
+                    return "WX";
+                default:
+                    return "Unknown PPU register";
             }
         }
     };

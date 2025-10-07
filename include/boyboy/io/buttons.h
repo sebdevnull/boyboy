@@ -64,24 +64,24 @@ struct ButtonMask {
     static uint8_t get_mask(Button button)
     {
         switch (button) {
-        case Button::A:
-            return A;
-        case Button::B:
-            return B;
-        case Button::Select:
-            return Select;
-        case Button::Start:
-            return Start;
-        case Button::Right:
-            return Right;
-        case Button::Left:
-            return Left;
-        case Button::Up:
-            return Up;
-        case Button::Down:
-            return Down;
-        default:
-            return 0;
+            case Button::A:
+                return A;
+            case Button::B:
+                return B;
+            case Button::Select:
+                return Select;
+            case Button::Start:
+                return Start;
+            case Button::Right:
+                return Right;
+            case Button::Left:
+                return Left;
+            case Button::Up:
+                return Up;
+            case Button::Down:
+                return Down;
+            default:
+                return 0;
         }
     }
 };
