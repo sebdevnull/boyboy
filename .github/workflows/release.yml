@@ -13,10 +13,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build --no-install-recommends cmake libsdl2-dev libopengl-dev
+      - name: Cache APT packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ninja-build cmake libsdl2-dev libopengl-dev
+          version: 1.0
 
       - name: Configure
         run: cmake --preset release-no-tests
