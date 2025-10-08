@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+---
+
 ## [0.4.0] - 2025-10-07
 
 ### Added
@@ -32,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 - Update `.clang-format` formatting rules for better readability
 - Add `scripts/format.py` to check and apply clang-format to the codebase
+
+---
 
 ## [0.3.0] - 2025-10-04
 
