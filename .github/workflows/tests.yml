@@ -61,6 +61,3 @@ jobs:
 
       - name: Run tests
         run: ctest --preset ${{ env.PRESET }}
-
-      - name: Show Ccache stats
-        run: ccache --show-stats
