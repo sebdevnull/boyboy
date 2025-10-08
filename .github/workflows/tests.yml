@@ -45,15 +45,22 @@ jobs:
       - name: Cache APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: ninja-build cmake libsdl2-dev libopengl-dev
+          packages: ninja-build cmake ccache libsdl2-dev libopengl-dev
           version: 1.0
 
-      - name: Setup ccache
+      - name: Setup Ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.os }}-${{ env.PRESET }}
 
-      - name: Run CMake workflow
-        uses: lukka/run-cmake@v10
-        with:
-          workflowPreset: ${{ env.PRESET }}
+      - name: Configure CMake with Ccache
+        run: cmake --preset ${{ env.PRESET }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
+
+      - name: Build project
+        run: cmake --build --preset ${{ env.PRESET }}
+
+      - name: Run tests
+        run: ctest --preset ${{ env.PRESET }}
+
+      - name: Show Ccache stats
+        run: ccache --show-stats
