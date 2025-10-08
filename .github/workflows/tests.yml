@@ -10,17 +10,25 @@ on:
       - main
       - "release/*"
     types: [opened, reopened, synchronize, review_requested, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      preset:
+        description: "CMake preset to use"
+        required: false
+        default: "release"
 
 jobs:
   build-and-test:
-    name: Build & Test (${{ matrix.preset }})
-    runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    name: Build and Test
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
         preset: [release]
+    env:
+      PRESET: ${{ github.event.inputs.preset || matrix.preset }}
 
     steps:
       - name: Workflow info
@@ -29,9 +37,11 @@ jobs:
           echo "Commit SHA: $GITHUB_SHA"
           echo "Actor: $GITHUB_ACTOR"
           echo "Event name: $GITHUB_EVENT_NAME"
+          echo "Event action: $GITHUB_EVENT_ACTION"
+          echo "Using preset: $PRESET"
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
@@ -42,9 +52,9 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-${{ matrix.preset }}
+          key: ${{ matrix.os }}-${{ env.preset }}
 
       - name: Run CMake workflow
         uses: lukka/run-cmake@v10
         with:
-          workflowPreset: ${{ matrix.preset }}
+          workflowPreset: ${{ env.preset }}
