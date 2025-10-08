@@ -1,19 +1,21 @@
 name: Tests
 
-on: 
+on:
   push:
     branches:
       - main
-      - 'release/*'
+      - "release/*"
   pull_request:
     branches:
       - main
-      - 'release/*'
+      - "release/*"
+    types: [opened, reopened, synchronize, review_requested, ready_for_review]
 
 jobs:
-  build:
+  build-and-test:
     name: Build & Test (${{ matrix.preset }})
     runs-on: ${{ matrix.os }}
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
