@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build cmake libsdl2-dev libopengl-dev
+          sudo apt-get install -y ninja-build --no-install-recommends cmake libsdl2-dev libopengl-dev
 
       - name: Configure
         run: cmake --preset release-no-tests
