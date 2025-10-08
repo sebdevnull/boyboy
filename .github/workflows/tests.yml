@@ -37,7 +37,6 @@ jobs:
           echo "Commit SHA: $GITHUB_SHA"
           echo "Actor: $GITHUB_ACTOR"
           echo "Event name: $GITHUB_EVENT_NAME"
-          echo "Event action: $GITHUB_EVENT_ACTION"
           echo "Using preset: $PRESET"
 
       - name: Checkout repository
@@ -52,9 +51,9 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-${{ env.preset }}
+          key: ${{ matrix.os }}-${{ env.PRESET }}
 
       - name: Run CMake workflow
         uses: lukka/run-cmake@v10
         with:
-          workflowPreset: ${{ env.preset }}
+          workflowPreset: ${{ env.PRESET }}
