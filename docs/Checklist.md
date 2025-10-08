@@ -71,7 +71,10 @@ Implementation status of every major component and feature in **BoyBoy**.
 - [ ] Window management ⏳
   - [ ] Scaling & resizing ⏳
   - [ ] Fullscreen mode
-- [ ] Frame rate control
+- [ ] Frame rate control ⏳
+  - [ ] Frame limiting ⏳
+  - [ ] Frame skipping
+  - [x] Frame profiling ✅
 
 ## Audio & Sound
 
@@ -103,7 +106,7 @@ Implementation status of every major component and feature in **BoyBoy**.
   - [ ] CPU/Memory viewer ⏳
   - [ ] Breakpoints
   - [ ] Step execution ⏳
-  - [ ] Performance profiling ⏳
+  - [x] Performance profiling ✅
 - [ ] Logging ⏳
   - [x] CPU instructions ✅
   - [ ] Interrupts ⏳
