@@ -10,17 +10,25 @@ on:
       - main
       - "release/*"
     types: [opened, reopened, synchronize, review_requested, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      preset:
+        description: "CMake preset to use"
+        required: false
+        default: "release"
 
 jobs:
   build-and-test:
-    name: Build & Test (${{ matrix.preset }})
+    name: Build and Test
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
         preset: [release]
+    env:
+      PRESET: ${{ github.event.inputs.preset || matrix.preset }}
 
     steps:
       - name: Workflow info
@@ -29,31 +37,27 @@ jobs:
           echo "Commit SHA: $GITHUB_SHA"
           echo "Actor: $GITHUB_ACTOR"
           echo "Event name: $GITHUB_EVENT_NAME"
+          echo "Using preset: $PRESET"
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Install dependencies (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ninja-build cmake libsdl2-dev libopengl-dev
-
-      - name: Cache CMake
-        uses: actions/cache@v4
+      - name: Cache APT packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          path: |
-            ~/.cache/CMake
-            build/
-          key: ${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.preset }}-
+          packages: ninja-build cmake ccache libsdl2-dev libopengl-dev
+          version: 1.0
 
-      - name: Configure CMake
-        run: cmake --preset ${{ matrix.preset }}
+      - name: Setup Ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.os }}-${{ env.PRESET }}
+
+      - name: Configure CMake with Ccache
+        run: cmake --preset ${{ env.PRESET }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache
 
       - name: Build project
-        run: cmake --build --preset ${{ matrix.preset }}
+        run: cmake --build --preset ${{ env.PRESET }}
 
       - name: Run tests
-        run: ctest --preset ${{ matrix.preset }}
+        run: ctest --preset ${{ env.PRESET }}
