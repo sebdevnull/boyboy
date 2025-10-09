@@ -18,8 +18,8 @@
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
-using boyboy::cpu::Opcode;
-using boyboy::cpu::Reg16Name;
+using boyboy::core::cpu::Opcode;
+using boyboy::core::cpu::Reg16Name;
 
 using boyboy::test::cpu::InstrParam;
 using boyboy::test::cpu::InstrTest;

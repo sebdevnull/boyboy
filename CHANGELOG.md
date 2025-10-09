@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Changed
+
+- Reorganize codebase moving core components under `boyboy/core/` directory.
+- Improve helper scripts `format.py` and `generate_opcodes.py`.
+
 ---
 
 ## [0.4.0] - 2025-10-07

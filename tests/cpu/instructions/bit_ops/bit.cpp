@@ -16,8 +16,8 @@
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
-using boyboy::cpu::CBOpcode;
-using boyboy::cpu::Reg16Name;
+using boyboy::core::cpu::CBOpcode;
+using boyboy::core::cpu::Reg16Name;
 
 using boyboy::test::cpu::InstrParam;
 using boyboy::test::cpu::InstrTest;
@@ -44,8 +44,8 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                          ::testing::Values(
                              InstrParam{
                                  .opcode         = CBOpcode::BIT_0_A,
-                                 .src            = boyboy::cpu::Reg8Name::A,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .src            = boyboy::core::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00000000},
                                  .expect_z       = true,
@@ -54,8 +54,8 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::BIT_1_B,
-                                 .src            = boyboy::cpu::Reg8Name::B,
-                                 .dst            = boyboy::cpu::Reg8Name::B,
+                                 .src            = boyboy::core::cpu::Reg8Name::B,
+                                 .dst            = boyboy::core::cpu::Reg8Name::B,
                                  .src_value      = uint8_t{0b00000010},
                                  .expected_value = uint8_t{0b00000010},
                                  .expect_z       = false,
@@ -64,8 +64,8 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::BIT_2_C,
-                                 .src            = boyboy::cpu::Reg8Name::C,
-                                 .dst            = boyboy::cpu::Reg8Name::C,
+                                 .src            = boyboy::core::cpu::Reg8Name::C,
+                                 .dst            = boyboy::core::cpu::Reg8Name::C,
                                  .src_value      = uint8_t{0b00000100},
                                  .expected_value = uint8_t{0b00000100},
                                  .expect_z       = false,
@@ -74,8 +74,8 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::BIT_3_D,
-                                 .src            = boyboy::cpu::Reg8Name::D,
-                                 .dst            = boyboy::cpu::Reg8Name::D,
+                                 .src            = boyboy::core::cpu::Reg8Name::D,
+                                 .dst            = boyboy::core::cpu::Reg8Name::D,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00000000},
                                  .expect_z       = true,
@@ -84,8 +84,8 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::BIT_4_E,
-                                 .src            = boyboy::cpu::Reg8Name::E,
-                                 .dst            = boyboy::cpu::Reg8Name::E,
+                                 .src            = boyboy::core::cpu::Reg8Name::E,
+                                 .dst            = boyboy::core::cpu::Reg8Name::E,
                                  .src_value      = uint8_t{0b00010000},
                                  .expected_value = uint8_t{0b00010000},
                                  .expect_z       = false,
@@ -94,8 +94,8 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::BIT_5_H,
-                                 .src            = boyboy::cpu::Reg8Name::H,
-                                 .dst            = boyboy::cpu::Reg8Name::H,
+                                 .src            = boyboy::core::cpu::Reg8Name::H,
+                                 .dst            = boyboy::core::cpu::Reg8Name::H,
                                  .src_value      = uint8_t{0b00100000},
                                  .expected_value = uint8_t{0b00100000},
                                  .expect_z       = false,
@@ -104,8 +104,8 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::BIT_6_L,
-                                 .src            = boyboy::cpu::Reg8Name::L,
-                                 .dst            = boyboy::cpu::Reg8Name::L,
+                                 .src            = boyboy::core::cpu::Reg8Name::L,
+                                 .dst            = boyboy::core::cpu::Reg8Name::L,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00000000},
                                  .expect_z       = true,
@@ -114,8 +114,8 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::BIT_7_A,
-                                 .src            = boyboy::cpu::Reg8Name::A,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .src            = boyboy::core::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .src_value      = uint8_t{0b10000000},
                                  .expected_value = uint8_t{0b10000000},
                                  .expect_z       = false,

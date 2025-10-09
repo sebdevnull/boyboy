@@ -8,15 +8,15 @@
 #include <gtest/gtest.h>
 
 // boyboy
-#include "boyboy/cpu/cpu.h"
-#include "boyboy/cpu/registers.h"
+#include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/registers.h"
 
 // Helpers
 #include "helpers/cpu_fixtures.h"
 
-using boyboy::cpu::Flag;
-using boyboy::cpu::Reg16Name;
-using boyboy::cpu::Reg8Name;
+using boyboy::core::cpu::Flag;
+using boyboy::core::cpu::Reg16Name;
+using boyboy::core::cpu::Reg8Name;
 
 using boyboy::test::cpu::CpuTest;
 

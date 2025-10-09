@@ -7,13 +7,13 @@
 
 #include <gtest/gtest.h>
 
-#include "boyboy/mmu/mmu.h"
-#include "boyboy/ppu/ppu.h"
-#include "boyboy/ppu/registers.h"
+#include "boyboy/core/mmu/mmu.h"
+#include "boyboy/core/ppu/ppu.h"
+#include "boyboy/core/ppu/registers.h"
 
-using namespace boyboy::ppu;
-using boyboy::io::IoReg;
-using boyboy::mmu::Mmu;
+using namespace boyboy::core::ppu;
+using boyboy::core::io::IoReg;
+using boyboy::core::mmu::Mmu;
 
 class PpuTest : public ::testing::Test {
 protected:
@@ -106,7 +106,7 @@ TEST_F(PpuTest, VBlankInterrupt)
     bool vblank_irq_triggered = false;
 
     ppu_.set_interrupt_cb([&](uint8_t interrupt) {
-        if (interrupt == boyboy::cpu::Interrupts::VBlank) {
+        if (interrupt == boyboy::core::cpu::Interrupts::VBlank) {
             vblank_irq_triggered = true;
         }
     });
@@ -132,10 +132,10 @@ TEST_F(PpuTest, StatInterrupts)
     uint16_t stat_irq_count  = 0;
 
     ppu_.set_interrupt_cb([&](uint8_t interrupt) {
-        if (interrupt == boyboy::cpu::Interrupts::VBlank) {
+        if (interrupt == boyboy::core::cpu::Interrupts::VBlank) {
             vblank_irq_count++;
         }
-        else if (interrupt == boyboy::cpu::Interrupts::LCDStat) {
+        else if (interrupt == boyboy::core::cpu::Interrupts::LCDStat) {
             stat_irq_count++;
         }
     });

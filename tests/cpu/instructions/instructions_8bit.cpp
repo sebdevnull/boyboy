@@ -11,7 +11,7 @@
 // #include "helpers/cpu_fixtures.h"
 // #include "helpers/cpu_params.h"
 
-// using namespace boyboy::cpu;
+// using namespace boyboy::core::cpu;
 
 // -----------------------------
 // Test types

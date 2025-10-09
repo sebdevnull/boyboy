@@ -13,16 +13,16 @@
 
 // boyboy
 #include "boyboy/common/errors.h"
-#include "boyboy/cpu/cpu.h"
-#include "boyboy/cpu/opcodes.h"
+#include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/opcodes.h"
 
 // Helpers
 #include "helpers/cpu_fixtures.h"
 
 using boyboy::test::cpu::CpuTest;
 
-using boyboy::cpu::Opcode;
-using boyboy::errors::IllegalOpcode;
+using boyboy::common::errors::IllegalOpcode;
+using boyboy::core::cpu::Opcode;
 
 // -----------------------------
 // Test types

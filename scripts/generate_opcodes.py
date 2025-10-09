@@ -5,13 +5,14 @@ Generate opcode tables and CPU function declarations/implementations from a JSON
 Reads from data/Opcodes.json and writes to src/generated/.
 """
 
+import argparse
 import json
 from pathlib import Path
 from datetime import datetime, timezone
 
 JSON_FILE = Path(__file__).parent.parent / "data/Opcodes.json"
-PRIVATE_OUTPUT_DIR = Path(__file__).parent.parent / "src/boyboy/generated"
-PUBLIC_OUTPUT_DIR = Path(__file__).parent.parent / "include/boyboy/generated"
+PRIVATE_OUTPUT_DIR = Path(__file__).parent.parent / "src/boyboy/core/cpu/generated"
+PUBLIC_OUTPUT_DIR = Path(__file__).parent.parent / "include/boyboy/core/cpu/generated"
 PRIVATE_OUTPUT_DIR.mkdir(exist_ok=True)
 PUBLIC_OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -133,6 +134,7 @@ def write_table(opcodes, path, description="Opcode Table"):
                 f'.cycles = {cycles},{" " * (2 - len(str(cycles)) + 1)}'
                 f".execute = &Cpu::{func_name}}};\n"
             )
+    print(f"[INFO] Wrote opcode table to {path}")
 
 
 def write_cpu_decls(opcodes, path, description="CPU Function Declarations"):
@@ -142,6 +144,7 @@ def write_cpu_decls(opcodes, path, description="CPU Function Declarations"):
         for code, info in sorted(opcodes.items(), key=lambda x: int(x[0], 16)):
             func_name = get_func_name(info["mnemonic"], info.get("operands", []))
             f.write(f"    void {func_name}();\n")
+    print(f"[INFO] Wrote CPU function declarations to {path}")
 
 
 def write_cpu_impls(opcodes, path, description="CPU Function Implementations"):
@@ -167,10 +170,11 @@ def write_cpu_impls(opcodes, path, description="CPU Function Implementations"):
             f.write(f"#ifndef {macro_name}\n")
             f.write(f"void boyboy::cpu::Cpu::{func_name}() {{\n")
             f.write(
-                f'    throw boyboy::errors::UnimplementedOpcode(0x{opcode_int:02X}, "{mnemonic}");\n'
+                f'    throw boyboy::common::errors::UnimplementedOpcode(0x{opcode_int:02X}, "{mnemonic}");\n'
             )
             f.write("}\n")
             f.write(f"#endif // {macro_name}\n\n")
+    print(f"[INFO] Wrote CPU function implementations to {path}")
 
 
 def check_duplicates(opcodes, prefix):
@@ -197,11 +201,11 @@ def check_duplicates(opcodes, prefix):
 
 
 # generate enum class Opcode and enum class CBOpcode
-def write_opcode_enums(opcodes, path, cbprefix=False):
+def write_opcode_enums(opcodes, path, cbprefix=False, description="Opcode Enums"):
     """Generate enum class for opcodes."""
     with open(path, "w") as f:
         enum_name = "CBOpcode" if cbprefix else "Opcode"
-        write_file_header(f, "Opcode Enums", JSON_FILE.name)
+        write_file_header(f, description, JSON_FILE.name)
         f.write("#include <cstdint>\n\n")
         f.write("namespace boyboy::cpu {\n\n")
         f.write("// NOLINTBEGIN(readability-identifier-naming)\n\n")
@@ -216,63 +220,82 @@ def write_opcode_enums(opcodes, path, cbprefix=False):
         f.write("};\n\n")
         f.write("// NOLINTEND(readability-identifier-naming)\n\n")
         f.write("} // namespace boyboy::cpu\n")
+    print(f"[INFO] Wrote opcode enums to {path}")
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Generate opcode tables and CPU instruction declarations/implementations from a JSON file."
+    )
+    parser.add_argument("--table", action="store_true", help="Generate opcode tables")
+    parser.add_argument(
+        "--decls", action="store_true", help="Generate CPU instruction declarations"
+    )
+    parser.add_argument(
+        "--impls",
+        action="store_true",
+        help="Generate CPU instruction implementations stubs",
+    )
+    parser.add_argument("--enums", action="store_true", help="Generate opcode enums")
+    parser.add_argument("--all", action="store_true", help="Generate all files")
+    args = parser.parse_args()
+
     with open(JSON_FILE) as f:
         data = json.load(f)
 
     check_duplicates(data["unprefixed"], "unprefixed")
     check_duplicates(data["cbprefixed"], "CB-prefixed")
 
-    # Tables
-    write_table(
-        data["unprefixed"],
-        PRIVATE_OUTPUT_DIR / "opcodes.inc",
-        "Opcode table for InstructionsTable (unprefixed)",
-    )
-    write_table(
-        data["cbprefixed"],
-        PRIVATE_OUTPUT_DIR / "cbopcodes.inc",
-        "Opcode table for InstructionsTable (CB-prefixed)",
-    )
+    if args.table or args.all:
+        write_table(
+            data["unprefixed"],
+            PRIVATE_OUTPUT_DIR / "opcodes.inc",
+            "Opcode table for InstructionsTable (unprefixed)",
+        )
+        write_table(
+            data["cbprefixed"],
+            PRIVATE_OUTPUT_DIR / "cbopcodes.inc",
+            "Opcode table for InstructionsTable (CB-prefixed)",
+        )
 
-    # CPU declarations
-    write_cpu_decls(
-        data["unprefixed"],
-        PUBLIC_OUTPUT_DIR / "cpu_opcodes.inc",
-        "CPU function declarations (unprefixed)",
-    )
-    write_cpu_decls(
-        data["cbprefixed"],
-        PUBLIC_OUTPUT_DIR / "cpu_cbopcodes.inc",
-        "CPU function declarations (CB-prefixed)",
-    )
+    if args.decls or args.all:
+        write_cpu_decls(
+            data["unprefixed"],
+            PUBLIC_OUTPUT_DIR / "cpu_opcodes.inc",
+            "CPU function declarations (unprefixed)",
+        )
+        write_cpu_decls(
+            data["cbprefixed"],
+            PUBLIC_OUTPUT_DIR / "cpu_cbopcodes.inc",
+            "CPU function declarations (CB-prefixed)",
+        )
 
-    # CPU stub implementations
-    write_cpu_impls(
-        data["unprefixed"],
-        PRIVATE_OUTPUT_DIR / "cpu_opcodes_impl.inc",
-        "CPU stub implementations (unprefixed)",
-    )
-    write_cpu_impls(
-        data["cbprefixed"],
-        PRIVATE_OUTPUT_DIR / "cpu_cbopcodes_impl.inc",
-        "CPU stub implementations (CB-prefixed)",
-    )
+    if args.impls or args.all:
+        write_cpu_impls(
+            data["unprefixed"],
+            PRIVATE_OUTPUT_DIR / "cpu_opcodes_impl.inc",
+            "CPU stub implementations (unprefixed)",
+        )
+        write_cpu_impls(
+            data["cbprefixed"],
+            PRIVATE_OUTPUT_DIR / "cpu_cbopcodes_impl.inc",
+            "CPU stub implementations (CB-prefixed)",
+        )
 
-    # Opcode enums
-    # write_opcode_enums(
-    #     data["unprefixed"],
-    #     PUBLIC_OUTPUT_DIR / "opcode_enum.h",
-    #     cbprefix=False,
-    # )
+    if args.enums or args.all:
+        write_opcode_enums(
+            data["unprefixed"],
+            PUBLIC_OUTPUT_DIR / "opcode_enum.h",
+            cbprefix=False,
+            description="Opcode Enums (unprefixed)",
+        )
 
-    # write_opcode_enums(
-    #     data["cbprefixed"],
-    #     PUBLIC_OUTPUT_DIR / "cbopcode_enum.h",
-    #     cbprefix=True,
-    # )
+        write_opcode_enums(
+            data["cbprefixed"],
+            PUBLIC_OUTPUT_DIR / "cbopcode_enum.h",
+            cbprefix=True,
+            description="Opcode Enums (CB-prefixed)",
+        )
 
 
 if __name__ == "__main__":

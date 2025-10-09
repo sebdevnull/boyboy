@@ -7,11 +7,11 @@
 
 #include <gtest/gtest.h>
 
-#include "boyboy/io/io.h"
-#include "boyboy/mmu/mmu.h"
+#include "boyboy/core/io/io.h"
+#include "boyboy/core/mmu/mmu.h"
 
-using boyboy::io::Io;
-using Serial = boyboy::io::IoReg::Serial;
+using boyboy::core::io::Io;
+using Serial = boyboy::core::io::IoReg::Serial;
 
 class SerialIOTest : public ::testing::Test {
 protected:
@@ -38,7 +38,7 @@ TEST_F(SerialIOTest, WritesCharacterToSB)
 TEST(SerialMMUTest, WritesCharacterToSB)
 {
     std::ostringstream buffer;
-    boyboy::mmu::Mmu mmu;
+    boyboy::core::mmu::Mmu mmu;
 
     auto* cout_buf = std::cout.rdbuf(buffer.rdbuf()); // Redirect std::cout to buffer
 

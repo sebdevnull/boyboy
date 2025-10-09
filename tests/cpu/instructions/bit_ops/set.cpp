@@ -14,8 +14,8 @@
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
-using boyboy::cpu::CBOpcode;
-using boyboy::cpu::Reg16Name;
+using boyboy::core::cpu::CBOpcode;
+using boyboy::core::cpu::Reg16Name;
 
 using boyboy::test::cpu::InstrParam;
 using boyboy::test::cpu::InstrTest;
@@ -42,64 +42,64 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                          ::testing::Values(
                              InstrParam{
                                  .opcode         = CBOpcode::SET_0_A,
-                                 .src            = boyboy::cpu::Reg8Name::A,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .src            = boyboy::core::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00000001},
                                  .name           = "SET_0_A_LSBClear",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::SET_1_B,
-                                 .src            = boyboy::cpu::Reg8Name::B,
-                                 .dst            = boyboy::cpu::Reg8Name::B,
+                                 .src            = boyboy::core::cpu::Reg8Name::B,
+                                 .dst            = boyboy::core::cpu::Reg8Name::B,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00000010},
                                  .name           = "SET_1_B_Bit1Clear",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::SET_2_C,
-                                 .src            = boyboy::cpu::Reg8Name::C,
-                                 .dst            = boyboy::cpu::Reg8Name::C,
+                                 .src            = boyboy::core::cpu::Reg8Name::C,
+                                 .dst            = boyboy::core::cpu::Reg8Name::C,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00000100},
                                  .name           = "SET_2_C_Bit2Clear",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::SET_3_D,
-                                 .src            = boyboy::cpu::Reg8Name::D,
-                                 .dst            = boyboy::cpu::Reg8Name::D,
+                                 .src            = boyboy::core::cpu::Reg8Name::D,
+                                 .dst            = boyboy::core::cpu::Reg8Name::D,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00001000},
                                  .name           = "SET_3_D_Bit3Clear",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::SET_4_E,
-                                 .src            = boyboy::cpu::Reg8Name::E,
-                                 .dst            = boyboy::cpu::Reg8Name::E,
+                                 .src            = boyboy::core::cpu::Reg8Name::E,
+                                 .dst            = boyboy::core::cpu::Reg8Name::E,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00010000},
                                  .name           = "SET_4_E_Bit4Clear",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::SET_5_H,
-                                 .src            = boyboy::cpu::Reg8Name::H,
-                                 .dst            = boyboy::cpu::Reg8Name::H,
+                                 .src            = boyboy::core::cpu::Reg8Name::H,
+                                 .dst            = boyboy::core::cpu::Reg8Name::H,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b00100000},
                                  .name           = "SET_5_H_Bit5Clear",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::SET_6_L,
-                                 .src            = boyboy::cpu::Reg8Name::L,
-                                 .dst            = boyboy::cpu::Reg8Name::L,
+                                 .src            = boyboy::core::cpu::Reg8Name::L,
+                                 .dst            = boyboy::core::cpu::Reg8Name::L,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b01000000},
                                  .name           = "SET_6_L_Bit6Clear",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::SET_7_A,
-                                 .src            = boyboy::cpu::Reg8Name::A,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .src            = boyboy::core::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .src_value      = uint8_t{0b00000000},
                                  .expected_value = uint8_t{0b10000000},
                                  .name           = "SET_7_A_MSBClear",

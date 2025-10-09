@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 """
-format.py - Apply clang-format with colorized, minimal diff output
-
-Usage:
-  ./format.py         # format files in-place
-  ./format.py --check # show violations without modifying files
+format.py - Checks and formats C++ source files using clang-format.
 """
 
+import argparse
 import sys
 import subprocess
 import difflib
@@ -108,30 +105,17 @@ def format_file(clang_format, file_path, in_place=False):
         return None, 0, 0
 
 
-def print_usage():
-    print(
-        """Usage:
-  ./format.py              # Format files in-place and show diffs
-  ./format.py -c, --check  # Check formatting without modifying files
-  ./format.py -h, --help   # Show this help message
-"""
-    )
-
-
 # -------------------- Main -------------------- #
 def main():
-    mode = "format"
-    if len(sys.argv) > 1:
-        arg = sys.argv[1]
-        if arg in ("-c", "--check"):
-            mode = "check"
-        elif arg in ("-h", "--help"):
-            print_usage()
-            sys.exit(0)
-        else:
-            print(f"Unknown option: {arg}\n")
-            print_usage()
-            sys.exit(1)
+    parser = argparse.ArgumentParser(description="Checks and formats C++ source files using clang-format.")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "-c", "--check", action="store_true", help="Check for formatting violations without modifying files"
+    )
+    group.add_argument(
+        "-f", "--format", action="store_true", help="Format files in-place"
+    )
+    args = parser.parse_args()
 
     clang_format = find_clang_format()
     files = find_source_files(DIRECTORIES)
@@ -145,7 +129,8 @@ def main():
     total_added = 0
     total_removed = 0
 
-    print(f"{'Checking' if mode=='check' else 'Formatting'} {len(files)} files...")
+    mode = "format" if args.format else "check"
+    print(f"{'Formatting' if mode=='format' else 'Checking'} {len(files)} files...")
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {

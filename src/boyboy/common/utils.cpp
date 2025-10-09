@@ -7,7 +7,7 @@
 
 #include "boyboy/common/utils.h"
 
-namespace boyboy::utils {
+namespace boyboy::common::utils {
 
 /**
  * @brief Returns a printable representation of a character.
@@ -35,7 +35,7 @@ std::string printable_char(char c)
                 return std::string{c};
             }
             else {
-                return utils::PrettyHex{static_cast<uint8_t>(c)}.to_string();
+                return common::utils::PrettyHex{static_cast<uint8_t>(c)}.to_string();
             }
     }
 }
@@ -60,4 +60,4 @@ const char* as_char_ptr(const std::byte* ptr) noexcept
     return reinterpret_cast<const char*>(ptr);
 }
 
-} // namespace boyboy::utils
+} // namespace boyboy::common::utils

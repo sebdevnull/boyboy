@@ -16,10 +16,10 @@
 
 // boyboy
 #include "boyboy/common/utils.h"
-#include "boyboy/cpu/cpu.h"
-#include "boyboy/cpu/registers.h"
-#include "boyboy/mmu/constants.h"
-#include "boyboy/mmu/mmu.h"
+#include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/registers.h"
+#include "boyboy/core/mmu/constants.h"
+#include "boyboy/core/mmu/mmu.h"
 
 // Helpers
 #include "helpers/cpu_asserts.h"
@@ -28,10 +28,10 @@
 namespace boyboy::test::cpu {
 
 struct CpuTest : public ::testing::Test {
-    std::shared_ptr<boyboy::mmu::Mmu> mmu;
-    boyboy::cpu::Cpu cpu;
+    std::shared_ptr<boyboy::core::mmu::Mmu> mmu;
+    boyboy::core::cpu::Cpu cpu;
 
-    CpuTest() : mmu(std::make_shared<boyboy::mmu::Mmu>()), cpu(mmu) {}
+    CpuTest() : mmu(std::make_shared<boyboy::core::mmu::Mmu>()), cpu(mmu) {}
 
     void SetUp() override
     {
@@ -42,41 +42,41 @@ struct CpuTest : public ::testing::Test {
         clear_flags();
 
         // Set PC to a writable area (WRAM) to avoid issues with read-only memory
-        cpu.set_pc(boyboy::mmu::WRAM0Start);
+        cpu.set_pc(boyboy::core::mmu::WRAM0Start);
     }
 
-    void run(boyboy::cpu::Opcode opcode)
+    void run(boyboy::core::cpu::Opcode opcode)
     {
         cpu.fetch(); // simulate opcode fetch
         cpu.execute(opcode);
     }
 
-    void run(boyboy::cpu::CBOpcode opcode)
+    void run(boyboy::core::cpu::CBOpcode opcode)
     {
         cpu.fetch(); // simulate 0xCB prefix fetch
         cpu.fetch(); // simulate opcode fetch
         cpu.execute(opcode);
     }
 
-    void set_next_instruction(boyboy::cpu::Opcode opcode)
+    void set_next_instruction(boyboy::core::cpu::Opcode opcode)
     {
         uint16_t pc = cpu.get_pc();
         cpu.write_byte(pc, static_cast<uint8_t>(opcode));
     }
 
-    void set_next_instruction(boyboy::cpu::CBOpcode opcode)
+    void set_next_instruction(boyboy::core::cpu::CBOpcode opcode)
     {
         uint16_t pc = cpu.get_pc();
-        cpu.write_byte(pc, boyboy::cpu::CBInstructionPrefix);
+        cpu.write_byte(pc, boyboy::core::cpu::CBInstructionPrefix);
         cpu.write_byte(pc + 1, static_cast<uint8_t>(opcode));
     }
 
     void set_flags(bool z, bool n, bool h, bool c)
     {
-        cpu.set_flag(boyboy::cpu::Flag::Zero, z);
-        cpu.set_flag(boyboy::cpu::Flag::Substract, n);
-        cpu.set_flag(boyboy::cpu::Flag::HalfCarry, h);
-        cpu.set_flag(boyboy::cpu::Flag::Carry, c);
+        cpu.set_flag(boyboy::core::cpu::Flag::Zero, z);
+        cpu.set_flag(boyboy::core::cpu::Flag::Substract, n);
+        cpu.set_flag(boyboy::core::cpu::Flag::HalfCarry, h);
+        cpu.set_flag(boyboy::core::cpu::Flag::Carry, c);
     }
 
     void clear_flags() { set_flags(false, false, false, false); }
@@ -120,11 +120,11 @@ private:
     {
         // Set initial A register if provided
         if (param.initial_a) {
-            cpu.set_register(boyboy::cpu::Reg8Name::A, *param.initial_a);
+            cpu.set_register(boyboy::core::cpu::Reg8Name::A, *param.initial_a);
         }
         // Set initial HL if provided
         if (param.initial_hl) {
-            cpu.set_register(boyboy::cpu::Reg16Name::HL, *param.initial_hl);
+            cpu.set_register(boyboy::core::cpu::Reg16Name::HL, *param.initial_hl);
         }
         // Set initial PC if provided
         if (param.initial_pc) {
@@ -135,8 +135,8 @@ private:
             uint16_t sp = *param.initial_sp;
             cpu.set_sp(sp);
             if (param.stack_init) {
-                cpu.write_byte(sp, utils::lsb(*param.stack_init));
-                cpu.write_byte(sp + 1, utils::msb(*param.stack_init));
+                cpu.write_byte(sp, boyboy::common::utils::lsb(*param.stack_init));
+                cpu.write_byte(sp + 1, boyboy::common::utils::msb(*param.stack_init));
             }
         }
 
@@ -189,8 +189,8 @@ private:
                     cpu.write_byte(pc + 1, val);
                 }
                 else if (std::is_same_v<T, uint16_t>) {
-                    cpu.write_byte(pc + 1, boyboy::utils::lsb(val));
-                    cpu.write_byte(pc + 2, boyboy::utils::msb(val));
+                    cpu.write_byte(pc + 1, boyboy::common::utils::lsb(val));
+                    cpu.write_byte(pc + 2, boyboy::common::utils::msb(val));
                 }
             },
             *param.src_value
@@ -217,8 +217,8 @@ private:
         // Set the imm 16-bit address and its value
         uint16_t addr = *param.src_addr;
         uint16_t pc   = cpu.get_pc();
-        cpu.write_byte(pc + 1, boyboy::utils::lsb(addr));
-        cpu.write_byte(pc + 2, boyboy::utils::msb(addr));
+        cpu.write_byte(pc + 1, boyboy::common::utils::lsb(addr));
+        cpu.write_byte(pc + 2, boyboy::common::utils::msb(addr));
 
         // Write value to the memory address
         std::visit(
@@ -228,8 +228,8 @@ private:
                     cpu.write_byte(*param.src_addr, val);
                 }
                 else if constexpr (std::is_same_v<T, uint16_t>) {
-                    cpu.write_byte(*param.src_addr, boyboy::utils::lsb(val));
-                    cpu.write_byte(*param.src_addr + 1, boyboy::utils::msb(val));
+                    cpu.write_byte(*param.src_addr, boyboy::common::utils::lsb(val));
+                    cpu.write_byte(*param.src_addr + 1, boyboy::common::utils::msb(val));
                 }
             },
             *param.src_value
@@ -241,7 +241,7 @@ private:
         if (!param.src_addr) {
             throw std::runtime_error("HighRAM address must be specified");
         }
-        uint8_t addr_lsb = boyboy::utils::lsb(*param.src_addr);
+        uint8_t addr_lsb = boyboy::common::utils::lsb(*param.src_addr);
         if (param.src && param.src->is_r8()) {
             cpu.set_register(param.src->get_r8(), addr_lsb);
         }
@@ -265,12 +265,12 @@ private:
                 case OperandType::Memory: {
                     // Set the imm 16-bit dst address
                     uint16_t addr = *param.dst_addr;
-                    cpu.write_byte(cpu.get_pc() + 1, boyboy::utils::lsb(addr));
-                    cpu.write_byte(cpu.get_pc() + 2, boyboy::utils::msb(addr));
+                    cpu.write_byte(cpu.get_pc() + 1, boyboy::common::utils::lsb(addr));
+                    cpu.write_byte(cpu.get_pc() + 2, boyboy::common::utils::msb(addr));
                     break;
                 }
                 case OperandType::HighRAM: {
-                    uint8_t addr_lsb = boyboy::utils::lsb(*param.dst_addr);
+                    uint8_t addr_lsb = boyboy::common::utils::lsb(*param.dst_addr);
                     if (param.dst) {
                         cpu.set_register(param.dst->get_r8(), addr_lsb);
                     }
