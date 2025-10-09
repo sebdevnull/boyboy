@@ -12,9 +12,9 @@
 #include <string_view>
 #include <vector>
 
-#include "boyboy/cart/mbc.h"
+#include "boyboy/core/cartridge/mbc.h"
 
-namespace boyboy::cart {
+namespace boyboy::core::cartridge {
 
 enum class CartridgeType : uint8_t {
     ROMOnly = 0x00,
@@ -157,4 +157,4 @@ private:
     uint16_t validate_rom_checksum();
 };
 
-} // namespace boyboy::cart
+} // namespace boyboy::core::cartridge

@@ -30,15 +30,15 @@
 #include <optional>
 #include <span>
 
-#include "boyboy/io/io.h"
-#include "boyboy/mmu/constants.h"
+#include "boyboy/core/io/io.h"
+#include "boyboy/core/mmu/constants.h"
 
 // Forward declaration
-namespace boyboy::cart {
+namespace boyboy::core::cartridge {
 class Cartridge;
 }
 
-namespace boyboy::mmu {
+namespace boyboy::core::mmu {
 
 class Mmu {
 public:
@@ -51,7 +51,7 @@ public:
     void reset();
 
     // Maps ROM memory into own memory map
-    void map_rom(cart::Cartridge& cart);
+    void map_rom(cartridge::Cartridge& cart);
 
     // Memory access
     [[nodiscard]] uint8_t read_byte(uint16_t addr) const;
@@ -179,4 +179,4 @@ private:
     [[nodiscard]] uint8_t io_read(uint16_t addr) const;
 };
 
-} // namespace boyboy::mmu
+} // namespace boyboy::core::mmu

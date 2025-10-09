@@ -35,11 +35,11 @@
 #include <vector>
 
 // Forward declaration
-namespace boyboy::cart {
+namespace boyboy::core::cartridge {
 class Cartridge;
 }
 
-namespace boyboy::cart::mbc {
+namespace boyboy::core::cartridge::mbc {
 
 // MBC types
 enum class MbcType : uint8_t {
@@ -120,4 +120,4 @@ private:
     }
 };
 
-} // namespace boyboy::cart::mbc
+} // namespace boyboy::core::cartridge::mbc

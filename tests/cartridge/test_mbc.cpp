@@ -11,20 +11,20 @@
 #include "helpers/rom_fixtures.h"
 
 // boyboy
-#include "boyboy/cart/cartridge.h"
-#include "boyboy/cart/mbc.h"
-#include "boyboy/mmu/constants.h"
+#include "boyboy/core/cartridge/cartridge.h"
+#include "boyboy/core/cartridge/mbc.h"
+#include "boyboy/core/mmu/constants.h"
 
 using boyboy::test::common::param_name;
 using boyboy::test::rom::MBCParam;
 using boyboy::test::rom::MBCParamTest;
 
-using boyboy::cart::CartridgeType;
-using boyboy::cart::mbc::Mbc;
-using boyboy::cart::mbc::MbcType;
-using boyboy::mmu::ERAMStart;
-using boyboy::mmu::ROMBank1Start;
-using boyboy::utils::PrettyHex;
+using boyboy::core::cartridge::CartridgeType;
+using boyboy::core::cartridge::mbc::Mbc;
+using boyboy::core::cartridge::mbc::MbcType;
+using boyboy::core::mmu::ERAMStart;
+using boyboy::core::mmu::ROMBank1Start;
+using boyboy::common::utils::PrettyHex;
 
 TEST_P(MBCParamTest, InitialState)
 {

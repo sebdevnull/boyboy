@@ -5,9 +5,9 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/cpu/instructions_table.h"
+#include "boyboy/core/cpu/instructions_table.h"
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
 const std::array<Instruction, 256> InstructionTable::Opcodes = []() {
     std::array<Instruction, 256> table{};
@@ -29,4 +29,4 @@ const std::array<Instruction, 256> InstructionTable::CBOpcodes = []() {
 }();
 static_assert(InstructionTable::CBOpcodes.size() == 256, "CB Opcodes table must have 256 entries");
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

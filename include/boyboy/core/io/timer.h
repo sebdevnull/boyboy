@@ -10,9 +10,9 @@
 #include <array>
 #include <cstdint>
 
-#include "boyboy/io/iocomponent.h"
+#include "boyboy/core/io/iocomponent.h"
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 class Timer : public IoComponent {
 public:
@@ -77,4 +77,4 @@ private:
     bool stopped_{false};
 };
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

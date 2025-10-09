@@ -10,7 +10,7 @@
 //       cartridge type and GB HW version (DMG/CGB). Check "The Cycle-Accurate Game Boy Docs"
 // TODO: read/write word and copy are only used in tests. Consider removing them.
 
-#include "boyboy/mmu/mmu.h"
+#include "boyboy/core/mmu/mmu.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -20,13 +20,15 @@
 #include <stdexcept>
 #include <string>
 
-#include "boyboy/cart/cartridge.h"
+#include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/common/utils.h"
-#include "boyboy/log/logging.h"
-#include "boyboy/mmu/constants.h"
-#include "boyboy/profiling/profiler_utils.h"
+#include "boyboy/common/log/logging.h"
+#include "boyboy/core/mmu/constants.h"
+#include "boyboy/core/profiling/profiler_utils.h"
 
-namespace boyboy::mmu {
+namespace boyboy::core::mmu {
+
+using namespace boyboy::common;
 
 void Mmu::reset()
 {
@@ -42,7 +44,7 @@ void Mmu::reset()
     init_memory_map();
 }
 
-void Mmu::map_rom(cart::Cartridge& cart)
+void Mmu::map_rom(cartridge::Cartridge& cart)
 {
     auto& rom_bank0 = map(MemoryRegionID::ROMBank0);
     auto& rom_bank1 = map(MemoryRegionID::ROMBank1);
@@ -89,9 +91,9 @@ uint8_t Mmu::read_byte(uint16_t addr) const
 
         log::debug(
             "Read from mirrored region at {}: [{}] (mirrored to {})",
-            utils::PrettyHex(addr).to_string(),
-            utils::PrettyHex(mirror.data[addr - region.start]).to_string(),
-            utils::PrettyHex(mirror_addr).to_string()
+            common::utils::PrettyHex(addr).to_string(),
+            common::utils::PrettyHex(mirror.data[addr - region.start]).to_string(),
+            common::utils::PrettyHex(mirror_addr).to_string()
         );
 
         uint8_t result = read_byte(mirror_addr);
@@ -126,8 +128,8 @@ uint16_t Mmu::read_word(uint16_t addr) const
 
         log::debug(
             "Read from mirrored region at {} (mirrored to {})",
-            utils::PrettyHex(addr).to_string(),
-            utils::PrettyHex(mirror_addr).to_string()
+            common::utils::PrettyHex(addr).to_string(),
+            common::utils::PrettyHex(mirror_addr).to_string()
         );
 
         return read_word(mirror_addr);
@@ -139,7 +141,7 @@ uint16_t Mmu::read_word(uint16_t addr) const
 
     uint16_t local_addr = addr - region.start;
 
-    return utils::to_u16(region.data[local_addr + 1], region.data[local_addr]);
+    return common::utils::to_u16(region.data[local_addr + 1], region.data[local_addr]);
 }
 
 void Mmu::write_byte(uint16_t addr, uint8_t value)
@@ -149,7 +151,7 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
     if (dma_.active && addr >= OAMStart && addr <= OAMEnd) {
         // Ignore writes to OAM during DMA transfer
         log::warn(
-            "Attempted write to OAM during DMA transfer at {}", utils::PrettyHex(addr).to_string()
+            "Attempted write to OAM during DMA transfer at {}", common::utils::PrettyHex(addr).to_string()
         );
         BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
 
@@ -159,7 +161,7 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
     auto& region = region_lookup(addr);
 
     if (region.read_only) {
-        log::warn("Attempted write to read-only memory at {}", utils::PrettyHex(addr).to_string());
+        log::warn("Attempted write to read-only memory at {}", common::utils::PrettyHex(addr).to_string());
         BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
 
         return;
@@ -176,9 +178,9 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
 
         log::debug(
             "Write to mirrored region at {}: [{}] (mirrored to {})",
-            utils::PrettyHex(addr).to_string(),
-            utils::PrettyHex(value).to_string(),
-            utils::PrettyHex(mirror_addr).to_string()
+            common::utils::PrettyHex(addr).to_string(),
+            common::utils::PrettyHex(value).to_string(),
+            common::utils::PrettyHex(mirror_addr).to_string()
         );
 
         BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
@@ -204,7 +206,7 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
     auto& region = region_lookup(addr);
 
     if (region.read_only) {
-        log::warn("Attempted write to read-only memory at {}", utils::PrettyHex(addr).to_string());
+        log::warn("Attempted write to read-only memory at {}", common::utils::PrettyHex(addr).to_string());
         return;
     }
 
@@ -217,8 +219,8 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
 
         log::debug(
             "Write to mirrored region at {} (mirrored to {})",
-            utils::PrettyHex(addr).to_string(),
-            utils::PrettyHex(mirror_addr).to_string()
+            common::utils::PrettyHex(addr).to_string(),
+            common::utils::PrettyHex(mirror_addr).to_string()
         );
 
         write_word(mirror_addr, value);
@@ -231,8 +233,8 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
     }
 
     uint16_t local_addr = addr - region.start;
-    region.data[local_addr] = utils::lsb(value);
-    region.data[local_addr + 1] = utils::msb(value);
+    region.data[local_addr] = common::utils::lsb(value);
+    region.data[local_addr + 1] = common::utils::msb(value);
 }
 
 void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
@@ -241,7 +243,7 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
 
     if (region.read_only) {
         log::warn(
-            "Attempted copy to read-only memory at {}", utils::PrettyHex(dst_addr).to_string()
+            "Attempted copy to read-only memory at {}", common::utils::PrettyHex(dst_addr).to_string()
         );
         return;
     }
@@ -255,8 +257,8 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
 
         log::debug(
             "Copy to mirrored region at {} (mirrored to {})",
-            utils::PrettyHex(dst_addr).to_string(),
-            utils::PrettyHex(mirror_addr).to_string()
+            common::utils::PrettyHex(dst_addr).to_string(),
+            common::utils::PrettyHex(mirror_addr).to_string()
         );
 
         copy(mirror_addr, src);
@@ -292,7 +294,7 @@ void Mmu::Dma::start(uint8_t value)
     tick_counter = 0;
     cks = 0;
 
-    log::trace("Starting DMA transfer from {}", utils::PrettyHex(src).to_string());
+    log::trace("Starting DMA transfer from {}", common::utils::PrettyHex(src).to_string());
 }
 
 void Mmu::Dma::tick(uint16_t cycles, Mmu& mmu)
@@ -319,7 +321,7 @@ void Mmu::Dma::tick(uint16_t cycles, Mmu& mmu)
 
     if (bytes_remaining == 0) {
         active = false;
-        log::trace("DMA transfer completed, checksum: {}", utils::PrettyHex(cks).to_string());
+        log::trace("DMA transfer completed, checksum: {}", common::utils::PrettyHex(cks).to_string());
     }
 }
 
@@ -364,25 +366,25 @@ void Mmu::dump(uint16_t start_addr, uint16_t end_addr, const std::string& filena
 void Mmu::init_memory_map()
 {
     auto unloaded_rom_read = [](uint16_t addr) -> uint8_t {
-        log::warn("Read from ROM before ROM loaded at {}", utils::PrettyHex(addr).to_string());
+        log::warn("Read from ROM before ROM loaded at {}", common::utils::PrettyHex(addr).to_string());
         return OpenBusValue;
     };
     auto unloaded_rom_write = [](uint16_t addr, uint8_t value) {
         log::warn(
             "Write to ROM before ROM loaded at {}: {}",
-            utils::PrettyHex(addr).to_string(),
-            utils::PrettyHex(value).to_string()
+            common::utils::PrettyHex(addr).to_string(),
+            common::utils::PrettyHex(value).to_string()
         );
     };
     auto unloaded_eram_read = [](uint16_t addr) -> uint8_t {
-        log::warn("Read from ERAM before ROM loaded at {}", utils::PrettyHex(addr).to_string());
+        log::warn("Read from ERAM before ROM loaded at {}", common::utils::PrettyHex(addr).to_string());
         return OpenBusValue;
     };
     auto unloaded_eram_write = [](uint16_t addr, uint8_t value) {
         log::warn(
             "Write to ERAM before ROM loaded at {}: {}",
-            utils::PrettyHex(addr).to_string(),
-            utils::PrettyHex(value).to_string()
+            common::utils::PrettyHex(addr).to_string(),
+            common::utils::PrettyHex(value).to_string()
         );
     };
 
@@ -486,11 +488,11 @@ void Mmu::init_memory_map()
 #ifdef DEBUG
             // In debug mode, throw for easier debugging
             throw std::out_of_range(
-                std::format("Read from unmapped memory at {}", utils::PrettyHex(addr).to_string())
+                std::format("Read from unmapped memory at {}", common::utils::PrettyHex(addr).to_string())
             );
 #else
             // In release mode, log a warning and return open bus value
-            log::warn("Read from unmapped memory at {}", utils::PrettyHex(addr).to_string());
+            log::warn("Read from unmapped memory at {}", common::utils::PrettyHex(addr).to_string());
             return OpenBusValue;
 #endif
         },
@@ -500,15 +502,15 @@ void Mmu::init_memory_map()
                 // In debug mode, throw for easier debugging
                 throw std::out_of_range(std::format(
                     "Write to unmapped memory at {}: {}",
-                    utils::PrettyHex(addr).to_string(),
-                    utils::PrettyHex(value).to_string()
+                    common::utils::PrettyHex(addr).to_string(),
+                    common::utils::PrettyHex(value).to_string()
                 ));
 #else
                 // In release mode, log a warning
                 log::warn(
                     "Write to unmapped memory at {}: {}",
-                    utils::PrettyHex(addr).to_string(),
-                    utils::PrettyHex(value).to_string()
+                    common::utils::PrettyHex(addr).to_string(),
+                    common::utils::PrettyHex(value).to_string()
                 );
 #endif
             },
@@ -550,4 +552,4 @@ void Mmu::io_write(uint16_t addr, uint8_t value)
     return value;
 }
 
-} // namespace boyboy::mmu
+} // namespace boyboy::core::mmu

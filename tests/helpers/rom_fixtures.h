@@ -14,13 +14,13 @@
 #include <memory>
 #include <vector>
 
-#include "boyboy/cart/mbc.h"
+#include "boyboy/core/cartridge/mbc.h"
 #include "helpers/cpu_fixtures.h"
 
 // boyboy
-#include "boyboy/cart/cartridge.h"
-#include "boyboy/cart/cartridge_loader.h"
-#include "boyboy/io/io.h"
+#include "boyboy/core/cartridge/cartridge.h"
+#include "boyboy/core/cartridge/cartridge_loader.h"
+#include "boyboy/core/io/io.h"
 
 namespace boyboy::test::rom {
 
@@ -44,8 +44,8 @@ struct ROMTest : public cpu::CpuTest {
 protected:
     static constexpr int LoopThreshold = 10000; // Arbitrary large number to prevent infinite loops
 
-    boyboy::cart::Cartridge cart;
-    boyboy::io::Io* io;
+    boyboy::core::cartridge::Cartridge cart;
+    boyboy::core::io::Io* io;
 
     SerialTestCapturer serial_capturer;
     std::string serial_output;
@@ -64,7 +64,7 @@ protected:
 };
 
 struct MBCParam {
-    cart::CartridgeType type;
+    core::cartridge::CartridgeType type;
     uint16_t rom_banks;
     uint8_t ram_banks;
     std::string name;
@@ -72,7 +72,7 @@ struct MBCParam {
     // For pretty printing in test names
     friend std::ostream& operator<<(std::ostream& os, const MBCParam& p)
     {
-        os << p.name << " [Type=" << boyboy::cart::to_string(p.type)
+        os << p.name << " [Type=" << boyboy::core::cartridge::to_string(p.type)
            << ", ROM Banks=" << static_cast<int>(p.rom_banks)
            << ", RAM Banks=" << static_cast<int>(p.ram_banks) << "]";
         return os;
@@ -81,12 +81,12 @@ struct MBCParam {
 
 class FakeROMTest : public ::testing::Test {
 protected:
-    static cart::RomData make_fake_rom(
-        cart::CartridgeType type, uint16_t rom_banks, uint8_t ram_banks, std::string title = ""
+    static core::cartridge::RomData make_fake_rom(
+        core::cartridge::CartridgeType type, uint16_t rom_banks, uint8_t ram_banks, std::string title = ""
     );
 
-    cart::RomData rom_data;
-    std::unique_ptr<cart::Cartridge> cart;
+    core::cartridge::RomData rom_data;
+    std::unique_ptr<core::cartridge::Cartridge> cart;
 };
 
 class MBCParamTest : public FakeROMTest, public ::testing::WithParamInterface<MBCParam> {

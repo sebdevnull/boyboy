@@ -9,10 +9,11 @@
 #include <span>
 #include <stdexcept>
 
-#include "boyboy/emulator.h"
-#include "boyboy/log/logging.h"
+#include "boyboy/core/emulator/emulator.h"
+#include "boyboy/common/log/logging.h"
 
-using namespace boyboy;
+using namespace boyboy::common;
+using namespace boyboy::core;
 
 int main(int argc, const char** argv)
 {

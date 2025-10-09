@@ -5,11 +5,11 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/io/timer.h"
+#include "boyboy/core/io/timer.h"
 
-#include "boyboy/io/registers.h"
+#include "boyboy/core/io/registers.h"
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 void Timer::tick(uint16_t cycles)
 {
@@ -106,4 +106,4 @@ void Timer::stop()
     div_counter_ = 0;
 }
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

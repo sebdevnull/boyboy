@@ -10,7 +10,7 @@
 #include <array>
 #include <cstdint>
 
-namespace boyboy::ppu::palettes {
+namespace boyboy::core::ppu::palettes {
 
 using Pixel = uint32_t; // ARGB format
 
@@ -84,4 +84,4 @@ static constexpr std::array<Pixel, 4> Chocolate = {
     0xFF0A2649,
 };
 
-} // namespace boyboy::ppu::palettes
+} // namespace boyboy::core::ppu::palettes

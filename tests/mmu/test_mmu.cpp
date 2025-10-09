@@ -8,11 +8,11 @@
 #include <gtest/gtest.h>
 
 #include "boyboy/common/utils.h"
-#include "boyboy/mmu/constants.h"
-#include "boyboy/mmu/mmu.h"
+#include "boyboy/core/mmu/constants.h"
+#include "boyboy/core/mmu/mmu.h"
 
-using namespace boyboy::mmu;
-using namespace boyboy::utils;
+using namespace boyboy::core::mmu;
+using namespace boyboy::common::utils;
 
 class MmuTest : public ::testing::Test {
 protected:

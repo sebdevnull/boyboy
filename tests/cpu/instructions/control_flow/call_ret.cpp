@@ -17,17 +17,17 @@
 #include <cstdint>
 
 // boyboy
-#include "boyboy/mmu/constants.h"
+#include "boyboy/core/mmu/constants.h"
 
 // Helpers
 #include "helpers/cpu_asserts.h"
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
-using boyboy::cpu::Opcode;
-using boyboy::cpu::Reg16Name;
-using boyboy::mmu::VRAMStart;
-using boyboy::mmu::WRAM0Start;
+using boyboy::core::cpu::Opcode;
+using boyboy::core::cpu::Reg16Name;
+using boyboy::core::mmu::VRAMStart;
+using boyboy::core::mmu::WRAM0Start;
 
 using boyboy::test::cpu::expect_call;
 using boyboy::test::cpu::expect_pop;
@@ -312,7 +312,7 @@ INSTANTIATE_TEST_SUITE_P(
             .expect_c       = true,
             .name           = "RETI",
             .validators     = {expect_pop,
-                               [](const boyboy::cpu::Cpu& cpu, const InstrParam& p) {
+                               [](const boyboy::core::cpu::Cpu& cpu, const InstrParam& p) {
                                EXPECT_TRUE(cpu.get_ime())
                                    << "IME flag not set after RETI: " << p.name;
                            }},

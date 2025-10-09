@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <functional>
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
 struct Interrupts {
     static constexpr uint8_t VBlank = (1 << 0);
@@ -39,4 +39,4 @@ struct InterruptVectors {
 
 using InterruptRequestCallback = std::function<void(uint8_t)>;
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

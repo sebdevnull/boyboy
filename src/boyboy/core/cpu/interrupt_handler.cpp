@@ -5,17 +5,17 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/cpu/interrupt_handler.h"
+#include "boyboy/core/cpu/interrupt_handler.h"
 
 #include <cstdint>
 
-#include "boyboy/cpu/cpu.h"
-#include "boyboy/cpu/interrupts.h"
+#include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/interrupts.h"
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
-constexpr auto IF = boyboy::io::IoReg::Interrupts::IF;
-constexpr auto IE = boyboy::io::IoReg::Interrupts::IE;
+constexpr auto IF = boyboy::core::io::IoReg::Interrupts::IF;
+constexpr auto IE = boyboy::core::io::IoReg::Interrupts::IE;
 
 void InterruptHandler::service()
 {
@@ -112,4 +112,4 @@ void InterruptHandler::set_if(uint8_t value)
     cpu_.write_byte(IF, value);
 }
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

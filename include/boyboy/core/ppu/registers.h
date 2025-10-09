@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-namespace boyboy::ppu::registers {
+namespace boyboy::core::ppu::registers {
 
 // LCD Control (LCDC) Register (R/W) - 0xFF40
 struct LCDC {
@@ -46,4 +46,4 @@ struct STAT {
     enum class PPUMode : uint8_t { HBlank = 0b00, VBlank = 0b01, OAMRead = 0b10, VRAMRead = 0b11 };
 };
 
-} // namespace boyboy::ppu::registers
+} // namespace boyboy::core::ppu::registers

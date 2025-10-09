@@ -9,15 +9,15 @@
 
 #include <cstdint>
 
-#include "boyboy/io/buttons.h"
-#include "boyboy/io/joypad.h"
-#include "boyboy/io/registers.h"
+#include "boyboy/core/io/buttons.h"
+#include "boyboy/core/io/joypad.h"
+#include "boyboy/core/io/registers.h"
 
-using boyboy::io::Button;
-using boyboy::io::ButtonMask;
-using boyboy::io::IoReg;
-using boyboy::io::Joypad;
-using boyboy::io::to_string;
+using boyboy::core::io::Button;
+using boyboy::core::io::ButtonMask;
+using boyboy::core::io::IoReg;
+using boyboy::core::io::Joypad;
+using boyboy::core::io::to_string;
 
 class IoJoypadTest : public ::testing::Test {
 protected:

@@ -14,8 +14,8 @@
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
-using boyboy::cpu::CBOpcode;
-using boyboy::cpu::Reg16Name;
+using boyboy::core::cpu::CBOpcode;
+using boyboy::core::cpu::Reg16Name;
 
 using boyboy::test::cpu::InstrParam;
 using boyboy::test::cpu::InstrTest;
@@ -42,64 +42,64 @@ INSTANTIATE_TEST_SUITE_P(CBBitInstructions,
                          ::testing::Values(
                              InstrParam{
                                  .opcode         = CBOpcode::RES_0_A,
-                                 .src            = boyboy::cpu::Reg8Name::A,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .src            = boyboy::core::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .src_value      = uint8_t{0b00000001},
                                  .expected_value = uint8_t{0b00000000},
                                  .name           = "RES_0_A_LSBSet",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::RES_1_B,
-                                 .src            = boyboy::cpu::Reg8Name::B,
-                                 .dst            = boyboy::cpu::Reg8Name::B,
+                                 .src            = boyboy::core::cpu::Reg8Name::B,
+                                 .dst            = boyboy::core::cpu::Reg8Name::B,
                                  .src_value      = uint8_t{0b00000010},
                                  .expected_value = uint8_t{0b00000000},
                                  .name           = "RES_1_B_Bit1Set",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::RES_2_C,
-                                 .src            = boyboy::cpu::Reg8Name::C,
-                                 .dst            = boyboy::cpu::Reg8Name::C,
+                                 .src            = boyboy::core::cpu::Reg8Name::C,
+                                 .dst            = boyboy::core::cpu::Reg8Name::C,
                                  .src_value      = uint8_t{0b00000100},
                                  .expected_value = uint8_t{0b00000000},
                                  .name           = "RES_2_C_Bit2Set",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::RES_3_D,
-                                 .src            = boyboy::cpu::Reg8Name::D,
-                                 .dst            = boyboy::cpu::Reg8Name::D,
+                                 .src            = boyboy::core::cpu::Reg8Name::D,
+                                 .dst            = boyboy::core::cpu::Reg8Name::D,
                                  .src_value      = uint8_t{0b00001000},
                                  .expected_value = uint8_t{0b00000000},
                                  .name           = "RES_3_D_Bit3Set",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::RES_4_E,
-                                 .src            = boyboy::cpu::Reg8Name::E,
-                                 .dst            = boyboy::cpu::Reg8Name::E,
+                                 .src            = boyboy::core::cpu::Reg8Name::E,
+                                 .dst            = boyboy::core::cpu::Reg8Name::E,
                                  .src_value      = uint8_t{0b00010000},
                                  .expected_value = uint8_t{0b00000000},
                                  .name           = "RES_4_E_Bit4Set",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::RES_5_H,
-                                 .src            = boyboy::cpu::Reg8Name::H,
-                                 .dst            = boyboy::cpu::Reg8Name::H,
+                                 .src            = boyboy::core::cpu::Reg8Name::H,
+                                 .dst            = boyboy::core::cpu::Reg8Name::H,
                                  .src_value      = uint8_t{0b00100000},
                                  .expected_value = uint8_t{0b00000000},
                                  .name           = "RES_5_H_Bit5Set",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::RES_6_L,
-                                 .src            = boyboy::cpu::Reg8Name::L,
-                                 .dst            = boyboy::cpu::Reg8Name::L,
+                                 .src            = boyboy::core::cpu::Reg8Name::L,
+                                 .dst            = boyboy::core::cpu::Reg8Name::L,
                                  .src_value      = uint8_t{0b01000000},
                                  .expected_value = uint8_t{0b00000000},
                                  .name           = "RES_6_L_Bit6Set",
                              },
                              InstrParam{
                                  .opcode         = CBOpcode::RES_7_A,
-                                 .src            = boyboy::cpu::Reg8Name::A,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .src            = boyboy::core::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .src_value      = uint8_t{0b10000000},
                                  .expected_value = uint8_t{0b00000000},
                                  .name           = "RES_7_A_MSBSet",

@@ -13,7 +13,7 @@
 
 #include "boyboy/common/utils.h"
 
-namespace boyboy::errors {
+namespace boyboy::common::errors {
 
 class CpuException : public std::runtime_error {
 public:
@@ -34,7 +34,7 @@ private:
     static std::string make_message(uint8_t opcode, const std::string& mnemonic)
     {
         return std::format(
-            "Opcode {} ({}) not implemented", utils::PrettyHex{opcode}.to_string(), mnemonic
+            "Opcode {} ({}) not implemented", common::utils::PrettyHex{opcode}.to_string(), mnemonic
         );
     }
 };
@@ -47,7 +47,7 @@ public:
 private:
     static std::string make_message(uint8_t opcode)
     {
-        return std::format("Illegal Opcode {} encountered", utils::PrettyHex{opcode}.to_string());
+        return std::format("Illegal Opcode {} encountered", common::utils::PrettyHex{opcode}.to_string());
     }
 };
 
@@ -70,10 +70,10 @@ private:
         return std::format(
             "Checksum error in {}: expected {}, got {}",
             where,
-            utils::PrettyHex{expected}.to_string(),
-            utils::PrettyHex{actual}.to_string()
+            common::utils::PrettyHex{expected}.to_string(),
+            common::utils::PrettyHex{actual}.to_string()
         );
     }
 };
 
-} // namespace boyboy::errors
+} // namespace boyboy::common::errors

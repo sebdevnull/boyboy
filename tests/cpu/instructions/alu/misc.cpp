@@ -16,7 +16,7 @@
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
-using boyboy::cpu::Opcode;
+using boyboy::core::cpu::Opcode;
 
 using boyboy::test::cpu::FlagsParam;
 using boyboy::test::cpu::InstrParam;
@@ -37,26 +37,26 @@ TEST_P(DAATest, Works) { run_test(); }
 
 TEST_F(CPLTest, Works)
 {
-    cpu.set_register(boyboy::cpu::Reg8Name::A, 0xAA);
+    cpu.set_register(boyboy::core::cpu::Reg8Name::A, 0xAA);
     CpuTest::set_flags(false, false, false, false);
 
     run(Opcode::CPL);
-    EXPECT_EQ(cpu.get_register(boyboy::cpu::Reg8Name::A), 0x55)
+    EXPECT_EQ(cpu.get_register(boyboy::core::cpu::Reg8Name::A), 0x55)
         << "A register not complemented after CPL";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Zero)) << "Z flag changed after CPL";
-    EXPECT_TRUE(cpu.get_flag(boyboy::cpu::Flag::Substract)) << "N flag not set after CPL";
-    EXPECT_TRUE(cpu.get_flag(boyboy::cpu::Flag::HalfCarry)) << "H flag not set after CPL";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Carry)) << "C flag changed after CPL";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CPL";
+    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag not set after CPL";
+    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag not set after CPL";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag changed after CPL";
 
     CpuTest::set_flags(false, false, false, false);
 
     run(Opcode::CPL);
-    EXPECT_EQ(cpu.get_register(boyboy::cpu::Reg8Name::A), 0xAA)
+    EXPECT_EQ(cpu.get_register(boyboy::core::cpu::Reg8Name::A), 0xAA)
         << "A register not complemented after CPL";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Zero)) << "Z flag changed after CPL";
-    EXPECT_TRUE(cpu.get_flag(boyboy::cpu::Flag::Substract)) << "N flag not set after CPL";
-    EXPECT_TRUE(cpu.get_flag(boyboy::cpu::Flag::HalfCarry)) << "H flag not set after CPL";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Carry)) << "C flag changed after CPL";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CPL";
+    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag not set after CPL";
+    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag not set after CPL";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag changed after CPL";
 }
 
 TEST_F(CCFTest, Works)
@@ -64,16 +64,16 @@ TEST_F(CCFTest, Works)
     CpuTest::set_flags(false, false, false, false);
 
     run(Opcode::CCF);
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Zero)) << "Z flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Substract)) << "N flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::HalfCarry)) << "H flag changed after CCF";
-    EXPECT_TRUE(cpu.get_flag(boyboy::cpu::Flag::Carry)) << "C flag not set after CCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after CCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after CCF";
+    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after CCF";
 
     run(Opcode::CCF);
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Zero)) << "Z flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Substract)) << "N flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::HalfCarry)) << "H flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Carry)) << "C flag not reset after CCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after CCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after CCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not reset after CCF";
 }
 
 TEST_F(SCFTest, Works)
@@ -81,16 +81,16 @@ TEST_F(SCFTest, Works)
     CpuTest::set_flags(false, false, false, false);
 
     run(Opcode::SCF);
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Zero)) << "Z flag changed after SCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Substract)) << "N flag changed after SCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::HalfCarry)) << "H flag changed after SCF";
-    EXPECT_TRUE(cpu.get_flag(boyboy::cpu::Flag::Carry)) << "C flag not set after SCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after SCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after SCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after SCF";
+    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after SCF";
 
     run(Opcode::SCF);
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Zero)) << "Z flag changed after SCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::Substract)) << "N flag changed after SCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::cpu::Flag::HalfCarry)) << "H flag changed after SCF";
-    EXPECT_TRUE(cpu.get_flag(boyboy::cpu::Flag::Carry)) << "C flag not set after SCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after SCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after SCF";
+    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after SCF";
+    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after SCF";
 }
 
 // -----------------------------
@@ -102,7 +102,7 @@ INSTANTIATE_TEST_SUITE_P(DaaInstruction,
                          ::testing::Values(
                              InstrParam{
                                  .opcode         = Opcode::DAA,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .initial_a      = uint8_t{0x45},
                                  .initial_flags  = FlagsParam{.n = false, .h = false, .c = false},
                                  .expected_value = uint8_t{0x45},
@@ -113,7 +113,7 @@ INSTANTIATE_TEST_SUITE_P(DaaInstruction,
                              },
                              InstrParam{
                                  .opcode         = Opcode::DAA,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .initial_a      = uint8_t{0x9A},
                                  .initial_flags  = FlagsParam{.n = false, .h = false, .c = false},
                                  .expected_value = uint8_t{0x00},
@@ -124,7 +124,7 @@ INSTANTIATE_TEST_SUITE_P(DaaInstruction,
                              },
                              InstrParam{
                                  .opcode         = Opcode::DAA,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .initial_a      = uint8_t{0x15},
                                  .initial_flags  = FlagsParam{.n = false, .h = true, .c = false},
                                  .expected_value = uint8_t{0x1B},
@@ -135,7 +135,7 @@ INSTANTIATE_TEST_SUITE_P(DaaInstruction,
                              },
                              InstrParam{
                                  .opcode         = Opcode::DAA,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .initial_a      = uint8_t{0x9A},
                                  .initial_flags  = FlagsParam{.n = false, .h = true, .c = false},
                                  .expected_value = uint8_t{0x00},
@@ -146,7 +146,7 @@ INSTANTIATE_TEST_SUITE_P(DaaInstruction,
                              },
                              InstrParam{
                                  .opcode         = Opcode::DAA,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .initial_a      = uint8_t{0x45},
                                  .initial_flags  = FlagsParam{.n = true, .h = false, .c = false},
                                  .expected_value = uint8_t{0x45},
@@ -158,7 +158,7 @@ INSTANTIATE_TEST_SUITE_P(DaaInstruction,
                              },
                              InstrParam{
                                  .opcode         = Opcode::DAA,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .initial_a      = uint8_t{0x15},
                                  .initial_flags  = FlagsParam{.n = true, .h = true, .c = false},
                                  .expected_value = uint8_t{0x0F},
@@ -170,7 +170,7 @@ INSTANTIATE_TEST_SUITE_P(DaaInstruction,
                              },
                              InstrParam{
                                  .opcode         = Opcode::DAA,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .initial_a      = uint8_t{0x45},
                                  .initial_flags  = FlagsParam{.n = true, .h = false, .c = true},
                                  .expected_value = uint8_t{0xE5},
@@ -182,7 +182,7 @@ INSTANTIATE_TEST_SUITE_P(DaaInstruction,
                              },
                              InstrParam{
                                  .opcode         = Opcode::DAA,
-                                 .dst            = boyboy::cpu::Reg8Name::A,
+                                 .dst            = boyboy::core::cpu::Reg8Name::A,
                                  .initial_a      = uint8_t{0x15},
                                  .initial_flags  = FlagsParam{.n = true, .h = true, .c = true},
                                  .expected_value = uint8_t{0xAF},

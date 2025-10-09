@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
 // NOLINTBEGIN(readability-identifier-naming)
 // clang-format off
@@ -533,4 +533,4 @@ enum class CBOpcode : uint8_t {
 // clang-format on
 // NOLINTEND(readability-identifier-naming)
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

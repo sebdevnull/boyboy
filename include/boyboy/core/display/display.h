@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "boyboy/ppu/ppu.h"
+#include "boyboy/core/ppu/ppu.h"
 
 // Forward declarations for SDL and OpenGL types
 class SDL_Window;
@@ -18,11 +18,11 @@ using GLuint = unsigned int;
 union SDL_Event;
 
 // Forward declaration for Button enum
-namespace boyboy::io {
+namespace boyboy::core::io {
 enum class Button : uint8_t;
 }
 
-namespace boyboy::display {
+namespace boyboy::core::display {
 
 static constexpr int DefaultScale = 4;
 
@@ -58,4 +58,4 @@ private:
     void init_opengl();
 };
 
-} // namespace boyboy::display
+} // namespace boyboy::core::display

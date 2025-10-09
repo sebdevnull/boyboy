@@ -9,9 +9,9 @@
 
 #include <cstdint>
 
-#include "boyboy/cpu/interrupts.h"
+#include "boyboy/core/cpu/interrupts.h"
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 class IoComponent {
 public:
@@ -40,4 +40,4 @@ protected:
     IoComponent() = default;
 };
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

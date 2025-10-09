@@ -9,12 +9,12 @@
 
 #include <cstdint>
 
-namespace boyboy::mmu {
+namespace boyboy::core::mmu {
 // Forward declaration
 class Mmu;
-} // namespace boyboy::mmu
+} // namespace boyboy::core::mmu
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
 // Forward declaration
 class Cpu;
@@ -49,4 +49,4 @@ private:
     void set_if(uint8_t value);
 };
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

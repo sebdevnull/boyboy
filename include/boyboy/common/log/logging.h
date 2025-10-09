@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-namespace boyboy::log {
+namespace boyboy::common::log {
 
 inline void init(const std::string& log_file = "logs/boyboy.log", bool async = true)
 {
@@ -154,4 +154,4 @@ inline void cpu_trace(const char* fmt, Args&&... args)
 #endif
 }
 
-} // namespace boyboy::log
+} // namespace boyboy::common::log

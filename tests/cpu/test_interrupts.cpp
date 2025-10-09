@@ -8,20 +8,20 @@
 #include <gtest/gtest.h>
 
 // boyboy
-#include "boyboy/cpu/cpu.h"
-#include "boyboy/cpu/cpu_constants.h"
-#include "boyboy/cpu/interrupt_handler.h"
-#include "boyboy/cpu/interrupts.h"
-#include "boyboy/mmu/constants.h"
+#include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/cpu_constants.h"
+#include "boyboy/core/cpu/interrupt_handler.h"
+#include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/mmu/constants.h"
 
 // Helpers
 #include "helpers/cpu_fixtures.h"
 
-using boyboy::cpu::Interrupts;
-using boyboy::cpu::InterruptVectors;
-using boyboy::cpu::PCStartValue;
-using boyboy::cpu::SPStartValue;
-using boyboy::mmu::WRAM0Start;
+using boyboy::core::cpu::Interrupts;
+using boyboy::core::cpu::InterruptVectors;
+using boyboy::core::cpu::PCStartValue;
+using boyboy::core::cpu::SPStartValue;
+using boyboy::core::mmu::WRAM0Start;
 
 using boyboy::test::cpu::CpuTest;
 
@@ -45,12 +45,12 @@ TEST_F(CpuInterruptsTest, EiSchedulesIME)
     EXPECT_FALSE(cpu.get_ime());
 
     // Execute EI
-    set_next_instruction(boyboy::cpu::Opcode::EI);
+    set_next_instruction(boyboy::core::cpu::Opcode::EI);
     cpu.step();
     EXPECT_FALSE(cpu.get_ime()); // IME should still be false immediately after EI
 
     // Execute a NOP to trigger IME enabling
-    set_next_instruction(boyboy::cpu::Opcode::NOP);
+    set_next_instruction(boyboy::core::cpu::Opcode::NOP);
     cpu.step();
     EXPECT_TRUE(cpu.get_ime()); // IME should now be true
 }
@@ -238,7 +238,7 @@ TEST_F(CpuInterruptsTest, HaltThenInterrupt)
     cpu.enable_interrupt(Interrupts::VBlank); // Enable V-Blank interrupt
 
     // Enter HALT state (PC += 1 for HALT instruction)
-    set_next_instruction(boyboy::cpu::Opcode::HALT);
+    set_next_instruction(boyboy::core::cpu::Opcode::HALT);
     cpu.step();
     EXPECT_TRUE(cpu.is_halted());
 

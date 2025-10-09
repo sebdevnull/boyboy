@@ -13,9 +13,9 @@
 #include <memory>
 #include <string>
 
-#include "boyboy/profiling/timer.h"
+#include "boyboy/core/profiling/timer.h"
 
-namespace boyboy::profiling {
+namespace boyboy::core::profiling {
 
 /**
  * @brief Abstract interface for a high-level profiler.
@@ -107,4 +107,4 @@ private:
     NullTimer null_timer_;
 };
 
-} // namespace boyboy::profiling
+} // namespace boyboy::core::profiling

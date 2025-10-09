@@ -10,10 +10,10 @@
 #include <set>
 #include <string_view>
 
-#include "boyboy/cpu/instructions.h"
-#include "boyboy/cpu/instructions_table.h"
+#include "boyboy/core/cpu/instructions.h"
+#include "boyboy/core/cpu/instructions_table.h"
 
-using namespace boyboy::cpu;
+using namespace boyboy::core::cpu;
 
 namespace {
 

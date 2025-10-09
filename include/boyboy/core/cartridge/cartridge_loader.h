@@ -10,7 +10,7 @@
 #include <string_view>
 #include <vector>
 
-namespace boyboy::cart {
+namespace boyboy::core::cartridge {
 
 class Cartridge;
 using RomData = std::vector<std::byte>;
@@ -25,4 +25,4 @@ private:
     static RomData load_rom_data(std::string_view path);
 };
 
-} // namespace boyboy::cart
+} // namespace boyboy::core::cartridge

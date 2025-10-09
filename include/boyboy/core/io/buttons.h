@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <string>
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 // Button definitions
 enum class Button : uint8_t {
@@ -86,4 +86,4 @@ struct ButtonMask {
     }
 };
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

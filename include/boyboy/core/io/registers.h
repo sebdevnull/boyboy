@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <string>
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 struct IoReg {
     struct Joypad {
@@ -120,4 +120,4 @@ struct IoReg {
     };
 };
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

@@ -5,17 +5,19 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/cart/cartridge_loader.h"
+#include "boyboy/core/cartridge/cartridge_loader.h"
 
 #include <filesystem>
 #include <format>
 #include <fstream>
 
-#include "boyboy/cart/cartridge.h"
+#include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/common/utils.h"
-#include "boyboy/log/logging.h"
+#include "boyboy/common/log/logging.h"
 
-namespace boyboy::cart {
+namespace boyboy::core::cartridge {
+
+using namespace boyboy::common;
 
 Cartridge CartridgeLoader::load(std::string_view path)
 {
@@ -67,4 +69,4 @@ RomData CartridgeLoader::load_rom_data(std::string_view path)
     return rom_data;
 }
 
-} // namespace boyboy::cart
+} // namespace boyboy::core::cartridge

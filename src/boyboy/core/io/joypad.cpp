@@ -5,16 +5,18 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/io/joypad.h"
+#include "boyboy/core/io/joypad.h"
 
 #include <cstdint>
 
 #include "boyboy/common/utils.h"
-#include "boyboy/io/buttons.h"
-#include "boyboy/io/registers.h"
-#include "boyboy/log/logging.h"
+#include "boyboy/core/io/buttons.h"
+#include "boyboy/core/io/registers.h"
+#include "boyboy/common/log/logging.h"
 
-namespace boyboy::io {
+namespace boyboy::core::io {
+
+using namespace boyboy::common;
 
 void Joypad::tick(uint16_t /*cycles*/)
 {
@@ -24,7 +26,7 @@ void Joypad::tick(uint16_t /*cycles*/)
 [[nodiscard]] uint8_t Joypad::read(uint16_t addr) const
 {
     if (!IoReg::Joypad::contains(addr)) {
-        log::warn("Joypad read from invalid address: {}", utils::PrettyHex(addr).to_string());
+        log::warn("Joypad read from invalid address: {}", common::utils::PrettyHex(addr).to_string());
         return 0xFF; // Open bus
     }
     return p1();
@@ -33,7 +35,7 @@ void Joypad::tick(uint16_t /*cycles*/)
 void Joypad::write(uint16_t addr, uint8_t value)
 {
     if (!IoReg::Joypad::contains(addr)) {
-        log::warn("Joypad write to invalid address: {}", utils::PrettyHex(addr).to_string());
+        log::warn("Joypad write to invalid address: {}", common::utils::PrettyHex(addr).to_string());
         return;
     }
 
@@ -41,9 +43,9 @@ void Joypad::write(uint16_t addr, uint8_t value)
 
     log::trace(
         "Joypad Write: {} <- {}, P1={}",
-        utils::PrettyHex(addr).to_string(),
-        utils::PrettyHex(value).to_string(),
-        utils::PrettyHex(p1()).to_string()
+        common::utils::PrettyHex(addr).to_string(),
+        common::utils::PrettyHex(value).to_string(),
+        common::utils::PrettyHex(p1()).to_string()
     );
 }
 
@@ -70,7 +72,7 @@ void Joypad::press(Button button)
         log::trace(
             "Button already pressed: {}, P1={}",
             to_string(button),
-            utils::PrettyHex(p1()).to_string()
+            common::utils::PrettyHex(p1()).to_string()
         );
         return;
     }
@@ -79,7 +81,7 @@ void Joypad::press(Button button)
 
     buttons_ &= ~mask; // Set to 0 (pressed)
 
-    log::debug("Button Pressed: {}, P1={}", to_string(button), utils::PrettyHex(p1()).to_string());
+    log::debug("Button Pressed: {}, P1={}", to_string(button), common::utils::PrettyHex(p1()).to_string());
 
     // Trigger interrupt if any button was not previously pressed and one or two groups are selected
     if (request_interrupt_ && !was_any_pressed &&
@@ -101,14 +103,14 @@ void Joypad::release(Button button)
         log::debug(
             "Button already released: {}, P1={}",
             to_string(button),
-            utils::PrettyHex(p1()).to_string()
+            common::utils::PrettyHex(p1()).to_string()
         );
         return;
     }
 
     buttons_ |= mask; // Set to 1 (released)
 
-    log::debug("Button Released: {}, P1={}", to_string(button), utils::PrettyHex(p1()).to_string());
+    log::debug("Button Released: {}, P1={}", to_string(button), common::utils::PrettyHex(p1()).to_string());
 }
 
 [[nodiscard]] bool Joypad::is_pressed(Button button) const
@@ -193,4 +195,4 @@ inline std::ostream& operator<<(std::ostream& os, Button button)
     return os << to_string(button);
 }
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

@@ -5,23 +5,25 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/emulator.h"
+#include "boyboy/core/emulator/emulator.h"
 
 #include <chrono>
 #include <thread>
 
-#include "boyboy/cart/cartridge_loader.h"
-#include "boyboy/log/logging.h"
-#include "boyboy/ppu/ppu.h"
-#include "boyboy/profiling/profiler_utils.h"
+#include "boyboy/core/cartridge/cartridge_loader.h"
+#include "boyboy/common/log/logging.h"
+#include "boyboy/core/ppu/ppu.h"
+#include "boyboy/core/profiling/profiler_utils.h"
 
-namespace boyboy::emulator {
+namespace boyboy::core::emulator {
+
+using namespace boyboy::common;
 
 void Emulator::load(const std::string& path)
 {
     log::info("Loading ROM from {}", path);
 
-    cartridge_ = cart::CartridgeLoader::load(path);
+    cartridge_ = cartridge::CartridgeLoader::load(path);
     mmu_->map_rom(cartridge_);
 }
 
@@ -149,4 +151,4 @@ void Emulator::render_frame()
     cycle_count_ = 0;
 }
 
-} // namespace boyboy::emulator
+} // namespace boyboy::core::emulator

@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
 class Cpu;
 
@@ -25,4 +25,4 @@ struct Instruction {
 
 enum class InstructionType : uint8_t { Unprefixed, CBPrefixed };
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

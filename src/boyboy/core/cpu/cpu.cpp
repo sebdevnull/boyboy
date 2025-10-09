@@ -5,16 +5,18 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/cpu/cpu.h"
+#include "boyboy/core/cpu/cpu.h"
 
 #include <cstdint>
 
-#include "boyboy/cpu/instructions.h"
-#include "boyboy/cpu/instructions_table.h"
-#include "boyboy/log/logging.h"
-#include "boyboy/profiling/profiler_utils.h"
+#include "boyboy/core/cpu/instructions.h"
+#include "boyboy/core/cpu/instructions_table.h"
+#include "boyboy/common/log/logging.h"
+#include "boyboy/core/profiling/profiler_utils.h"
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
+
+using namespace boyboy::common;
 
 uint8_t Cpu::get_register(Reg8Name reg) const
 {
@@ -182,23 +184,23 @@ void Cpu::trace() const
 {
     log::cpu_trace("--- CPU TRACE ---");
     log::cpu_trace(
-        "Instruction: {} ({})", disassemble(registers_.pc), utils::PrettyHex(peek()).to_string()
+        "Instruction: {} ({})", disassemble(registers_.pc), common::utils::PrettyHex(peek()).to_string()
     );
     log::cpu_trace(
         "Next bytes: {} {} {}",
-        utils::PrettyHex(read_byte(registers_.pc + 1)).to_string(),
-        utils::PrettyHex(read_byte(registers_.pc + 2)).to_string(),
-        utils::PrettyHex(read_byte(registers_.pc + 3)).to_string()
+        common::utils::PrettyHex(read_byte(registers_.pc + 1)).to_string(),
+        common::utils::PrettyHex(read_byte(registers_.pc + 2)).to_string(),
+        common::utils::PrettyHex(read_byte(registers_.pc + 3)).to_string()
     );
     log::cpu_trace(
         "CPU State: PC={}, SP={}, AF={}, BC={}, DE={}, HL={}, Flags=[Z={}, N={}, H={}, C={}], "
         "IME={}, HALT={}, Cycles={}",
-        utils::PrettyHex(registers_.pc).to_string(),
-        utils::PrettyHex(registers_.sp).to_string(),
-        utils::PrettyHex(registers_.af).to_string(),
-        utils::PrettyHex(registers_.bc).to_string(),
-        utils::PrettyHex(registers_.de).to_string(),
-        utils::PrettyHex(registers_.hl).to_string(),
+        common::utils::PrettyHex(registers_.pc).to_string(),
+        common::utils::PrettyHex(registers_.sp).to_string(),
+        common::utils::PrettyHex(registers_.af).to_string(),
+        common::utils::PrettyHex(registers_.bc).to_string(),
+        common::utils::PrettyHex(registers_.de).to_string(),
+        common::utils::PrettyHex(registers_.hl).to_string(),
         get_flag(Flag::Zero) ? 1 : 0,
         get_flag(Flag::Substract) ? 1 : 0,
         get_flag(Flag::HalfCarry) ? 1 : 0,
@@ -305,4 +307,4 @@ void Cpu::cp(uint8_t val)
     set_flag(Flag::Carry, result > a);
 }
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

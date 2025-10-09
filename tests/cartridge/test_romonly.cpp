@@ -11,14 +11,14 @@
 
 // boyboy
 #include "boyboy/common/utils.h"
-#include "boyboy/mmu/constants.h"
+#include "boyboy/core/mmu/constants.h"
 
-using boyboy::mmu::ERAMStart;
-using boyboy::mmu::ROMBank0End;
-using boyboy::mmu::ROMBank0Start;
-using boyboy::mmu::ROMBank1End;
-using boyboy::mmu::ROMBank1Start;
-using boyboy::utils::PrettyHex;
+using boyboy::core::mmu::ERAMStart;
+using boyboy::core::mmu::ROMBank0End;
+using boyboy::core::mmu::ROMBank0Start;
+using boyboy::core::mmu::ROMBank1End;
+using boyboy::core::mmu::ROMBank1Start;
+using boyboy::common::utils::PrettyHex;
 
 // Helpers
 #include "helpers/rom_fixtures.h"
@@ -29,9 +29,9 @@ class RomOnlyTest : public FakeROMTest {
 protected:
     void SetUp() override
     {
-        rom_data = make_fake_rom(boyboy::cart::CartridgeType::ROMOnly, 2, 0, "ROM_ONLY_TEST");
-        cart     = std::make_unique<boyboy::cart::Cartridge>(
-            boyboy::cart::CartridgeLoader::load(rom_data)
+        rom_data = make_fake_rom(boyboy::core::cartridge::CartridgeType::ROMOnly, 2, 0, "ROM_ONLY_TEST");
+        cart     = std::make_unique<boyboy::core::cartridge::Cartridge>(
+            boyboy::core::cartridge::CartridgeLoader::load(rom_data)
         );
     }
 };
@@ -40,8 +40,8 @@ TEST_F(RomOnlyTest, InitialState)
 {
     const auto& mbc = cart->get_mbc();
 
-    EXPECT_EQ(cart->get_header().cartridge_type, boyboy::cart::CartridgeType::ROMOnly);
-    EXPECT_EQ(mbc.get_type(), boyboy::cart::mbc::MbcType::None);
+    EXPECT_EQ(cart->get_header().cartridge_type, boyboy::core::cartridge::CartridgeType::ROMOnly);
+    EXPECT_EQ(mbc.get_type(), boyboy::core::cartridge::mbc::MbcType::None);
     EXPECT_EQ(mbc.rom_bank(), 1) << "Initial ROM bank should be 1";
     EXPECT_EQ(mbc.ram_bank(), 0) << "Initial RAM bank should be 0";
     EXPECT_EQ(mbc.banking_mode(), 0) << "Initial banking mode should be 0 (ROM banking)";

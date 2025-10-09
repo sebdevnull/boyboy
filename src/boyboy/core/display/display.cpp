@@ -11,17 +11,19 @@
 #include <SDL2/SDL.h>
 // clang-format on
 
-#include "boyboy/display.h"
+#include "boyboy/core/display/display.h"
 
 #include <array>
 #include <iostream>
 
-#include "boyboy/io/buttons.h"
-#include "boyboy/log/logging.h"
-#include "boyboy/ppu/ppu.h"
-#include "boyboy/profiling/profiler_utils.h"
+#include "boyboy/core/io/buttons.h"
+#include "boyboy/common/log/logging.h"
+#include "boyboy/core/ppu/ppu.h"
+#include "boyboy/core/profiling/profiler_utils.h"
 
-namespace boyboy::display {
+namespace boyboy::core::display {
+
+using namespace boyboy::common;
 
 bool Display::init(const std::string& title)
 {
@@ -271,4 +273,4 @@ void Display::init_opengl()
     glUniform1i(glGetUniformLocation(shader_program_, "screenTexture"), 0);
 }
 
-} // namespace boyboy::display
+} // namespace boyboy::core::display

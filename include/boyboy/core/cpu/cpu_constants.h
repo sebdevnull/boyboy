@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
 // Initial values for registers after boot ROM
 constexpr uint16_t AFStartValue = 0x01B0; // assumes header cks != 0, otherwise 0x0180
@@ -26,4 +26,4 @@ constexpr uint16_t HighRAMOffset = 0xFF00;
 constexpr uint64_t MasterClockFrequencyHz = 4'194'304;                  // 4.194304 MHz
 constexpr uint64_t SystemClockFrequencyHz = MasterClockFrequencyHz / 4; // 1.048576 MHz
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

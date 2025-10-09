@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "boyboy/cpu/cpu.h" // needed for stub disabling macros
+#include "boyboy/core/cpu/cpu.h" // needed for stub disabling macros
 
 // Regex for opcode extraction: ^void.+\n\{\n.+Opcode\((0x\w{2}).+\n\}
 

@@ -10,15 +10,15 @@
 #include <gtest/gtest.h>
 
 // boyboy
-#include "boyboy/mmu/constants.h"
+#include "boyboy/core/mmu/constants.h"
 
 // Helpers
 #include "helpers/cpu_fixtures.h"
 #include "helpers/cpu_params.h"
 
-using boyboy::cpu::Opcode;
-using boyboy::cpu::Reg16Name;
-using boyboy::mmu::VRAMStart;
+using boyboy::core::cpu::Opcode;
+using boyboy::core::cpu::Reg16Name;
+using boyboy::core::mmu::VRAMStart;
 
 using boyboy::test::cpu::InstrParam;
 using boyboy::test::cpu::InstrTest;

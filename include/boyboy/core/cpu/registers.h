@@ -12,7 +12,7 @@
 #include <ostream>
 #include <string>
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
 struct Flag {
     static constexpr uint8_t Zero = 0x80;      // Zero flag (Z)
@@ -223,4 +223,4 @@ struct Registers {
     void l(uint8_t val) { hl.low(val); }
 };
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

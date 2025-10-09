@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace boyboy::mmu {
+namespace boyboy::core::mmu {
 
 // --- MMU memory map constants ---
 static constexpr uint32_t MemoryMapSize = (1 << 16); // 16-bit address space (64KB)
@@ -73,4 +73,4 @@ static constexpr uint16_t DMATransferCycles = DMATransferSize * 4; // 4 cycles p
 // --- Other MMU constants ---
 static constexpr uint8_t OpenBusValue = 0xFF; // Default value for open bus reads
 
-} // namespace boyboy::mmu
+} // namespace boyboy::core::mmu

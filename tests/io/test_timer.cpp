@@ -8,14 +8,14 @@
 #include <gtest/gtest.h>
 
 // boyboy
-#include "boyboy/cpu/interrupts.h"
-#include "boyboy/io/io.h"
-#include "boyboy/io/timer.h"
+#include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/io/io.h"
+#include "boyboy/core/io/timer.h"
 
-using boyboy::cpu::Interrupts;
-using boyboy::io::Io;
-using boyboy::io::IoReg;
-using boyboy::io::Timer;
+using boyboy::core::cpu::Interrupts;
+using boyboy::core::io::Io;
+using boyboy::core::io::IoReg;
+using boyboy::core::io::Timer;
 
 class IoTimerTest : public ::testing::Test {
 protected:

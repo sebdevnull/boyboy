@@ -8,15 +8,15 @@
 #include <memory>
 #include <string>
 
-#include "boyboy/cart/cartridge.h"
-#include "boyboy/cpu/cpu.h"
-#include "boyboy/display.h"
-#include "boyboy/io/io.h"
-#include "boyboy/io/joypad.h"
-#include "boyboy/mmu/mmu.h"
-#include "boyboy/ppu/ppu.h"
+#include "boyboy/core/cartridge/cartridge.h"
+#include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/display/display.h"
+#include "boyboy/core/io/io.h"
+#include "boyboy/core/io/joypad.h"
+#include "boyboy/core/mmu/mmu.h"
+#include "boyboy/core/ppu/ppu.h"
 
-namespace boyboy::emulator {
+namespace boyboy::core::emulator {
 
 class Emulator {
 public:
@@ -46,7 +46,7 @@ private:
     ppu::Ppu& ppu_ = io_.ppu();
     io::Joypad& joypad_ = io_.joypad();
     display::Display display_;
-    cart::Cartridge cartridge_;
+    cartridge::Cartridge cartridge_;
 
     // Emulator state
     bool running_ = false;
@@ -61,4 +61,4 @@ private:
     void render_frame();
 };
 
-} // namespace boyboy::emulator
+} // namespace boyboy::core::emulator

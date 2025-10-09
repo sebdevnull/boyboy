@@ -9,10 +9,10 @@
 
 #include <array>
 
-#include "boyboy/cpu/cpu.h"
-#include "boyboy/cpu/instructions.h"
+#include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/instructions.h"
 
-namespace boyboy::cpu {
+namespace boyboy::core::cpu {
 
 class InstructionTable {
 public:
@@ -31,4 +31,4 @@ public:
     static const std::array<Instruction, 256> CBOpcodes;
 };
 
-} // namespace boyboy::cpu
+} // namespace boyboy::core::cpu

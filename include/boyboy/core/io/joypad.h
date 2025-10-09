@@ -14,10 +14,10 @@
 
 #include <cstdint>
 
-#include "boyboy/io/buttons.h"
-#include "boyboy/io/iocomponent.h"
+#include "boyboy/core/io/buttons.h"
+#include "boyboy/core/io/iocomponent.h"
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 class Joypad : public IoComponent {
 public:
@@ -45,4 +45,4 @@ private:
     [[nodiscard]] bool any_button_pressed() const { return buttons_ != 0xFF; }
 };
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

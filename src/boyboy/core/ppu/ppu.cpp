@@ -5,20 +5,22 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/ppu/ppu.h"
+#include "boyboy/core/ppu/ppu.h"
 
 #include <algorithm>
 #include <cstdint>
 
 #include "boyboy/common/utils.h"
-#include "boyboy/cpu/interrupts.h"
-#include "boyboy/io/registers.h"
-#include "boyboy/log/logging.h"
-#include "boyboy/mmu/constants.h"
-#include "boyboy/ppu/registers.h"
-#include "boyboy/profiling/profiler_utils.h"
+#include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/io/registers.h"
+#include "boyboy/common/log/logging.h"
+#include "boyboy/core/mmu/constants.h"
+#include "boyboy/core/ppu/registers.h"
+#include "boyboy/core/profiling/profiler_utils.h"
 
-namespace boyboy::ppu {
+namespace boyboy::core::ppu {
+
+using namespace boyboy::common;
 
 using io::IoReg;
 
@@ -33,7 +35,7 @@ void Ppu::tick(uint16_t cycles)
     if ((STAT_ & registers::STAT::PPUModeMask) != static_cast<uint8_t>(mode_)) {
         log::warn(
             "PPU mode out of sync! STAT={}, Mode={}",
-            utils::PrettyHex(STAT_).to_string(),
+            common::utils::PrettyHex(STAT_).to_string(),
             to_string(mode_)
         );
         // Correct the mode in STAT
@@ -43,7 +45,7 @@ void Ppu::tick(uint16_t cycles)
     if (((STAT_ & registers::STAT::LYCEqualsLY) != 0) != (LY_ == LYC_)) {
         log::warn(
             "PPU LYC=LY flag out of sync! STAT={}, LY={}, LYC={}",
-            utils::PrettyHex(STAT_).to_string(),
+            common::utils::PrettyHex(STAT_).to_string(),
             LY_,
             LYC_
         );
@@ -120,8 +122,8 @@ void Ppu::write(uint16_t addr, uint8_t value)
     log::trace(
         "PPU Write: {} <- {}, STAT={}, LY={}, Mode={}",
         IoReg::Ppu::to_string(addr),
-        utils::PrettyHex(value).to_string(),
-        utils::PrettyHex(STAT_).to_string(),
+        common::utils::PrettyHex(value).to_string(),
+        common::utils::PrettyHex(STAT_).to_string(),
         LY_,
         to_string(mode_)
     );
@@ -161,15 +163,15 @@ void Ppu::write(uint16_t addr, uint8_t value)
         value |= STAT_ & 0b10000111;
         log::trace(
             "PPU STAT write, old value: {}, new value: {}",
-            utils::PrettyHex(STAT_).to_string(),
-            utils::PrettyHex(value).to_string()
+            common::utils::PrettyHex(STAT_).to_string(),
+            common::utils::PrettyHex(value).to_string()
         );
     }
     else if (addr == IoReg::Ppu::LYC) {
         log::trace(
             "PPU LYC write, old value: {}, new value: {}",
-            utils::PrettyHex(LYC_).to_string(),
-            utils::PrettyHex(value).to_string()
+            common::utils::PrettyHex(LYC_).to_string(),
+            common::utils::PrettyHex(value).to_string()
         );
         // Update LYC=LY flag immediately
         LYC_ = value;
@@ -534,12 +536,12 @@ void Ppu::request_interrupt(uint8_t interrupt)
     );
     log::trace(
         "LCDC: {}, STAT: {}, SCY: {}, SCX: {}, LYC: {}, BGP: {}",
-        utils::PrettyHex(LCDC_).to_string(),
-        utils::PrettyHex(STAT_).to_string(),
-        utils::PrettyHex(SCY_).to_string(),
-        utils::PrettyHex(SCX_).to_string(),
-        utils::PrettyHex(LYC_).to_string(),
-        utils::PrettyHex(BGP_).to_string()
+        common::utils::PrettyHex(LCDC_).to_string(),
+        common::utils::PrettyHex(STAT_).to_string(),
+        common::utils::PrettyHex(SCY_).to_string(),
+        common::utils::PrettyHex(SCX_).to_string(),
+        common::utils::PrettyHex(LYC_).to_string(),
+        common::utils::PrettyHex(BGP_).to_string()
     );
 
     request_interrupt_(interrupt);
@@ -547,14 +549,14 @@ void Ppu::request_interrupt(uint8_t interrupt)
     uint8_t ie_reg = mem_read(IoReg::Interrupts::IE);
     uint8_t if_reg = mem_read(IoReg::Interrupts::IF);
     log::trace(
-        "IE: {}, IF: {}", utils::PrettyHex(ie_reg).to_string(), utils::PrettyHex(if_reg).to_string()
+        "IE: {}, IF: {}", common::utils::PrettyHex(ie_reg).to_string(), common::utils::PrettyHex(if_reg).to_string()
     );
 }
 
 [[nodiscard]] uint8_t Ppu::mem_read(uint16_t addr) const
 {
     if (!mem_read_cb_) {
-        log::warn("PPU memory read at {} but no callback set", utils::PrettyHex(addr).to_string());
+        log::warn("PPU memory read at {} but no callback set", common::utils::PrettyHex(addr).to_string());
         return 0xFF;
     }
     return mem_read_cb_(addr);
@@ -562,7 +564,7 @@ void Ppu::request_interrupt(uint8_t interrupt)
 void Ppu::mem_write(uint16_t addr, uint8_t value)
 {
     if (!mem_write_cb_) {
-        log::warn("PPU memory write at {} but no callback set", utils::PrettyHex(addr).to_string());
+        log::warn("PPU memory write at {} but no callback set", common::utils::PrettyHex(addr).to_string());
         return;
     }
     mem_write_cb_(addr, value);
@@ -570,10 +572,10 @@ void Ppu::mem_write(uint16_t addr, uint8_t value)
 void Ppu::dma_start(uint8_t value)
 {
     if (!dma_start_cb_) {
-        log::warn("PPU DMA start at {} but no callback set", utils::PrettyHex(value).to_string());
+        log::warn("PPU DMA start at {} but no callback set", common::utils::PrettyHex(value).to_string());
         return;
     }
     dma_start_cb_(value);
 }
 
-} // namespace boyboy::ppu
+} // namespace boyboy::core::ppu

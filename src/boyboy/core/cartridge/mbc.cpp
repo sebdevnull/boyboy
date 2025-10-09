@@ -5,19 +5,21 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/cart/mbc.h"
+#include "boyboy/core/cartridge/mbc.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <format>
 #include <ranges>
 
-#include "boyboy/cart/cartridge.h"
+#include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/common/utils.h"
-#include "boyboy/log/logging.h"
-#include "boyboy/mmu/constants.h"
+#include "boyboy/common/log/logging.h"
+#include "boyboy/core/mmu/constants.h"
 
-namespace boyboy::cart::mbc {
+namespace boyboy::core::cartridge::mbc {
+
+using namespace boyboy::common;
 
 void Mbc::load_banks(const Cartridge& cart)
 {
@@ -25,7 +27,7 @@ void Mbc::load_banks(const Cartridge& cart)
     if (type_ != MbcType::None && type_ != MbcType::MBC1) {
         // Currently only ROM_ONLY and MBC1 are supported
         throw std::runtime_error(std::format(
-            "Unsupported MBC type: {}", cart::to_string(cart.get_header().cartridge_type)
+            "Unsupported MBC type: {}", cartridge::to_string(cart.get_header().cartridge_type)
         ));
     }
 
@@ -33,8 +35,8 @@ void Mbc::load_banks(const Cartridge& cart)
     unload_banks();
 
     const auto& header = cart.get_header();
-    rom_bank_cnt_ = cart::num_rom_banks(header.rom_size);
-    ram_bank_cnt_ = cart::num_ram_banks(header.ram_size);
+    rom_bank_cnt_ = cartridge::num_rom_banks(header.rom_size);
+    ram_bank_cnt_ = cartridge::num_ram_banks(header.ram_size);
 
     rom_banks_.resize(rom_bank_cnt_);
 
@@ -98,8 +100,8 @@ void Mbc::write(uint16_t addr, uint8_t value)
         // Currently only MBC1 is supported
         log::warn(
             "Ignoring write to unsupported MBC type at {}: {}",
-            utils::PrettyHex(addr).to_string(),
-            utils::PrettyHex(value).to_string()
+            common::utils::PrettyHex(addr).to_string(),
+            common::utils::PrettyHex(value).to_string()
         );
         return;
     }
@@ -226,4 +228,4 @@ MbcType Mbc::mbc_type(const Cartridge& cart)
     }
 }
 
-} // namespace boyboy::cart::mbc
+} // namespace boyboy::core::cartridge::mbc

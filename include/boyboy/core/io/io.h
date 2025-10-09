@@ -14,14 +14,14 @@
 #include <array>
 #include <cstdint>
 
-#include "boyboy/io/iocomponent.h"
-#include "boyboy/io/joypad.h"
-#include "boyboy/io/serial.h"
-#include "boyboy/io/timer.h"
-#include "boyboy/mmu/constants.h"
-#include "boyboy/ppu/ppu.h"
+#include "boyboy/core/io/iocomponent.h"
+#include "boyboy/core/io/joypad.h"
+#include "boyboy/core/io/serial.h"
+#include "boyboy/core/io/timer.h"
+#include "boyboy/core/mmu/constants.h"
+#include "boyboy/core/ppu/ppu.h"
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 class Io {
 public:
@@ -69,4 +69,4 @@ private:
     }
 };
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

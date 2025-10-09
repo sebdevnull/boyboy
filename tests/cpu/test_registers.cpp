@@ -7,9 +7,9 @@
 
 #include <gtest/gtest.h>
 
-#include "boyboy/cpu/registers.h"
+#include "boyboy/core/cpu/registers.h"
 
-using namespace boyboy::cpu;
+using namespace boyboy::core::cpu;
 
 // ===== Parameterized test for 16-bit registers using high/low =====
 struct Reg16TestParam {

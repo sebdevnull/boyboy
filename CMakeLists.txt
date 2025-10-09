@@ -86,21 +86,21 @@ endif()
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/common/utils.cpp
-    src/boyboy/cpu/cpu.cpp
-    src/boyboy/cpu/instructions.cpp
-    src/boyboy/cpu/instructions_table.cpp
-    src/boyboy/cpu/interrupt_handler.cpp
-    src/boyboy/mmu/mmu.cpp
-    src/boyboy/io/io.cpp
-    src/boyboy/io/serial.cpp
-    src/boyboy/io/timer.cpp
-    src/boyboy/io/joypad.cpp
-    src/boyboy/ppu/ppu.cpp
-    src/boyboy/cart/cartridge.cpp
-    src/boyboy/cart/cartridge_loader.cpp
-    src/boyboy/cart/mbc.cpp
-    src/boyboy/display.cpp
-    src/boyboy/emulator.cpp
+    src/boyboy/core/cpu/cpu.cpp
+    src/boyboy/core/cpu/instructions.cpp
+    src/boyboy/core/cpu/instructions_table.cpp
+    src/boyboy/core/cpu/interrupt_handler.cpp
+    src/boyboy/core/mmu/mmu.cpp
+    src/boyboy/core/io/io.cpp
+    src/boyboy/core/io/serial.cpp
+    src/boyboy/core/io/timer.cpp
+    src/boyboy/core/io/joypad.cpp
+    src/boyboy/core/ppu/ppu.cpp
+    src/boyboy/core/cartridge/cartridge.cpp
+    src/boyboy/core/cartridge/cartridge_loader.cpp
+    src/boyboy/core/cartridge/mbc.cpp
+    src/boyboy/core/display/display.cpp
+    src/boyboy/core/emulator/emulator.cpp
 )
 
 # --- Include directories ---
@@ -122,7 +122,7 @@ set_target_properties(${BOYBOY_LIB} PROPERTIES
 )
 
 # --- Executable ---
-add_executable(${BOYBOY_APP} src/app/main.cpp)
+add_executable(${BOYBOY_APP} src/boyboy/main.cpp)
 target_compile_options(${BOYBOY_APP} PRIVATE
     -Wall -Wextra -Wpedantic
 )

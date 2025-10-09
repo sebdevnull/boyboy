@@ -18,9 +18,9 @@
 #include <optional>
 #include <string>
 
-#include "boyboy/log/logging.h"
+#include "boyboy/common/log/logging.h"
 
-namespace boyboy::profiling {
+namespace boyboy::core::profiling {
 
 /**
  * @brief Enum for core frame timing components.
@@ -217,9 +217,9 @@ public:
             }
         }
 
-        log::info("----- Frame Profiler Report -----");
-        log::info("{}", log_msg);
-        log::info("---------------------------------");
+        common::log::info("----- Frame Profiler Report -----");
+        common::log::info("{}", log_msg);
+        common::log::info("---------------------------------");
     }
 
     /**
@@ -266,8 +266,8 @@ private:
             }
         }
 
-        log::info("{}", log_msg);
+        common::log::info("{}", log_msg);
     }
 };
 
-} // namespace boyboy::profiling
+} // namespace boyboy::core::profiling

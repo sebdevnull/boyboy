@@ -9,11 +9,11 @@
  */
 
 #pragma once
-#include "boyboy/profiling/frame_profiler.h"
-#include "boyboy/profiling/hot_profiler.h"
-#include "boyboy/profiling/profiler.h"
+#include "boyboy/core/profiling/frame_profiler.h"
+#include "boyboy/core/profiling/hot_profiler.h"
+#include "boyboy/core/profiling/profiler.h"
 
-namespace boyboy::profiling {
+namespace boyboy::core::profiling {
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
@@ -35,13 +35,13 @@ using ActiveProfiler = Profiler;
  * @brief Start a named profiling timer.
  * @param name Timer name (string or FrameTimer enum).
  */
-#define BB_PROFILE_START(name) boyboy::profiling::profile_start(name)
+#define BB_PROFILE_START(name) boyboy::core::profiling::profile_start(name)
 
 /**
  * @brief Stop a named profiling timer.
  * @param name Timer name (string or FrameTimer enum).
  */
-#define BB_PROFILE_STOP(name) boyboy::profiling::profile_stop(name)
+#define BB_PROFILE_STOP(name) boyboy::core::profiling::profile_stop(name)
 
 /**
  * @brief Profile a scope using RAII. Automatically stops when leaving scope.
@@ -50,17 +50,17 @@ using ActiveProfiler = Profiler;
 #define BB_PROFILE_SCOPE(name)                                                                     \
     [[maybe_unused]] auto BB_CONCAT(                                                               \
         _bb_profile_scope_, __LINE__                                                               \
-    ) = boyboy::profiling::profile_scope(name)
+    ) = boyboy::core::profiling::profile_scope(name)
 
 /**
  * @brief Output a profiling report for all timers.
  */
-#define BB_PROFILE_REPORT() boyboy::profiling::profile_report()
+#define BB_PROFILE_REPORT() boyboy::core::profiling::profile_report()
 
 /**
  * @brief Output a hot profiler report.
  */
-#define BB_HOT_PROFILE_REPORT() boyboy::profiling::hot_profile_report()
+#define BB_HOT_PROFILE_REPORT() boyboy::core::profiling::hot_profile_report()
 
 #else
 using ActiveProfiler = NullProfiler;
@@ -77,12 +77,12 @@ using ActiveProfiler = NullProfiler;
  * @param instr Instruction count for the frame.
  * @param cycles Cycle count for the frame.
  */
-#define BB_PROFILE_FRAME(instr, cycles) boyboy::profiling::profile_frame(instr, cycles)
+#define BB_PROFILE_FRAME(instr, cycles) boyboy::core::profiling::profile_frame(instr, cycles)
 
 /**
  * @brief Output a frame profiler report (FPS, IPS, CPS, etc).
  */
-#define BB_FRAME_PROFILE_REPORT() boyboy::profiling::frame_profile_report()
+#define BB_FRAME_PROFILE_REPORT() boyboy::core::profiling::frame_profile_report()
 
 /** @} */
 // NOLINTEND(cppcoreguidelines-macro-usage)
@@ -269,4 +269,4 @@ inline void hot_profile_report()
     get_hot_profiler().report();
 }
 
-} // namespace boyboy::profiling
+} // namespace boyboy::core::profiling

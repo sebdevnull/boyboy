@@ -16,9 +16,9 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "boyboy/log/logging.h"
+#include "boyboy/common/log/logging.h"
 
-namespace boyboy::profiling {
+namespace boyboy::core::profiling {
 
 /**
  * @brief Enum for identifying hot code sections to be profiled.
@@ -95,14 +95,14 @@ public:
      */
     void report()
     {
-        log::info("----- Hot Profiler Report -----");
+        common::log::info("----- Hot Profiler Report -----");
         for (size_t i = 0; i < static_cast<size_t>(HotSection::Count); ++i) {
             if (call_counts_[i] == 0) {
                 continue;
             }
             auto avg_time = static_cast<double>(accumulated_times_[i].count()) /
                             static_cast<double>(call_counts_[i]);
-            log::info(
+            common::log::info(
                 "[{}]: total={}ns, calls={}, avg={:.2f}ns",
                 to_string(static_cast<HotSection>(i)),
                 accumulated_times_[i].count(),
@@ -110,7 +110,7 @@ public:
                 avg_time
             );
         }
-        log::info("-------------------------------");
+        common::log::info("-------------------------------");
     }
 
 private:
@@ -119,4 +119,4 @@ private:
     std::array<uint64_t, static_cast<size_t>(HotSection::Count)> call_counts_{};
 };
 
-} // namespace boyboy::profiling
+} // namespace boyboy::core::profiling

@@ -13,15 +13,15 @@
 #include "helpers/rom_fixtures.h"
 
 // boyboy
-#include "boyboy/cart/cartridge.h"
+#include "boyboy/core/cartridge/cartridge.h"
 
 using boyboy::test::common::InvalidROM;
 using boyboy::test::common::ValidROM;
 using boyboy::test::rom::ROMTest;
 
-using boyboy::cart::CartridgeType;
-using boyboy::cart::RamSize;
-using boyboy::cart::RomSize;
+using boyboy::core::cartridge::CartridgeType;
+using boyboy::core::cartridge::RamSize;
+using boyboy::core::cartridge::RomSize;
 
 class CartridgeTest : public ROMTest {};
 

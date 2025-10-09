@@ -167,7 +167,7 @@ def write_cpu_impls(opcodes, path, description="CPU Function Implementations"):
             f.write(f"#ifndef {macro_name}\n")
             f.write(f"void boyboy::cpu::Cpu::{func_name}() {{\n")
             f.write(
-                f'    throw boyboy::errors::UnimplementedOpcode(0x{opcode_int:02X}, "{mnemonic}");\n'
+                f'    throw boyboy::common::errors::UnimplementedOpcode(0x{opcode_int:02X}, "{mnemonic}");\n'
             )
             f.write("}\n")
             f.write(f"#endif // {macro_name}\n\n")

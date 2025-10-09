@@ -14,7 +14,7 @@
 #include <ostream>
 #include <string>
 
-namespace boyboy::utils {
+namespace boyboy::common::utils {
 
 // Byte manipulation utilities
 constexpr uint16_t to_u16(uint8_t msb, uint8_t lsb)
@@ -71,4 +71,4 @@ std::string printable_char(char c);
 char* as_char_ptr(std::byte* ptr) noexcept;
 const char* as_char_ptr(const std::byte* ptr) noexcept;
 
-} // namespace boyboy::utils
+} // namespace boyboy::common::utils

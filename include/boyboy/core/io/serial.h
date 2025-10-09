@@ -10,10 +10,10 @@
 #include <iostream>
 #include <ostream>
 
-#include "boyboy/cpu/interrupts.h"
-#include "boyboy/io/iocomponent.h"
+#include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/io/iocomponent.h"
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 class Serial : public IoComponent {
 public:
@@ -32,4 +32,4 @@ private:
     cpu::InterruptRequestCallback request_interrupt_;
 };
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io

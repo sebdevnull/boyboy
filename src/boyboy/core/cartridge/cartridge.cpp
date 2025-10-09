@@ -5,7 +5,7 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/cart/cartridge.h"
+#include "boyboy/core/cartridge/cartridge.h"
 
 #include <cstdint>
 #include <format>
@@ -13,12 +13,14 @@
 #include <numeric>
 #include <stdexcept>
 
-#include "boyboy/cart/mbc.h"
+#include "boyboy/core/cartridge/mbc.h"
 #include "boyboy/common/errors.h"
 #include "boyboy/common/utils.h"
-#include "boyboy/log/logging.h"
+#include "boyboy/common/log/logging.h"
 
-namespace boyboy::cart {
+namespace boyboy::core::cartridge {
+
+using namespace boyboy::common;
 
 void Cartridge::load_rom(RomData&& rom_data)
 {
@@ -41,7 +43,7 @@ void Cartridge::load_rom()
         throw std::runtime_error(std::format(
             "Unsupported cartridge type: {} ({})",
             to_string(cart_type),
-            utils::PrettyHex{static_cast<uint8_t>(cart_type)}.to_string()
+            common::utils::PrettyHex{static_cast<uint8_t>(cart_type)}.to_string()
         ));
     }
 
@@ -110,12 +112,12 @@ uint16_t Cartridge::rom_checksum(const RomData& rom_data)
         rom_data.begin(),
         rom_data.end(),
         uint16_t{0},
-        [](uint16_t acc, std::byte b) { return acc + utils::to_u8(b); }
+        [](uint16_t acc, std::byte b) { return acc + common::utils::to_u8(b); }
     );
 
     // Don't compute the checksum bytes
-    cks -= utils::to_u8(rom_data.at(Header::ChecksumPos));
-    cks -= utils::to_u8(rom_data.at(Header::ChecksumPos + 1));
+    cks -= common::utils::to_u8(rom_data.at(Header::ChecksumPos));
+    cks -= common::utils::to_u8(rom_data.at(Header::ChecksumPos + 1));
 
     return cks;
 }
@@ -133,8 +135,8 @@ uint8_t Cartridge::validate_header_checksum()
     if (!pass) {
         log::warn(
             "ROM header checksum mismatch: {} != {}",
-            utils::PrettyHex{header_.header_checksum}.to_string(),
-            utils::PrettyHex{cks}.to_string()
+            common::utils::PrettyHex{header_.header_checksum}.to_string(),
+            common::utils::PrettyHex{cks}.to_string()
         );
     }
 
@@ -154,8 +156,8 @@ uint16_t Cartridge::validate_rom_checksum()
     if (!pass) {
         log::warn(
             "ROM checksum mismatch: {} != {}",
-            utils::PrettyHex{header_.checksum}.to_string(),
-            utils::PrettyHex{cks}.to_string()
+            common::utils::PrettyHex{header_.checksum}.to_string(),
+            common::utils::PrettyHex{cks}.to_string()
         );
     }
 
@@ -318,7 +320,7 @@ std::string_view to_string(CartridgeType type)
         default:
             throw std::runtime_error(std::format(
                 "Unknown ROM size code: {}",
-                utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()
+                common::utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()
             ));
     }
 }
@@ -399,7 +401,7 @@ std::string_view to_string(CartridgeType type)
         default:
             throw std::runtime_error(std::format(
                 "Unknown RAM size code: {}",
-                utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()
+                common::utils::PrettyHex{static_cast<uint8_t>(size)}.to_string()
             ));
     }
 }
@@ -435,11 +437,11 @@ std::string_view to_string(CartridgeType type)
     oss << "{title: " << title << ", "
         << "cbg_flag: " << PrettyHex{cgb_flag} << ", "
         << "sgb_flag: " << PrettyHex{sgb_flag} << ", "
-        << "cart_Type: " << cart::to_string(cartridge_type).data() << ", "
+        << "cart_Type: " << cartridge::to_string(cartridge_type).data() << ", "
         << "rom_size: " << PrettyHex{static_cast<uint8_t>(rom_size)} << " ("
-        << cart::to_string(rom_size) << ", " << num_rom_banks(rom_size) << " banks), "
+        << cartridge::to_string(rom_size) << ", " << num_rom_banks(rom_size) << " banks), "
         << "ram_size: " << PrettyHex{static_cast<uint8_t>(ram_size)} << " ("
-        << cart::to_string(ram_size) << ", " << num_ram_banks(ram_size) << " banks), "
+        << cartridge::to_string(ram_size) << ", " << num_ram_banks(ram_size) << " banks), "
         << "header_cks: " << PrettyHex{header_checksum} << ", "
         << "cks: " << PrettyHex{checksum} << "}";
 
@@ -454,15 +456,15 @@ std::string_view to_string(CartridgeType type)
     oss << "Title: " << title << "\n"
         << "CGB Flag: " << PrettyHex{cgb_flag} << "\n"
         << "SGB Flag: " << PrettyHex{sgb_flag} << "\n"
-        << "Cartridge Type: " << cart::to_string(cartridge_type).data() << "\n"
+        << "Cartridge Type: " << cartridge::to_string(cartridge_type).data() << "\n"
         << "ROM Size: " << PrettyHex{static_cast<uint8_t>(rom_size)} << " ("
-        << cart::to_string(rom_size) << ", " << num_rom_banks(rom_size) << " banks)\n"
+        << cartridge::to_string(rom_size) << ", " << num_rom_banks(rom_size) << " banks)\n"
         << "RAM Size: " << PrettyHex{static_cast<uint8_t>(ram_size)} << " ("
-        << cart::to_string(ram_size) << ", " << num_ram_banks(ram_size) << " banks)\n"
+        << cartridge::to_string(ram_size) << ", " << num_ram_banks(ram_size) << " banks)\n"
         << "Header Checksum: " << PrettyHex{header_checksum} << "\n"
         << "Global Checksum: " << PrettyHex{checksum} << "\n";
 
     return oss.str();
 }
 
-} // namespace boyboy::cart
+} // namespace boyboy::core::cartridge

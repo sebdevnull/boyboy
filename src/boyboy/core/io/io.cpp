@@ -5,9 +5,9 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include "boyboy/io/io.h"
+#include "boyboy/core/io/io.h"
 
-namespace boyboy::io {
+namespace boyboy::core::io {
 
 Io::Io()
 {
@@ -76,4 +76,4 @@ void Io::reset()
     }
 }
 
-} // namespace boyboy::io
+} // namespace boyboy::core::io
