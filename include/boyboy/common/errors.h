@@ -47,7 +47,9 @@ public:
 private:
     static std::string make_message(uint8_t opcode)
     {
-        return std::format("Illegal Opcode {} encountered", common::utils::PrettyHex{opcode}.to_string());
+        return std::format(
+            "Illegal Opcode {} encountered", common::utils::PrettyHex{opcode}.to_string()
+        );
     }
 };
 

@@ -16,8 +16,8 @@
 #include <array>
 #include <iostream>
 
-#include "boyboy/core/io/buttons.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/core/io/buttons.h"
 #include "boyboy/core/ppu/ppu.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 

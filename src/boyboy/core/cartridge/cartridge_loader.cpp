@@ -11,9 +11,9 @@
 #include <format>
 #include <fstream>
 
-#include "boyboy/core/cartridge/cartridge.h"
-#include "boyboy/common/utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/utils.h"
+#include "boyboy/core/cartridge/cartridge.h"
 
 namespace boyboy::core::cartridge {
 

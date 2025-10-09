@@ -13,10 +13,10 @@
 #include <numeric>
 #include <stdexcept>
 
-#include "boyboy/core/cartridge/mbc.h"
 #include "boyboy/common/errors.h"
-#include "boyboy/common/utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/utils.h"
+#include "boyboy/core/cartridge/mbc.h"
 
 namespace boyboy::core::cartridge {
 

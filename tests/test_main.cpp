@@ -18,7 +18,9 @@ int main(int argc, char** argv)
     // Initialize logging
     boyboy::common::log::init("logs/test_boyboy.log", true);
 
-    boyboy::common::log::debug("Tests working directory: {}", std::filesystem::current_path().string());
+    boyboy::common::log::debug(
+        "Tests working directory: {}", std::filesystem::current_path().string()
+    );
 
     int result = RUN_ALL_TESTS();
 

@@ -156,11 +156,17 @@ private:
     {
         switch (r16) {
             case boyboy::core::cpu::Reg16Name::HL:
-                return (r8 == boyboy::core::cpu::Reg8Name::H || r8 == boyboy::core::cpu::Reg8Name::L);
+                return (
+                    r8 == boyboy::core::cpu::Reg8Name::H || r8 == boyboy::core::cpu::Reg8Name::L
+                );
             case boyboy::core::cpu::Reg16Name::BC:
-                return (r8 == boyboy::core::cpu::Reg8Name::B || r8 == boyboy::core::cpu::Reg8Name::C);
+                return (
+                    r8 == boyboy::core::cpu::Reg8Name::B || r8 == boyboy::core::cpu::Reg8Name::C
+                );
             case boyboy::core::cpu::Reg16Name::DE:
-                return (r8 == boyboy::core::cpu::Reg8Name::D || r8 == boyboy::core::cpu::Reg8Name::E);
+                return (
+                    r8 == boyboy::core::cpu::Reg8Name::D || r8 == boyboy::core::cpu::Reg8Name::E
+                );
             case boyboy::core::cpu::Reg16Name::AF:
                 return (r8 == boyboy::core::cpu::Reg8Name::A /* || r8 == Reg8Name::F */);
             default:

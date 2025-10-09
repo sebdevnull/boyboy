@@ -9,9 +9,9 @@
 
 #include <cstdint>
 
+#include "boyboy/common/log/logging.h"
 #include "boyboy/core/cpu/instructions.h"
 #include "boyboy/core/cpu/instructions_table.h"
-#include "boyboy/common/log/logging.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 
 namespace boyboy::core::cpu {
@@ -184,7 +184,9 @@ void Cpu::trace() const
 {
     log::cpu_trace("--- CPU TRACE ---");
     log::cpu_trace(
-        "Instruction: {} ({})", disassemble(registers_.pc), common::utils::PrettyHex(peek()).to_string()
+        "Instruction: {} ({})",
+        disassemble(registers_.pc),
+        common::utils::PrettyHex(peek()).to_string()
     );
     log::cpu_trace(
         "Next bytes: {} {} {}",

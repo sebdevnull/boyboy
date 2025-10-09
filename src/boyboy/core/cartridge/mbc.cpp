@@ -12,9 +12,9 @@
 #include <format>
 #include <ranges>
 
-#include "boyboy/core/cartridge/cartridge.h"
-#include "boyboy/common/utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/utils.h"
+#include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/mmu/constants.h"
 
 namespace boyboy::core::cartridge::mbc {

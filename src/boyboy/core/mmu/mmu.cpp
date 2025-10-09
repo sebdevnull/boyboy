@@ -20,9 +20,9 @@
 #include <stdexcept>
 #include <string>
 
-#include "boyboy/core/cartridge/cartridge.h"
-#include "boyboy/common/utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/utils.h"
+#include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/mmu/constants.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 
@@ -151,7 +151,8 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
     if (dma_.active && addr >= OAMStart && addr <= OAMEnd) {
         // Ignore writes to OAM during DMA transfer
         log::warn(
-            "Attempted write to OAM during DMA transfer at {}", common::utils::PrettyHex(addr).to_string()
+            "Attempted write to OAM during DMA transfer at {}",
+            common::utils::PrettyHex(addr).to_string()
         );
         BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
 
@@ -161,7 +162,9 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
     auto& region = region_lookup(addr);
 
     if (region.read_only) {
-        log::warn("Attempted write to read-only memory at {}", common::utils::PrettyHex(addr).to_string());
+        log::warn(
+            "Attempted write to read-only memory at {}", common::utils::PrettyHex(addr).to_string()
+        );
         BB_PROFILE_STOP(profiling::HotSection::MmuWrite);
 
         return;
@@ -206,7 +209,9 @@ void Mmu::write_word(uint16_t addr, uint16_t value)
     auto& region = region_lookup(addr);
 
     if (region.read_only) {
-        log::warn("Attempted write to read-only memory at {}", common::utils::PrettyHex(addr).to_string());
+        log::warn(
+            "Attempted write to read-only memory at {}", common::utils::PrettyHex(addr).to_string()
+        );
         return;
     }
 
@@ -243,7 +248,8 @@ void Mmu::copy(uint16_t dst_addr, std::span<uint8_t> src)
 
     if (region.read_only) {
         log::warn(
-            "Attempted copy to read-only memory at {}", common::utils::PrettyHex(dst_addr).to_string()
+            "Attempted copy to read-only memory at {}",
+            common::utils::PrettyHex(dst_addr).to_string()
         );
         return;
     }
@@ -321,7 +327,9 @@ void Mmu::Dma::tick(uint16_t cycles, Mmu& mmu)
 
     if (bytes_remaining == 0) {
         active = false;
-        log::trace("DMA transfer completed, checksum: {}", common::utils::PrettyHex(cks).to_string());
+        log::trace(
+            "DMA transfer completed, checksum: {}", common::utils::PrettyHex(cks).to_string()
+        );
     }
 }
 
@@ -366,7 +374,9 @@ void Mmu::dump(uint16_t start_addr, uint16_t end_addr, const std::string& filena
 void Mmu::init_memory_map()
 {
     auto unloaded_rom_read = [](uint16_t addr) -> uint8_t {
-        log::warn("Read from ROM before ROM loaded at {}", common::utils::PrettyHex(addr).to_string());
+        log::warn(
+            "Read from ROM before ROM loaded at {}", common::utils::PrettyHex(addr).to_string()
+        );
         return OpenBusValue;
     };
     auto unloaded_rom_write = [](uint16_t addr, uint8_t value) {
@@ -377,7 +387,9 @@ void Mmu::init_memory_map()
         );
     };
     auto unloaded_eram_read = [](uint16_t addr) -> uint8_t {
-        log::warn("Read from ERAM before ROM loaded at {}", common::utils::PrettyHex(addr).to_string());
+        log::warn(
+            "Read from ERAM before ROM loaded at {}", common::utils::PrettyHex(addr).to_string()
+        );
         return OpenBusValue;
     };
     auto unloaded_eram_write = [](uint16_t addr, uint8_t value) {
@@ -487,12 +499,14 @@ void Mmu::init_memory_map()
         .read_handler = [&](uint16_t addr) -> uint8_t {
 #ifdef DEBUG
             // In debug mode, throw for easier debugging
-            throw std::out_of_range(
-                std::format("Read from unmapped memory at {}", common::utils::PrettyHex(addr).to_string())
-            );
+            throw std::out_of_range(std::format(
+                "Read from unmapped memory at {}", common::utils::PrettyHex(addr).to_string()
+            ));
 #else
             // In release mode, log a warning and return open bus value
-            log::warn("Read from unmapped memory at {}", common::utils::PrettyHex(addr).to_string());
+            log::warn(
+                "Read from unmapped memory at {}", common::utils::PrettyHex(addr).to_string()
+            );
             return OpenBusValue;
 #endif
         },

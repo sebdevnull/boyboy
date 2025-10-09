@@ -13,12 +13,12 @@
 #include "boyboy/common/utils.h"
 #include "boyboy/core/mmu/constants.h"
 
+using boyboy::common::utils::PrettyHex;
 using boyboy::core::mmu::ERAMStart;
 using boyboy::core::mmu::ROMBank0End;
 using boyboy::core::mmu::ROMBank0Start;
 using boyboy::core::mmu::ROMBank1End;
 using boyboy::core::mmu::ROMBank1Start;
-using boyboy::common::utils::PrettyHex;
 
 // Helpers
 #include "helpers/rom_fixtures.h"
@@ -29,8 +29,10 @@ class RomOnlyTest : public FakeROMTest {
 protected:
     void SetUp() override
     {
-        rom_data = make_fake_rom(boyboy::core::cartridge::CartridgeType::ROMOnly, 2, 0, "ROM_ONLY_TEST");
-        cart     = std::make_unique<boyboy::core::cartridge::Cartridge>(
+        rom_data = make_fake_rom(
+            boyboy::core::cartridge::CartridgeType::ROMOnly, 2, 0, "ROM_ONLY_TEST"
+        );
+        cart = std::make_unique<boyboy::core::cartridge::Cartridge>(
             boyboy::core::cartridge::CartridgeLoader::load(rom_data)
         );
     }

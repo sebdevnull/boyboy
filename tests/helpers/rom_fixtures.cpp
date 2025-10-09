@@ -18,8 +18,8 @@
 
 // boyboy
 #include "boyboy/common/errors.h"
-#include "boyboy/common/utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/utils.h"
 
 namespace boyboy::test::rom {
 
@@ -89,8 +89,11 @@ void ROMTest::load(const std::string& path)
         // TODO: use project path
         // Temporary hack to use parent directory file path, until we figure out why project's
         // path behaves so weirdly
-        cart = boyboy::core::cartridge::CartridgeLoader::load(common::local_file("../" + path, __FILE__));
-        // cart = boyboy::core::cartridge::CartridgeLoader::load(boyboy::test::common::project_file(path));
+        cart = boyboy::core::cartridge::CartridgeLoader::load(
+            common::local_file("../" + path, __FILE__)
+        );
+        // cart =
+        // boyboy::core::cartridge::CartridgeLoader::load(boyboy::test::common::project_file(path));
     }
     catch (const errors::ChecksumError& e) {
         log::warn("[ROM] Error loading ROM {}: {}", path, e.what());
@@ -181,7 +184,9 @@ core::cartridge::RomData FakeROMTest::make_fake_rom(
     // Minimum 2 rom_banks (no banking)
     rom_banks = std::max(rom_banks, uint16_t{2});
 
-    core::cartridge::RomData rom_data(static_cast<long>(rom_banks) * core::cartridge::mbc::RomBankSize);
+    core::cartridge::RomData rom_data(
+        static_cast<long>(rom_banks) * core::cartridge::mbc::RomBankSize
+    );
 
     // Fill each bank with its index
     for (long i = 0; i < rom_banks; i++) {
@@ -194,8 +199,10 @@ core::cartridge::RomData FakeROMTest::make_fake_rom(
 
     // Header setup
     rom_data.at(Cartridge::Header::CartridgeTypePos) = std::byte(type);
-    rom_data.at(Cartridge::Header::ROMSizePos) = std::byte(core::cartridge::rom_size_from_banks(rom_banks));
-    rom_data.at(Cartridge::Header::RAMSizePos) = std::byte(core::cartridge::ram_size_from_banks(ram_banks));
+    rom_data.at(Cartridge::Header::ROMSizePos
+    ) = std::byte(core::cartridge::rom_size_from_banks(rom_banks));
+    rom_data.at(Cartridge::Header::RAMSizePos
+    ) = std::byte(core::cartridge::ram_size_from_banks(ram_banks));
 
     // Title (max 16 chars)
     if (title.empty()) {
@@ -220,7 +227,9 @@ void MBCParamTest::SetUp()
 {
     auto p   = GetParam();
     rom_data = make_fake_rom(p.type, p.rom_banks, p.ram_banks, p.name);
-    cart     = std::make_unique<core::cartridge::Cartridge>(core::cartridge::CartridgeLoader::load(rom_data));
+    cart     = std::make_unique<core::cartridge::Cartridge>(
+        core::cartridge::CartridgeLoader::load(rom_data)
+    );
 }
 
 } // namespace boyboy::test::rom

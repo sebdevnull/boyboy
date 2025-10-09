@@ -10,10 +10,10 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/registers.h"
-#include "boyboy/common/log/logging.h"
 #include "boyboy/core/mmu/constants.h"
 #include "boyboy/core/ppu/registers.h"
 #include "boyboy/core/profiling/profiler_utils.h"
@@ -549,14 +549,18 @@ void Ppu::request_interrupt(uint8_t interrupt)
     uint8_t ie_reg = mem_read(IoReg::Interrupts::IE);
     uint8_t if_reg = mem_read(IoReg::Interrupts::IF);
     log::trace(
-        "IE: {}, IF: {}", common::utils::PrettyHex(ie_reg).to_string(), common::utils::PrettyHex(if_reg).to_string()
+        "IE: {}, IF: {}",
+        common::utils::PrettyHex(ie_reg).to_string(),
+        common::utils::PrettyHex(if_reg).to_string()
     );
 }
 
 [[nodiscard]] uint8_t Ppu::mem_read(uint16_t addr) const
 {
     if (!mem_read_cb_) {
-        log::warn("PPU memory read at {} but no callback set", common::utils::PrettyHex(addr).to_string());
+        log::warn(
+            "PPU memory read at {} but no callback set", common::utils::PrettyHex(addr).to_string()
+        );
         return 0xFF;
     }
     return mem_read_cb_(addr);
@@ -564,7 +568,9 @@ void Ppu::request_interrupt(uint8_t interrupt)
 void Ppu::mem_write(uint16_t addr, uint8_t value)
 {
     if (!mem_write_cb_) {
-        log::warn("PPU memory write at {} but no callback set", common::utils::PrettyHex(addr).to_string());
+        log::warn(
+            "PPU memory write at {} but no callback set", common::utils::PrettyHex(addr).to_string()
+        );
         return;
     }
     mem_write_cb_(addr, value);
@@ -572,7 +578,9 @@ void Ppu::mem_write(uint16_t addr, uint8_t value)
 void Ppu::dma_start(uint8_t value)
 {
     if (!dma_start_cb_) {
-        log::warn("PPU DMA start at {} but no callback set", common::utils::PrettyHex(value).to_string());
+        log::warn(
+            "PPU DMA start at {} but no callback set", common::utils::PrettyHex(value).to_string()
+        );
         return;
     }
     dma_start_cb_(value);

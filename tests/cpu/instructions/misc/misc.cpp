@@ -21,8 +21,8 @@
 
 using boyboy::test::cpu::CpuTest;
 
-using boyboy::core::cpu::Opcode;
 using boyboy::common::errors::IllegalOpcode;
+using boyboy::core::cpu::Opcode;
 
 // -----------------------------
 // Test types

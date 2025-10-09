@@ -9,8 +9,8 @@
 #include <span>
 #include <stdexcept>
 
-#include "boyboy/core/emulator/emulator.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/core/emulator/emulator.h"
 
 using namespace boyboy::common;
 using namespace boyboy::core;

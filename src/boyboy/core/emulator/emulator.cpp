@@ -10,8 +10,8 @@
 #include <chrono>
 #include <thread>
 
-#include "boyboy/core/cartridge/cartridge_loader.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/core/cartridge/cartridge_loader.h"
 #include "boyboy/core/ppu/ppu.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 

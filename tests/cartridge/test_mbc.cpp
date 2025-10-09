@@ -19,12 +19,12 @@ using boyboy::test::common::param_name;
 using boyboy::test::rom::MBCParam;
 using boyboy::test::rom::MBCParamTest;
 
+using boyboy::common::utils::PrettyHex;
 using boyboy::core::cartridge::CartridgeType;
 using boyboy::core::cartridge::mbc::Mbc;
 using boyboy::core::cartridge::mbc::MbcType;
 using boyboy::core::mmu::ERAMStart;
 using boyboy::core::mmu::ROMBank1Start;
-using boyboy::common::utils::PrettyHex;
 
 TEST_P(MBCParamTest, InitialState)
 {

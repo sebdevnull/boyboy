@@ -82,7 +82,10 @@ struct MBCParam {
 class FakeROMTest : public ::testing::Test {
 protected:
     static core::cartridge::RomData make_fake_rom(
-        core::cartridge::CartridgeType type, uint16_t rom_banks, uint8_t ram_banks, std::string title = ""
+        core::cartridge::CartridgeType type,
+        uint16_t rom_banks,
+        uint8_t ram_banks,
+        std::string title = ""
     );
 
     core::cartridge::RomData rom_data;
