@@ -9,6 +9,8 @@
 #include <span>
 #include <stdexcept>
 
+#include "boyboy/common/config/config.h"
+#include "boyboy/common/config/config_utils.h"
 #include "boyboy/common/log/logging.h"
 #include "boyboy/core/emulator/emulator.h"
 
@@ -29,6 +31,11 @@ int main(int argc, const char** argv)
 
     emulator::Emulator emulator;
 
+    // Load and apply configuration
+    config::Config config = config::load_config();
+    emulator.apply_config(config);
+
+    // Load ROM
     try {
         emulator.load(args[1]);
     }
@@ -37,6 +44,7 @@ int main(int argc, const char** argv)
         return 1;
     }
 
+    // Run emulator
     emulator.run();
 
     log::info("Exiting BoyBoy emulator");

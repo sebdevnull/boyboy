@@ -38,13 +38,22 @@ public:
     void poll_events(bool& running);
     void render_frame(const ppu::FrameBuffer& framebuffer);
 
+    // Accessors
+    [[nodiscard]] int width() const { return width_ * scale_; }
+    [[nodiscard]] int height() const { return height_ * scale_; }
+    [[nodiscard]] int scale() const { return scale_; }
+    [[nodiscard]] bool vsync() const { return vsync_; }
+    void set_scale(int scale) { scale_ = scale; }
+    void set_vsync(bool vsync) { vsync_ = vsync; }
+
     // Button event callback
     void set_button_cb(ButtonCallback cb) { button_cb_ = std::move(cb); }
 
 private:
     int width_ = ppu::LCDWidth;
     int height_ = ppu::LCDHeight;
-    int scale_;
+    int scale_ = DefaultScale;
+    bool vsync_ = true;
 
     ButtonCallback button_cb_;
 
