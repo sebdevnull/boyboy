@@ -10,6 +10,7 @@
 #include <chrono>
 #include <thread>
 
+#include "boyboy/common/config/config.h"
 #include "boyboy/common/log/logging.h"
 #include "boyboy/core/cartridge/cartridge_loader.h"
 #include "boyboy/core/ppu/ppu.h"
@@ -86,9 +87,9 @@ void Emulator::run()
         emulate_frame();
         render_frame();
 
-        // Frame limiting (if needed) at 59.73Hz
+        // Frame limiting (if needed) at 59.73Hz * speed_
         if (frame_rate_limited_) {
-            next_frame_time += FrameDuration;
+            next_frame_time += FrameDuration / speed_;
             auto now = clock::now();
             if (now < next_frame_time) {
                 std::this_thread::sleep_until(next_frame_time);
@@ -108,6 +109,24 @@ void Emulator::reset()
     cpu_.reset();
     mmu_.reset();
     io_.reset();
+}
+
+void Emulator::apply_config(const common::config::Config& config)
+{
+    log::info("Applying configuration...");
+
+    // Emulator settings
+    speed_ = config.emulator.speed;
+    frame_rate_limited_ = speed_ != 0;
+
+    // Video settings
+    display_.set_scale(config.video.scale);
+    display_.set_vsync(config.video.vsync);
+
+    // Logging settings
+    log::set_level(config.debug.log_level);
+
+    log::info("Configuration applied");
 }
 
 void Emulator::on_button_event(io::Button button, bool pressed)

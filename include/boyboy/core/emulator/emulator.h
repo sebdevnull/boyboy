@@ -16,6 +16,11 @@
 #include "boyboy/core/mmu/mmu.h"
 #include "boyboy/core/ppu/ppu.h"
 
+// Forward declaration
+namespace boyboy::common::config {
+struct Config;
+}
+
 namespace boyboy::core::emulator {
 
 class Emulator {
@@ -35,6 +40,9 @@ public:
     void limit_frame_rate(bool limit) { frame_rate_limited_ = limit; }
     [[nodiscard]] bool is_frame_rate_limited() const { return frame_rate_limited_; }
 
+    // Configuration
+    void apply_config(const common::config::Config& config);
+
     // Button event handler
     void on_button_event(io::Button button, bool pressed);
 
@@ -52,6 +60,7 @@ private:
     bool running_ = false;
     bool started_ = false;
     bool frame_rate_limited_ = true;
+    int speed_ = 1;
 
     // Statistics
     uint64_t instruction_count_ = 0;
