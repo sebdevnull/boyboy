@@ -9,8 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Added
+
+- **Configuration system** based on TOML, with support for limits, default values, validation, and normalization.
+  - `Config` struct and config keys for emulator, video, and debug settings.
+  - `IConfigLoader` interface and `TomlConfigLoader` implementation.
+  - `ConfigValidator` for config validation and normalization.
+  - High-level API for loading and saving config files (`load_config`, `save_config`).
+- Log level configuration and conversion helpers.
+- Display accessors for scale and vsync.
+- Emulator configuration application method.
+- Frame limiting based on configured speed.
+- Unit tests for configuration logic.
+
 ### Changed
 
+- Emulator and Display now apply configuration at startup.
+- Logging system supports configurable log levels.
 - Reorganize codebase moving core components under `boyboy/core/` directory.
 - Improve helper scripts `format.py` and `generate_opcodes.py`.
 
