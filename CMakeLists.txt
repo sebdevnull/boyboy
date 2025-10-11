@@ -30,6 +30,14 @@ FetchContent_MakeAvailable(spdlog)
 set_target_properties(spdlog PROPERTIES CXX_CLANG_TIDY "")
 set_target_properties(spdlog_header_only PROPERTIES CXX_CLANG_TIDY "")
 
+# --- Fetch toml++ ---
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG v3.4.0
+)
+FetchContent_MakeAvailable(tomlplusplus)
+
 # --- System dependencies ---
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -86,6 +94,9 @@ endif()
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/common/utils.cpp
+    src/boyboy/common/config/config_utils.cpp
+    src/boyboy/common/config/config_validator.cpp
+    src/boyboy/common/config/toml_config_loader.cpp
     src/boyboy/core/cpu/cpu.cpp
     src/boyboy/core/cpu/instructions.cpp
     src/boyboy/core/cpu/instructions_table.cpp
@@ -112,8 +123,13 @@ target_include_directories(${BOYBOY_LIB}
     ${CMAKE_SOURCE_DIR}/src/boyboy
 )
 
-# --- Link spdlog to the library ---
-target_link_libraries(${BOYBOY_LIB} PUBLIC spdlog::spdlog_header_only)
+# --- Link dependencies ---
+target_link_libraries(${BOYBOY_LIB} PUBLIC
+    spdlog::spdlog_header_only
+    tomlplusplus::tomlplusplus
+    SDL2::SDL2
+    OpenGL::GL
+)
 
 # Ensure artifact name is clean
 set_target_properties(${BOYBOY_LIB} PROPERTIES
@@ -127,11 +143,9 @@ target_compile_options(${BOYBOY_APP} PRIVATE
     -Wall -Wextra -Wpedantic
 )
 
-# --- Link libraries ---
+# --- Link BoyBoy lib
 target_link_libraries(${BOYBOY_APP} PRIVATE
     ${BOYBOY_LIB}
-    SDL2::SDL2
-    OpenGL::GL
 )
 
 # ---- Sanitizer option ----

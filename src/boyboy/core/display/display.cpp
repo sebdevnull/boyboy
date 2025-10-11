@@ -56,7 +56,8 @@ bool Display::init(const std::string& title)
         return false;
     }
 
-    SDL_GL_SetSwapInterval(1); // Enable vsync
+    // Enable VSync
+    SDL_GL_SetSwapInterval(vsync_ ? 1 : 0);
 
     if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) { // NOLINT
         std::cerr << "Failed to initialize GLAD\n";

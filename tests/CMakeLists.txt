@@ -60,6 +60,7 @@ set(TEST_SOURCES
     cpu/instructions/instructions_8bit.cpp
     cpu/instructions/instructions_16bit.cpp
     cpu/test_roms.cpp
+    config/test_config.cpp
 )
 
 # --- Options ---

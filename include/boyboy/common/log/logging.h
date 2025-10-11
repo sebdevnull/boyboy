@@ -21,6 +21,56 @@
 
 namespace boyboy::common::log {
 
+enum class LogLevel : uint8_t { Trace, Debug, Info, Warn, Error, Critical, Off };
+
+inline LogLevel log_level_from_string(const std::string& level_str)
+{
+    if (level_str == "trace") {
+        return LogLevel::Trace;
+    }
+    if (level_str == "debug") {
+        return LogLevel::Debug;
+    }
+    if (level_str == "info") {
+        return LogLevel::Info;
+    }
+    if (level_str == "warn") {
+        return LogLevel::Warn;
+    }
+    if (level_str == "error") {
+        return LogLevel::Error;
+    }
+    if (level_str == "critical") {
+        return LogLevel::Critical;
+    }
+    if (level_str == "off") {
+        return LogLevel::Off;
+    }
+    return LogLevel::Info; // default
+}
+
+inline std::string log_level_to_string(LogLevel level)
+{
+    switch (level) {
+        case LogLevel::Trace:
+            return "trace";
+        case LogLevel::Debug:
+            return "debug";
+        case LogLevel::Info:
+            return "info";
+        case LogLevel::Warn:
+            return "warn";
+        case LogLevel::Error:
+            return "error";
+        case LogLevel::Critical:
+            return "critical";
+        case LogLevel::Off:
+            return "off";
+        default:
+            return "info";
+    }
+}
+
 inline void init(const std::string& log_file = "logs/boyboy.log", bool async = true)
 {
     try {
@@ -128,6 +178,41 @@ template <typename... Args>
 inline void error(const char* fmt, Args&&... args)
 {
     spdlog::log(spdlog::level::err, fmt::runtime(fmt), std::forward<Args>(args)...);
+}
+
+inline void set_level(LogLevel level)
+{
+    switch (level) {
+        case LogLevel::Trace:
+            spdlog::set_level(spdlog::level::trace);
+            break;
+        case LogLevel::Debug:
+            spdlog::set_level(spdlog::level::debug);
+            break;
+        case LogLevel::Info:
+            spdlog::set_level(spdlog::level::info);
+            break;
+        case LogLevel::Warn:
+            spdlog::set_level(spdlog::level::warn);
+            break;
+        case LogLevel::Error:
+            spdlog::set_level(spdlog::level::err);
+            break;
+        case LogLevel::Critical:
+            spdlog::set_level(spdlog::level::critical);
+            break;
+        case LogLevel::Off:
+            spdlog::set_level(spdlog::level::off);
+            break;
+        default:
+            spdlog::set_level(spdlog::level::info);
+            break;
+    }
+}
+
+inline void set_level(const std::string& level_str)
+{
+    set_level(log_level_from_string(level_str));
 }
 
 // Shutdown logging (flushes and cleans up)
