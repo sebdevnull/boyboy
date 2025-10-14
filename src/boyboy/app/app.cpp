@@ -8,10 +8,12 @@
 #include "boyboy/app/app.h"
 
 #include <filesystem>
+#include <sstream>
 
 #include "boyboy/common/config/config.h"
 #include "boyboy/common/config/config_utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/version.h"
 
 namespace boyboy::app {
 
@@ -51,6 +53,32 @@ common::config::Config& App::load_config(std::optional<std::string_view> config_
 
     config_ = config::load_config(path);
     return config_;
+}
+
+std::string App::version()
+{
+    std::ostringstream oss;
+    oss << "BoyBoy version " << version::VersionStr << " (commit " << version::GitCommit << ")\n"
+        << version::LicenseShort << "\n"
+        << "Build type: " << version::BuildType << "\n"
+        << "Compiler: " << version::CompilerID << " " << version::CompilerVersion;
+
+    return oss.str();
+}
+
+std::string App::build_info()
+{
+    std::ostringstream oss;
+    oss << "BoyBoy version " << version::VersionStr << " (commit " << version::GitCommit
+        << ", branch " << version::GitBranch << ", tag " << version::GitTag << ")\n"
+        << version::LicenseShort << "\n"
+        << "Build type:     " << version::BuildType << "\n"
+        << "Compiler:       " << version::CompilerID << " " << version::CompilerVersion << "\n"
+        << "System:         " << version::SystemName << " (" << version::SystemProcessor << ")\n"
+        << "CMake version:  " << version::CmakeVersion << "\n"
+        << "Build timestamp:" << version::BuildTimestamp;
+
+    return oss.str();
 }
 
 } // namespace boyboy::app

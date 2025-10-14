@@ -9,8 +9,10 @@
 
 #include <CLI/CLI.hpp>
 
+#include "boyboy/app/app.h"
 #include "boyboy/common/config/config_limits.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/version.h"
 
 namespace boyboy::frontend::cli {
 
@@ -23,7 +25,20 @@ CLI11Adapter::CLI11Adapter(app::App& app, app::commands::CommandContext& context
     app_parser_.description("BoyBoy - A Game Boy emulator");
     app_parser_.set_help_flag("-h,--help", "Print help message and exit");
     app_parser_.set_help_all_flag("--help-all", "Print all help messages and exit");
-    app_parser_.require_subcommand(1);
+    app_parser_.set_version_flag("-v,--version", app::App::version());
+    app_parser_.add_flag_callback(
+        "--build-info",
+        [] {
+            std::cout << app::App::build_info() << "\n";
+            std::exit(0);
+        },
+        "Display detailed build information and exit"
+    );
+
+    app_parser_.footer(std::format(
+        "For more information and bug reports, visit <https://github.com/sebdevnull/boyboy>\n\n{}",
+        version::LicenseLong
+    ));
 }
 
 int CLI11Adapter::run(std::span<std::string_view> args)
@@ -45,6 +60,11 @@ void CLI11Adapter::register_command(app::commands::ICommand& command)
 
 int CLI11Adapter::parse(std::span<std::string_view> args)
 {
+    if (args.size() <= 1) {
+        std::cout << app_parser_.help();
+        return 0;
+    }
+
     std::vector<const char*> argv;
     for (const auto& arg : args) {
         argv.push_back(arg.data());
@@ -92,9 +112,6 @@ void CLI11Adapter::register_run(app::commands::ICommand& command)
         "--vsync,!--no-vsync", context_.vsync, "Enable or disable vertical synchronization"
     );
 
-    // convert log level options to vector of strings for CLI11
-    auto log_levels = common::config::ConfigLimits::Debug::LogLevels;
-
     cmd->add_option(
            "--log-level",
            context_.log_level,
@@ -104,7 +121,7 @@ void CLI11Adapter::register_run(app::commands::ICommand& command)
            )
     )
         ->option_text("LEVEL")
-        ->check(CLI::IsMember(log_levels));
+        ->check(CLI::IsMember(common::config::ConfigLimits::Debug::LogLevels));
 
     cmd->callback([this, &command]() { command.execute(app_, context_); });
 }

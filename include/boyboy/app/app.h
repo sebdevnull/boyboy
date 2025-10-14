@@ -25,11 +25,17 @@ namespace boyboy::app {
 
 class App {
 public:
+    // Main application operations
     int run(std::string_view rom_path);
 
+    // Configuration management
     common::config::Config& load_config(std::optional<std::string_view> config_path = std::nullopt);
     [[nodiscard]] const common::config::Config& get_config() const { return config_; }
     [[nodiscard]] common::config::Config& get_config() { return config_; }
+
+    // Version information
+    [[nodiscard]] static std::string version();
+    [[nodiscard]] static std::string build_info();
 
 private:
     common::config::Config config_ = common::config::Config::default_config();
