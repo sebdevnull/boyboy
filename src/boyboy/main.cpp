@@ -5,50 +5,29 @@
  * @license GPLv3 (see LICENSE file)
  */
 
-#include <iostream>
 #include <span>
-#include <stdexcept>
+#include <string_view>
 
-#include "boyboy/common/config/config.h"
-#include "boyboy/common/config/config_utils.h"
 #include "boyboy/common/log/logging.h"
-#include "boyboy/core/emulator/emulator.h"
+#include "boyboy/frontend/cli/cli_app.h"
 
 using namespace boyboy::common;
-using namespace boyboy::core;
+using namespace boyboy::frontend::cli;
 
 int main(int argc, const char** argv)
 {
-    std::span<const char*> args(argv, static_cast<std::size_t>(argc));
-
-    if (args.size() != 2) {
-        std::cout << "Usage: " << args[0] << " <path_to_rom>\n";
-        return 1;
+    // Convert argv to vector of string_view for better handling
+    std::vector<std::string_view> args;
+    for (const auto* s : std::span(argv, static_cast<std::size_t>(argc))) {
+        args.emplace_back(s);
     }
 
     log::init("logs/boyboy.log", true);
-    log::info("Starting BoyBoy emulator");
 
-    emulator::Emulator emulator;
+    CLIApp app{};
+    int res = app.run(args);
 
-    // Load and apply configuration
-    config::Config config = config::load_config();
-    emulator.apply_config(config);
-
-    // Load ROM
-    try {
-        emulator.load(args[1]);
-    }
-    catch (const std::runtime_error& e) {
-        log::error("Failed to load ROM: {}", e.what());
-        return 1;
-    }
-
-    // Run emulator
-    emulator.run();
-
-    log::info("Exiting BoyBoy emulator");
     log::shutdown();
 
-    return 0;
+    return res;
 }

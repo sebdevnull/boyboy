@@ -38,6 +38,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tomlplusplus)
 
+# --- Fetch CLI11 ---
+FetchContent_Declare(
+    cli11_proj
+    GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+    GIT_TAG v2.5.0
+)
+FetchContent_MakeAvailable(cli11_proj)
+
 # --- System dependencies ---
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -138,7 +146,13 @@ set_target_properties(${BOYBOY_LIB} PROPERTIES
 )
 
 # --- Executable ---
-add_executable(${BOYBOY_APP} src/boyboy/main.cpp)
+add_executable(${BOYBOY_APP}
+    src/boyboy/main.cpp
+    src/boyboy/frontend/cli/cli_app.cpp
+    src/boyboy/frontend/cli/adapters/cli11_adapter.cpp
+    src/boyboy/app/app.cpp
+    src/boyboy/app/commands/run_command.cpp
+)
 target_compile_options(${BOYBOY_APP} PRIVATE
     -Wall -Wextra -Wpedantic
 )
@@ -146,6 +160,7 @@ target_compile_options(${BOYBOY_APP} PRIVATE
 # --- Link BoyBoy lib
 target_link_libraries(${BOYBOY_APP} PRIVATE
     ${BOYBOY_LIB}
+    CLI11::CLI11
 )
 
 # ---- Sanitizer option ----
