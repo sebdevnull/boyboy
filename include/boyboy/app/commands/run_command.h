@@ -18,9 +18,9 @@ class RunCommand : public ICommand {
 public:
     [[nodiscard]] std::string_view name() const override { return Name; }
     [[nodiscard]] std::string_view description() const override { return Description; }
-    int execute(CommandContext& context) override
+    int execute(App& app, const CommandContext& context) override
     {
-        return context.app.run(context.rom_path, context.config_path);
+        return app.run(context.rom_path, context.config_path);
     }
 
 private:

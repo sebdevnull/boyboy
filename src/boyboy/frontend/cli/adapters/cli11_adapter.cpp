@@ -7,13 +7,16 @@
 
 #include "boyboy/frontend/cli/adapters/cli11_adapter.h"
 
-#include "CLI/CLI.hpp"
+#include <CLI/CLI.hpp>
+
+#include "boyboy/common/log/logging.h"
 
 namespace boyboy::frontend::cli {
 
 inline static constexpr std::string_view RunCommandName = "run";
 
-CLI11Adapter::CLI11Adapter(app::commands::CommandContext& context) : context_(context)
+CLI11Adapter::CLI11Adapter(app::App& app, app::commands::CommandContext& context)
+    : app_(app), context_(context)
 {
     app_parser_.name("boyboy");
     app_parser_.description("BoyBoy - A Game Boy emulator");
@@ -24,8 +27,7 @@ CLI11Adapter::CLI11Adapter(app::commands::CommandContext& context) : context_(co
 
 int CLI11Adapter::run(std::span<std::string_view> args)
 {
-    parse(args);
-    return 0;
+    return parse(args);
 }
 
 void CLI11Adapter::register_command(app::commands::ICommand& command)
@@ -40,7 +42,7 @@ void CLI11Adapter::register_command(app::commands::ICommand& command)
     }
 }
 
-void CLI11Adapter::parse(std::span<std::string_view> args)
+int CLI11Adapter::parse(std::span<std::string_view> args)
 {
     std::vector<const char*> argv;
     for (const auto& arg : args) {
@@ -51,8 +53,14 @@ void CLI11Adapter::parse(std::span<std::string_view> args)
         app_parser_.parse(static_cast<int>(argv.size()), argv.data());
     }
     catch (const CLI::ParseError& e) {
-        app_parser_.exit(e);
+        return app_parser_.exit(e);
     }
+    catch (const std::exception& e) {
+        common::log::error("Error running command: {}", e.what());
+        return 1;
+    }
+
+    return 0;
 }
 
 void CLI11Adapter::register_run(app::commands::ICommand& command)
@@ -66,7 +74,7 @@ void CLI11Adapter::register_run(app::commands::ICommand& command)
     cmd->add_option("-c,--config", context_.config_path, "Path to the configuration file")
         ->option_text("CONFIG_PATH")
         ->default_val("");
-    cmd->callback([this, &command]() { command.execute(context_); });
+    cmd->callback([this, &command]() { command.execute(app_, context_); });
 }
 
 } // namespace boyboy::frontend::cli

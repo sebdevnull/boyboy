@@ -14,7 +14,7 @@ namespace boyboy::frontend::cli {
 
 using CLIAdapter = CLI11Adapter;
 
-CLIApp::CLIApp() : context_(), cli_adapter_(std::make_unique<CLIAdapter>(context_)) {}
+CLIApp::CLIApp() : cli_adapter_(std::make_unique<CLIAdapter>(app_, context_)) {}
 
 int CLIApp::run(std::span<std::string_view> args)
 {

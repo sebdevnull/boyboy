@@ -18,16 +18,16 @@ int main(int argc, const char** argv)
 {
     // Convert argv to vector of string_view for better handling
     std::vector<std::string_view> args;
-    for (const auto* s : std::span(argv, static_cast<std::size_t>(argc))) {
-        args.emplace_back(s);
+    for (const auto* arg : std::span(argv, static_cast<std::size_t>(argc))) {
+        args.emplace_back(arg);
     }
 
     log::init("logs/boyboy.log", true);
 
     CLIApp app{};
-    int res = app.run(args);
+    int result = app.run(args);
 
     log::shutdown();
 
-    return res;
+    return result;
 }
