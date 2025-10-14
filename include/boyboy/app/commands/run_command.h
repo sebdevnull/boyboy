@@ -18,10 +18,7 @@ class RunCommand : public ICommand {
 public:
     [[nodiscard]] std::string_view name() const override { return Name; }
     [[nodiscard]] std::string_view description() const override { return Description; }
-    int execute(App& app, const CommandContext& context) override
-    {
-        return app.run(context.rom_path, context.config_path);
-    }
+    int execute(App& app, const CommandContext& context) override;
 
 private:
     static constexpr std::string_view Name = "run";

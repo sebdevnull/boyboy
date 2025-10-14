@@ -9,6 +9,7 @@
 
 #include <CLI/CLI.hpp>
 
+#include "boyboy/common/config/config_limits.h"
 #include "boyboy/common/log/logging.h"
 
 namespace boyboy::frontend::cli {
@@ -68,12 +69,43 @@ void CLI11Adapter::register_run(app::commands::ICommand& command)
     auto* cmd = app_parser_.add_subcommand(
         std::string(command.name()), std::string(command.description())
     );
+    cmd->footer(R"(
+        Examples:
+          boyboy run path/to/rom.gb
+          boyboy run path/to/rom.gb --config path/to/config.toml
+          boyboy run path/to/rom.gb --scale 2 --speed 2 --no-vsync
+        
+        Notes:
+          Any options provided here will override those in the configuration file.
+    )");
+
     cmd->add_option("rom", context_.rom_path, "Path to the ROM file")
         ->option_text("ROM_PATH")
         ->required();
     cmd->add_option("-c,--config", context_.config_path, "Path to the configuration file")
-        ->option_text("CONFIG_PATH")
-        ->default_val("");
+        ->option_text("PATH");
+    cmd->add_option("--scale", context_.scale, "Scaling factor for the display (x1, x2, x3, etc.)")
+        ->option_text("SCALE");
+    cmd->add_option("--speed", context_.speed, "Emulation speed (1 = normal, 2 = double, etc.)")
+        ->option_text("SPEED");
+    cmd->add_flag(
+        "--vsync,!--no-vsync", context_.vsync, "Enable or disable vertical synchronization"
+    );
+
+    // convert log level options to vector of strings for CLI11
+    auto log_levels = common::config::ConfigLimits::Debug::LogLevels;
+
+    cmd->add_option(
+           "--log-level",
+           context_.log_level,
+           std::format(
+               "Set the logging level ({})",
+               common::config::ConfigLimits::Debug::LogLevelOptions.option_list()
+           )
+    )
+        ->option_text("LEVEL")
+        ->check(CLI::IsMember(log_levels));
+
     cmd->callback([this, &command]() { command.execute(app_, context_); });
 }
 

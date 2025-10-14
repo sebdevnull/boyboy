@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -18,7 +19,11 @@ namespace boyboy::app::commands {
 
 struct CommandContext {
     std::string rom_path;
-    std::string config_path;
+    std::optional<std::string> config_path;
+    std::optional<int> scale;
+    std::optional<int> speed;
+    std::optional<bool> vsync;
+    std::optional<std::string> log_level;
 };
 
 class ICommand {
