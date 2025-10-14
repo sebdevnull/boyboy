@@ -17,6 +17,7 @@
 namespace boyboy::frontend::cli {
 
 inline static constexpr std::string_view RunCommandName = "run";
+inline static constexpr std::string_view InfoCommandName = "info";
 
 CLI11Adapter::CLI11Adapter(app::App& app, app::commands::CommandContext& context)
     : app_(app), context_(context)
@@ -50,6 +51,9 @@ void CLI11Adapter::register_command(app::commands::ICommand& command)
 {
     if (command.name() == RunCommandName) {
         register_run(command);
+    }
+    else if (command.name() == InfoCommandName) {
+        register_info(command);
     }
     else {
         throw std::runtime_error(
@@ -122,6 +126,23 @@ void CLI11Adapter::register_run(app::commands::ICommand& command)
     )
         ->option_text("LEVEL")
         ->check(CLI::IsMember(common::config::ConfigLimits::Debug::LogLevels));
+
+    cmd->callback([this, &command]() { command.execute(app_, context_); });
+}
+
+void CLI11Adapter::register_info(app::commands::ICommand& command)
+{
+    auto* cmd = app_parser_.add_subcommand(
+        std::string(command.name()), std::string(command.description())
+    );
+    cmd->footer(R"(
+        Examples:
+          boyboy info path/to/rom.gb
+    )");
+
+    cmd->add_option("rom", context_.rom_path, "Path to the ROM file")
+        ->option_text("ROM_PATH")
+        ->required();
 
     cmd->callback([this, &command]() { command.execute(app_, context_); });
 }

@@ -28,6 +28,7 @@ private:
     int parse(std::span<std::string_view> args);
 
     void register_run(app::commands::ICommand& command);
+    void register_info(app::commands::ICommand& command);
 };
 
 } // namespace boyboy::frontend::cli

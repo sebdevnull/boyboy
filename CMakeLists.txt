@@ -153,6 +153,7 @@ add_executable(${BOYBOY_APP}
     src/boyboy/frontend/cli/adapters/cli11_adapter.cpp
     src/boyboy/app/app.cpp
     src/boyboy/app/commands/run_command.cpp
+    src/boyboy/app/commands/info_command.cpp
 )
 target_compile_options(${BOYBOY_APP} PRIVATE
     -Wall -Wextra -Wpedantic

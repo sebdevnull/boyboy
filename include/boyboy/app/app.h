@@ -33,6 +33,9 @@ public:
     [[nodiscard]] const common::config::Config& get_config() const { return config_; }
     [[nodiscard]] common::config::Config& get_config() { return config_; }
 
+    // ROM information
+    [[nodiscard]] static std::string rom_info(std::string_view rom_path);
+
     // Version information
     [[nodiscard]] static std::string version();
     [[nodiscard]] static std::string build_info();

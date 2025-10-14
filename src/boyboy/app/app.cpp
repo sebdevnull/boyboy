@@ -13,6 +13,8 @@
 #include "boyboy/common/config/config.h"
 #include "boyboy/common/config/config_utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/core/cartridge/cartridge.h"
+#include "boyboy/core/cartridge/cartridge_loader.h"
 #include "boyboy/version.h"
 
 namespace boyboy::app {
@@ -53,6 +55,12 @@ common::config::Config& App::load_config(std::optional<std::string_view> config_
 
     config_ = config::load_config(path);
     return config_;
+}
+
+std::string App::rom_info(std::string_view rom_path)
+{
+    auto cart = core::cartridge::CartridgeLoader::load(rom_path);
+    return cart.get_header().pretty_string();
 }
 
 std::string App::version()
