@@ -50,8 +50,8 @@ struct ConfigLimits {
     };
 
     struct Debug {
-        static constexpr std::array<std::string_view, 5> LogLevels = {
-            "trace", "debug", "info", "warning", "error"
+        static constexpr std::array<std::string_view, 7> LogLevels = {
+            "trace", "debug", "info", "warn", "error", "critical", "off"
         };
 
         static constexpr Options<std::string_view> LogLevelOptions = {
