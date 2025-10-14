@@ -9,6 +9,7 @@
 
 #include <filesystem>
 
+#include "boyboy/common/config/config.h"
 #include "boyboy/common/config/config_utils.h"
 #include "boyboy/common/log/logging.h"
 
@@ -16,12 +17,9 @@ namespace boyboy::app {
 
 using namespace boyboy::common;
 
-int App::run(std::string_view rom_path, std::string_view config_path)
+int App::run(std::string_view rom_path)
 {
     log::info("Running BoyBoy emulator...");
-
-    // Load configuration
-    load_config(config_path);
 
     // Apply configuration
     emulator_.apply_config(config_);
@@ -43,19 +41,15 @@ int App::run(std::string_view rom_path, std::string_view config_path)
     return 0;
 }
 
-void App::load_config(std::string_view config_path)
+common::config::Config& App::load_config(std::optional<std::string_view> config_path)
 {
     // Load configuration from file if provided, otherwise use defaults
-    std::optional<std::filesystem::path> path;
-    if (!config_path.empty()) {
-        path = std::filesystem::path(config_path);
+    std::optional<std::filesystem::path> path = std::nullopt;
+    if (config_path && !(*config_path).empty()) {
+        path = std::filesystem::path(*config_path);
     }
 
     config_ = config::load_config(path);
-}
-
-[[nodiscard]] const config::Config& App::get_config() const
-{
     return config_;
 }
 
