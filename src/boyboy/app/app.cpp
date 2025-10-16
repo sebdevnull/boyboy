@@ -8,6 +8,7 @@
 #include "boyboy/app/app.h"
 
 #include <filesystem>
+#include <optional>
 #include <sstream>
 
 #include "boyboy/common/config/config.h"
@@ -20,6 +21,16 @@
 namespace boyboy::app {
 
 using namespace boyboy::common;
+
+namespace {
+std::optional<std::filesystem::path> get_fs_path(std::optional<std::string_view> path)
+{
+    if (path && !(*path).empty()) {
+        return std::filesystem::path(*path);
+    }
+    return std::nullopt;
+}
+} // namespace
 
 int App::run(std::string_view rom_path)
 {
@@ -47,14 +58,18 @@ int App::run(std::string_view rom_path)
 
 common::config::Config& App::load_config(std::optional<std::string_view> config_path)
 {
-    // Load configuration from file if provided, otherwise use defaults
-    std::optional<std::filesystem::path> path = std::nullopt;
-    if (config_path && !(*config_path).empty()) {
-        path = std::filesystem::path(*config_path);
-    }
-
+    std::optional<std::filesystem::path> path = get_fs_path(config_path);
     config_ = config::load_config(path);
     return config_;
+}
+
+void App::save_config( // NOLINT
+    const common::config::Config& config,
+    std::optional<std::string_view> config_path
+)
+{
+    std::optional<std::filesystem::path> path = get_fs_path(config_path);
+    config::save_config(config, path);
 }
 
 std::string App::rom_info(std::string_view rom_path)

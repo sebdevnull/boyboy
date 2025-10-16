@@ -30,6 +30,14 @@ public:
 
     // Configuration management
     common::config::Config& load_config(std::optional<std::string_view> config_path = std::nullopt);
+    void save_config(
+        const common::config::Config& config,
+        std::optional<std::string_view> config_path = std::nullopt
+    );
+    void save_config(std::optional<std::string_view> config_path = std::nullopt)
+    {
+        save_config(config_, config_path);
+    }
     [[nodiscard]] const common::config::Config& get_config() const { return config_; }
     [[nodiscard]] common::config::Config& get_config() { return config_; }
 
