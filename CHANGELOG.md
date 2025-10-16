@@ -16,14 +16,25 @@ and this project adheres to [Semantic Versioning](https://semver.org).
   - `IConfigLoader` interface and `TomlConfigLoader` implementation.
   - `ConfigValidator` for config validation and normalization.
   - High-level API for loading and saving config files (`load_config`, `save_config`).
+- **Command execution system**.
+  - `App` executor class, `ICommand` interface and `CommandContext` for information passing, `CommandRegistry` for command registration.
+  - Concrete commands: `RunCommand` for emulator running, `InfoCommand` for ROM information, `ConfigCommand` for viewing and editing configuration.
+- **Command-Line Interface** with CLI11.
+  - CLI application `CLIApp`, abstract adapter interface `ICLIAdapter`, and concrete implementation `CLI11Adapter`.
+  - Run command with config, speed, scale, vsync and log level options.
+  - Info command to display ROM metadata information.
+  - Config with key-value get and set, and full configuration list and reset.
+  - Version and build information.
 - Log level configuration and conversion helpers.
 - Display accessors for scale and vsync.
 - Emulator configuration application method.
 - Frame limiting based on configured speed.
+- Version header generation with build metadata.
 - Unit tests for configuration logic.
 
 ### Changed
 
+- Main application entry point modified to use `CLIApp`
 - Emulator and Display now apply configuration at startup.
 - Logging system supports configurable log levels.
 - Reorganize codebase moving core components under `boyboy/core/` directory.
