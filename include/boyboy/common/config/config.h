@@ -49,6 +49,13 @@ struct ConfigKeys {
                                                  std::string(Video::VSync);
     inline static const std::string DebugLogLevel = std::string(Debug::Section) + "." +
                                                     std::string(Debug::LogLevel);
+
+    inline static const std::vector<std::string> KeyList = {
+        EmulatorSpeed,
+        VideoScale,
+        VideoVSync,
+        DebugLogLevel,
+    };
 };
 
 struct ConfigMeta {
