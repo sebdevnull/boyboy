@@ -93,14 +93,18 @@ Implementation status of every major component and feature in **BoyBoy**.
 
 - [ ] CLI interface ⏳
   - [x] Load ROM ✅
-  - [ ] Start/Pause/Reset
-  - [ ] Debug options (log level, test mode)
+  - [x] Load configuration file ✅
+  - [x] Subcommands ✅
+  - [ ] Debug options (log level, test mode) ⏳
+  - [ ] Interactive CLI
+    - [ ] Emulator control (start, pause, reset)
+    - [ ] Debug (step, break, etc.)
 - [ ] GUI interface ⏳
   - [x] Basic window ✅
   - [x] Display rendering ✅
   - [x] Input handling ✅
   - [ ] Basic controls (load, start, pause, reset)
-- [ ] Configuration file support
+- [x] Configuration file support ✅
 - [ ] Save states
 - [ ] Debugging tools ⏳
   - [ ] CPU/Memory viewer ⏳
