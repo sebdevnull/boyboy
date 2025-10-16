@@ -8,6 +8,7 @@
 #pragma once
 
 #include <CLI/CLI.hpp>
+#include <optional>
 
 #include "boyboy/app/commands/command.h"
 #include "boyboy/frontend/cli/adapters/cli_adapter.h"
@@ -27,6 +28,16 @@ public:
     void register_command(app::commands::ICommand& command) override;
 
 private:
+    struct CLIOptions {
+        // Run
+        std::optional<int> scale;
+        std::optional<int> speed;
+        std::optional<bool> vsync;
+        // Config
+        std::optional<std::string> cfg_key;
+        std::optional<std::string> cfg_value;
+    } options_;
+
     CLI::App app_parser_;
     app::App& app_;
     app::commands::CommandContext& context_;

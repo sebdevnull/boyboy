@@ -8,6 +8,7 @@
 #include "boyboy/frontend/cli/adapters/cli11_adapter.h"
 
 #include <CLI/CLI.hpp>
+#include <optional>
 #include <string>
 
 #include "boyboy/app/app.h"
@@ -116,12 +117,14 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
         ->required();
     cmd->add_option("-c,--config", context_.config_path, "Path to the configuration file")
         ->option_text("PATH");
-    cmd->add_option("--scale", context_.scale, "Scaling factor for the display (x1, x2, x3, etc.)")
+    cmd->add_option("--scale", options_.scale, "Scaling factor for the display (x1, x2, x3, etc.)")
         ->option_text("SCALE");
-    cmd->add_option("--speed", context_.speed, "Emulation speed (1 = normal, 2 = double, etc.)")
+    cmd->add_option(
+           "--speed", options_.speed, "Emulation speed (0 = uncapped, 1 = normal, 2 = double, etc.)"
+    )
         ->option_text("SPEED");
     cmd->add_flag(
-        "--vsync,!--no-vsync", context_.vsync, "Enable or disable vertical synchronization"
+        "--vsync,!--no-vsync", options_.vsync, "Enable or disable vertical synchronization"
     );
 
     cmd->add_option(
@@ -135,7 +138,12 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
         ->option_text("LEVEL")
         ->check(CLI::IsMember(common::config::ConfigLimits::Debug::LogLevels));
 
-    cmd->callback([this, &command]() { command.execute(app_, context_); });
+    cmd->callback([this, &command]() {
+        command.set_scale(options_.scale);
+        command.set_speed(options_.speed);
+        command.set_vsync(options_.vsync);
+        command.execute(app_, context_);
+    });
 }
 
 void CLI11Adapter::register_info(app::commands::InfoCommand& command)
@@ -166,21 +174,10 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
 
     // Get
     auto* get_sub = cli_config->add_subcommand("get", "Get a configuration value");
-    get_sub
-        ->add_option(
-            "key",
-            [&command](const std::vector<std::string>& values) {
-                if (!values.empty()) {
-                    command.set_key(values[0]);
-                    return true;
-                }
-                return false;
-            },
-            "Configuration key"
-        )
-        ->required();
+    get_sub->add_option("key", options_.cfg_key, "Configuration key")->required();
     get_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Get);
+        command.set_key(options_.cfg_key);
         command.execute(app_, context_);
     });
     get_sub->footer(R"(
@@ -191,34 +188,12 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
 
     // Set
     auto* set_sub = cli_config->add_subcommand("set", "Set a configuration value");
-    set_sub
-        ->add_option(
-            "key",
-            [&command](const std::vector<std::string>& values) {
-                if (!values.empty()) {
-                    command.set_key(values[0]);
-                    return true;
-                }
-                return false;
-            },
-            "Configuration key"
-        )
-        ->required();
-    set_sub
-        ->add_option(
-            "value",
-            [&command](const std::vector<std::string>& values) {
-                if (!values.empty()) {
-                    command.set_value(values[0]);
-                    return true;
-                }
-                return false;
-            },
-            "Configuration value"
-        )
-        ->required();
+    set_sub->add_option("key", options_.cfg_key, "Configuration key")->required();
+    set_sub->add_option("value", options_.cfg_value, "Configuration value")->required();
     set_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Set);
+        command.set_key(options_.cfg_key);
+        command.set_value(options_.cfg_value);
         command.execute(app_, context_);
     });
     set_sub->footer(R"(

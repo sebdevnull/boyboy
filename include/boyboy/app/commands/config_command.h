@@ -28,9 +28,9 @@ public:
     [[nodiscard]] SubCommand get_subcommand() const { return subcommand_; }
     void set_subcommand(SubCommand cmd) { subcommand_ = cmd; }
     [[nodiscard]] std::optional<std::string> get_key() const { return key_; }
-    void set_key(std::string_view key) { key_ = std::string(key); }
+    void set_key(const std::optional<std::string>& key) { key_ = key; }
     [[nodiscard]] std::optional<std::string> get_value() const { return value_; }
-    void set_value(std::string_view value) { value_ = std::string(value); }
+    void set_value(const std::optional<std::string>& value) { value_ = value; }
 
 private:
     static constexpr std::string_view Name = "config";
