@@ -8,8 +8,12 @@
 #include "boyboy/frontend/cli/adapters/cli11_adapter.h"
 
 #include <CLI/CLI.hpp>
+#include <string>
 
 #include "boyboy/app/app.h"
+#include "boyboy/app/commands/config_command.h"
+#include "boyboy/app/commands/info_command.h"
+#include "boyboy/app/commands/run_command.h"
 #include "boyboy/common/config/config_limits.h"
 #include "boyboy/common/log/logging.h"
 #include "boyboy/version.h"
@@ -18,6 +22,7 @@ namespace boyboy::frontend::cli {
 
 inline static constexpr std::string_view RunCommandName = "run";
 inline static constexpr std::string_view InfoCommandName = "info";
+inline static constexpr std::string_view ConfigCommandName = "config";
 
 CLI11Adapter::CLI11Adapter(app::App& app, app::commands::CommandContext& context)
     : app_(app), context_(context)
@@ -50,10 +55,13 @@ int CLI11Adapter::run(std::span<std::string_view> args)
 void CLI11Adapter::register_command(app::commands::ICommand& command)
 {
     if (command.name() == RunCommandName) {
-        register_run(command);
+        register_run(dynamic_cast<app::commands::RunCommand&>(command));
     }
     else if (command.name() == InfoCommandName) {
-        register_info(command);
+        register_info(dynamic_cast<app::commands::InfoCommand&>(command));
+    }
+    else if (command.name() == ConfigCommandName) {
+        register_config(dynamic_cast<app::commands::ConfigCommand&>(command));
     }
     else {
         throw std::runtime_error(
@@ -88,7 +96,7 @@ int CLI11Adapter::parse(std::span<std::string_view> args)
     return 0;
 }
 
-void CLI11Adapter::register_run(app::commands::ICommand& command)
+void CLI11Adapter::register_run(app::commands::RunCommand& command)
 {
     auto* cmd = app_parser_.add_subcommand(
         std::string(command.name()), std::string(command.description())
@@ -130,7 +138,7 @@ void CLI11Adapter::register_run(app::commands::ICommand& command)
     cmd->callback([this, &command]() { command.execute(app_, context_); });
 }
 
-void CLI11Adapter::register_info(app::commands::ICommand& command)
+void CLI11Adapter::register_info(app::commands::InfoCommand& command)
 {
     auto* cmd = app_parser_.add_subcommand(
         std::string(command.name()), std::string(command.description())
@@ -145,6 +153,103 @@ void CLI11Adapter::register_info(app::commands::ICommand& command)
         ->required();
 
     cmd->callback([this, &command]() { command.execute(app_, context_); });
+}
+
+void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
+{
+    auto* cli_config = app_parser_.add_subcommand(
+        std::string(command.name()), std::string(command.description())
+    );
+    cli_config->add_option("-c,--config", context_.config_path, "Path to the configuration file")
+        ->option_text("PATH");
+    cli_config->require_subcommand(1);
+
+    // Get
+    auto* get_sub = cli_config->add_subcommand("get", "Get a configuration value");
+    get_sub
+        ->add_option(
+            "key",
+            [&command](const std::vector<std::string>& values) {
+                if (!values.empty()) {
+                    command.set_key(values[0]);
+                    return true;
+                }
+                return false;
+            },
+            "Configuration key"
+        )
+        ->required();
+    get_sub->callback([this, &command]() {
+        command.set_subcommand(app::commands::ConfigCommand::SubCommand::Get);
+        command.execute(app_, context_);
+    });
+    get_sub->footer(R"(
+        Examples:
+          boyboy config get emulator.speed
+          boyboy config -c path/to/config.toml get video.vsync
+    )");
+
+    // Set
+    auto* set_sub = cli_config->add_subcommand("set", "Set a configuration value");
+    set_sub
+        ->add_option(
+            "key",
+            [&command](const std::vector<std::string>& values) {
+                if (!values.empty()) {
+                    command.set_key(values[0]);
+                    return true;
+                }
+                return false;
+            },
+            "Configuration key"
+        )
+        ->required();
+    set_sub
+        ->add_option(
+            "value",
+            [&command](const std::vector<std::string>& values) {
+                if (!values.empty()) {
+                    command.set_value(values[0]);
+                    return true;
+                }
+                return false;
+            },
+            "Configuration value"
+        )
+        ->required();
+    set_sub->callback([this, &command]() {
+        command.set_subcommand(app::commands::ConfigCommand::SubCommand::Set);
+        command.execute(app_, context_);
+    });
+    set_sub->footer(R"(
+        Examples:
+          boyboy config set emulator.speed 2
+          boyboy config -c path/to/config.toml set video.vsync true
+    )");
+
+    // List
+    auto* list_sub = cli_config->add_subcommand("list", "List configuration values");
+    list_sub->callback([this, &command]() {
+        command.set_subcommand(app::commands::ConfigCommand::SubCommand::List);
+        command.execute(app_, context_);
+    });
+    list_sub->footer(R"(
+        Examples:
+          boyboy config list
+          boyboy config -c path/to/config.toml list
+    )");
+
+    // Reset
+    auto* reset_sub = cli_config->add_subcommand("reset", "Reset configuration to default");
+    reset_sub->callback([this, &command]() {
+        command.set_subcommand(app::commands::ConfigCommand::SubCommand::Reset);
+        command.execute(app_, context_);
+    });
+    reset_sub->footer(R"(
+        Examples:
+          boyboy config reset
+          boyboy config -c path/to/config.toml reset
+    )");
 }
 
 } // namespace boyboy::frontend::cli

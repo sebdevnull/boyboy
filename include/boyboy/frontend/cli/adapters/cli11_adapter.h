@@ -12,6 +12,12 @@
 #include "boyboy/app/commands/command.h"
 #include "boyboy/frontend/cli/adapters/cli_adapter.h"
 
+namespace boyboy::app::commands {
+class RunCommand;
+class InfoCommand;
+class ConfigCommand;
+} // namespace boyboy::app::commands
+
 namespace boyboy::frontend::cli {
 class CLI11Adapter : public ICLIAdapter {
 public:
@@ -27,8 +33,9 @@ private:
 
     int parse(std::span<std::string_view> args);
 
-    void register_run(app::commands::ICommand& command);
-    void register_info(app::commands::ICommand& command);
+    void register_run(app::commands::RunCommand& command);
+    void register_info(app::commands::InfoCommand& command);
+    void register_config(app::commands::ConfigCommand& command);
 };
 
 } // namespace boyboy::frontend::cli
