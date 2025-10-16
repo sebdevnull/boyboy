@@ -10,6 +10,31 @@
 It implements a complete CPU core, memory management, and a functional PPU for graphics rendering.  
 BoyBoy provides a hands-on platform for learning about emulator development and low-level programming.
 
+---
+
+## Table of Contents
+
+- [🎮 BoyBoy](#-boyboy)
+  - [Gameplay](#gameplay)
+  - [Project goals](#project-goals)
+  - [Project status](#project-status)
+  - [Planned features](#planned-features)
+  - [Resources](#resources)
+    - [Technical references](#technical-references)
+    - [CPU instruction references](#cpu-instruction-references)
+    - [Emulation](#emulation)
+    - [Test ROMs](#test-roms)
+  - [Dependencies](#dependencies)
+  - [Build instructions](#build-instructions)
+  - [Usage](#usage)
+    - [Running a ROM](#running-a-rom)
+    - [Managing Configuration](#managing-configuration)
+    - [Inspecting ROM Information](#inspecting-rom-information)
+  - [Test ROMs](#test-roms-1)
+  - [Legal notice](#legal-notice)
+
+---
+
 ## Gameplay
 
 | ![Zelda gameplay](docs/images/zelda.gif) | ![Super Mario Land 2 gameplay](docs/images/super_mario_land2.gif) | ![Kirby's Dream Land gameplay](docs/images/kirbys_dream_land.gif) |
@@ -22,6 +47,8 @@ BoyBoy provides a hands-on platform for learning about emulator development and 
 
 > For full ROM compatibility status, check [Tested ROMs](docs/TestedROMs.md#games).
 
+---
+
 ## Project goals
 
 **BoyBoy** aims to be an accurate, maintainable, and developer-friendly Game Boy emulator.
@@ -32,6 +59,8 @@ The project is designed to:
 - Run commercial and homebrew ROMs  
 - Provide a developer-friendly debugging and testing environment
 - Serve as a hands-on learning platform for emulator development and low-level programming for the community
+
+---
 
 ## Project status
 
@@ -57,32 +86,36 @@ The project is designed to:
 > For a detailed feature checklist, see [Feature Checklist](/docs/Checklist.md).  
 > For detailed progress and changes, see [CHANGELOG](/CHANGELOG.md).
 
-## Upcoming features
+---
+
+## Planned features
 
 The following features are planned for future releases, in rough order of priority:
 
-### Core
+**Core:**
 
 - **Save states** – Save and restore game state
 - **Boot ROM** – Authentic startup sequence  
 - **Timing accuracy** – More accurate CPU and PPU timing
 - **Optimizations** – Further performance improvements
 
-### Hardware
+**Hardware:**
 
 - **Cartridge support** – MBC2, MBC3, MBC5, battery-backed RAM, RTC
 - **Audio (APU)** – Full audio emulation  
 
-### Tools & UI
+**Tools & UI:**
 
 - **Debugging tools** – Breakpoints, step execution, memory/state inspection  
-- **CLI improvements** – More options and features
 - **GUI frontend** – Window management, controls, and visualization  
+- **CLI improvements** – More options and features
 
-### Other
+**Other:**
 
 - **Testing** – Additional test ROMs to verify compatibility
 - **Cross-platform** – Windows and macOS support  
+
+---
 
 ## Resources
 
@@ -111,6 +144,8 @@ The following resources have been used in BoyBoy's development and may help you 
 - [**Blargg's Test ROMs**](https://github.com/retrio/gb-test-roms) – Widely used test ROMs for CPU, PPU, and other hardware verification.
 - [**dmg-acid2**](https://github.com/mattcurrie/dmg-acid2) – Basic PPU rendering test ROM.
 
+---
+
 ## Dependencies
 
 To build **BoyBoy**, the following libraries are required:
@@ -127,6 +162,8 @@ sudo apt install libsdl2-dev libglu1-mesa-dev mesa-common-dev
 ```
 
 Make sure you have **CMake 3.27+** and a C++23 compiler.
+
+---
 
 ## Build instructions
 
@@ -149,6 +186,101 @@ Make sure you have **CMake 3.27+** and a C++23 compiler.
     ```bash
     ctest --preset debug
     ```
+
+---
+
+## Usage
+
+After building BoyBoy, you can run the emulator, manage configuration, or inspect ROM metadata using the command-line interface.  
+For additional information on how to run the emulator or a specific command run with `--help` or `--help-all`.
+
+**Help examples:**
+
+  ```bash
+  boyboy --help
+  boyboy run --help
+  boyboy --help-all
+  ```
+
+---
+
+### Running a ROM
+
+Use the `run` subcommand to start a ROM. Command-line options override any configuration file settings.
+
+#### Usage
+
+  ```bash
+  boyboy run path/to/rom.gb [OPTIONS]
+  ```
+
+#### Options
+
+- `-c, --config PATH` : Path to a configuration file  
+- `--scale SCALE` : Display scaling factor (`x1`, `x2`, `x3`, etc.)  
+- `--speed SPEED` : Emulation speed (`0 = uncapped`, `1 = normal`, `2 = double`, etc.)  
+- `--vsync` / `--no-vsync` : Enable or disable vertical synchronization  
+- `--log-level LEVEL` : Logging verbosity (`trace`, `debug`, `info`, `warn`, `error`, `critical`, `off`)  
+
+#### Examples
+
+  ```bash
+  boyboy run path/to/rom.gb
+  boyboy run path/to/rom.gb --config path/to/config.toml
+  boyboy run path/to/rom.gb --scale 2 --speed 2 --no-vsync
+  ```
+
+---
+
+### Managing Configuration
+
+Use the `config` subcommand to view or modify emulator settings.
+
+#### Usage
+
+  ```bash
+  boyboy config [OPTIONS] SUBCOMMAND
+  ```
+
+#### Options
+
+- `-c, --config PATH` : Path to the configuration file  
+
+#### Subcommands
+
+- `get` : Get a configuration value  
+- `set` : Set a configuration value  
+- `list` : List all configuration values  
+- `reset` : Reset configuration to default  
+
+#### Examples
+
+  ```bash
+  boyboy config get emulator.speed
+  boyboy config set video.vsync false
+  boyboy config --config path/to/config.toml list
+  boyboy config reset
+  ```
+  
+---
+
+### Inspecting ROM Information
+
+Use the `info` subcommand to display metadata about a ROM.
+
+#### Usage
+
+  ```bash
+  boyboy info ROM_PATH
+  ```
+
+#### Example
+
+  ```bash
+  boyboy info path/to/rom.gb
+  ```
+
+---
 
 ## Test ROMs
 
