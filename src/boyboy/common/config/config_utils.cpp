@@ -13,6 +13,7 @@
 
 #include "boyboy/common/config/config.h"
 #include "boyboy/common/config/config_loader.h"
+#include "boyboy/common/config/config_validator.h"
 #include "boyboy/common/log/logging.h"
 
 namespace boyboy::common::config {
@@ -22,6 +23,12 @@ using ConfigLoader = TomlConfigLoader;
 Config load_config(const std::optional<std::filesystem::path>& path, bool normalize)
 {
     namespace fs = std::filesystem;
+
+    if (!path.has_value()) {
+        log::info(
+            "No configuration file provided, using default path: {}", default_config_path().string()
+        );
+    }
 
     auto file_path = path.value_or(default_config_path());
     if (!fs::exists(file_path)) {
@@ -66,6 +73,12 @@ void save_config(const Config& config, const std::optional<std::filesystem::path
 
     ConfigLoader loader{};
     loader.save(config, file);
+}
+
+void validate_config(Config& config, bool normalize)
+{
+    auto result = ConfigValidator::validate(config, normalize);
+    ConfigValidator::check_result(result);
 }
 
 std::filesystem::path default_config_path()

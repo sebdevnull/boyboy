@@ -7,12 +7,23 @@
 
 #pragma once
 
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 #include "boyboy/common/config/config_limits.h"
 
 namespace boyboy::common::config {
+
+template <typename T>
+concept ValidConfigType = std::same_as<T, int> || std::same_as<T, bool> ||
+                          std::same_as<T, std::string>;
 
 struct ConfigKeys {
     struct Emulator {
@@ -28,60 +39,179 @@ struct ConfigKeys {
         static constexpr std::string_view Section = "debug";
         static constexpr std::string_view LogLevel = "log_level";
     };
+
+    // Full keys for easy access
+    inline static const std::string EmulatorSpeed = std::string(Emulator::Section) + "." +
+                                                    std::string(Emulator::Speed);
+    inline static const std::string VideoScale = std::string(Video::Section) + "." +
+                                                 std::string(Video::Scale);
+    inline static const std::string VideoVSync = std::string(Video::Section) + "." +
+                                                 std::string(Video::VSync);
+    inline static const std::string DebugLogLevel = std::string(Debug::Section) + "." +
+                                                    std::string(Debug::LogLevel);
+
+    inline static const std::vector<std::string> KeyList = {
+        EmulatorSpeed,
+        VideoScale,
+        VideoVSync,
+        DebugLogLevel,
+    };
+};
+
+struct ConfigMeta {
+    enum class Type : uint8_t { Int, Bool, String, None };
+
+    [[nodiscard]] static ConfigMeta::Type get_type(std::string_view key)
+    {
+        auto it = ConfigMetadata.find(std::string(key));
+        return (it != ConfigMetadata.end()) ? it->second : Type::None;
+    }
+
+private:
+    inline static const std::unordered_map<std::string, ConfigMeta::Type> ConfigMetadata = {
+        {ConfigKeys::EmulatorSpeed, Type::Int},
+        {ConfigKeys::VideoScale, Type::Int},
+        {ConfigKeys::VideoVSync, Type::Bool},
+        {ConfigKeys::DebugLogLevel, Type::String},
+    };
 };
 
 struct Config {
 
     struct Emulator {
         int speed = ConfigLimits::Emulator::SpeedRange.default_value;
-        // std::string save_path = "saves/"; // directory for save files
-        // bool auto_save = true;            // auto-save on exit
-        // bool auto_load = true;            // auto-load on start
-        // int auto_save_interval = 300;     // auto-save interval in seconds, 0 = disabled
-        // bool skip_boot = false;           // skip boot ROM
-        // std::string boot_rom_path;        // path to custom boot ROM, empty = default
-    } emulator;
-
-    // struct Input {
-    //     struct Keymap {
-    //         // Game Boy buttons
-    //         std::string up = "up";
-    //         std::string down = "down";
-    //         std::string left = "left";
-    //         std::string right = "right";
-    //         std::string a = "z";
-    //         std::string b = "x";
-    //         std::string start = "enter";
-    //         std::string select = "backspace";
-
-    //         // Emulator controls
-    //         std::string pause = "space";
-    //         std::string reset = "r";
-    //         std::string fullscreen = "f11";
-    //         std::string screenshot = "f12";
-    //         std::string turbo = "lshift";
-    //         std::string increase_speed = "pageup";
-    //         std::string decrease_speed = "pagedown";
-    //         std::string quick_save = "f5";
-    //         std::string quick_load = "f8";
-    //     } keymap;
-    // } input;
+    } emulator; // NOLINT
 
     struct Video {
         int scale = ConfigLimits::Video::ScaleRange.default_value;
         bool vsync = true;
-        // bool fullscreen = false;
-        // int frame_limit = 60; // max FPS: 0 = uncapped
-
-    } video;
+    } video; // NOLINT
 
     struct Debug {
         std::string log_level = std::string(ConfigLimits::Debug::LogLevelOptions.default_value);
-        // bool profiling = false;         // enable performance profiling
-        // bool trace_cpu = false;         // enable CPU instruction tracing
-    } debug;
+    } debug; // NOLINT
 
     static Config default_config() { return Config{}; }
+
+    template <ValidConfigType T>
+    [[nodiscard]] T& get(std::string_view key)
+    {
+        std::string key_str(key);
+        auto it = config_map_.find(key_str);
+        if (it == config_map_.end()) {
+            throw std::invalid_argument("Invalid config key: " + key_str);
+        }
+
+        bool type_mismatch = true;
+        if constexpr (std::same_as<T, int>) {
+            type_mismatch = ConfigMeta::get_type(key) != ConfigMeta::Type::Int;
+        }
+        else if constexpr (std::same_as<T, bool>) {
+            type_mismatch = ConfigMeta::get_type(key) != ConfigMeta::Type::Bool;
+        }
+        else if constexpr (std::same_as<T, std::string>) {
+            type_mismatch = ConfigMeta::get_type(key) != ConfigMeta::Type::String;
+        }
+
+        if (type_mismatch) {
+            throw std::invalid_argument("Type mismatch for config key: " + key_str);
+        }
+
+        return it->second.get<T>(*this);
+    }
+
+    template <ValidConfigType T>
+    void set(std::string_view key, const T& value)
+    {
+        get<T>(key) = value;
+    }
+
+    void set_string(std::string_view key, std::string_view value)
+    {
+        auto type = ConfigMeta::get_type(key);
+        switch (type) {
+            case ConfigMeta::Type::Int:
+                set<int>(key, parse_int(value));
+                break;
+            case ConfigMeta::Type::Bool:
+                set<bool>(key, parse_bool(value));
+                break;
+            case ConfigMeta::Type::String:
+                set<std::string>(key, std::string(value));
+                break;
+            default:
+                throw std::invalid_argument("Invalid config key: " + std::string(key));
+        }
+    }
+
+    [[nodiscard]] std::string key_value_str(std::string_view key)
+    {
+        std::ostringstream oss;
+        oss << key << ": ";
+        auto type = ConfigMeta::get_type(key);
+        switch (type) {
+            case ConfigMeta::Type::Int:
+                oss << get<int>(key);
+                break;
+            case ConfigMeta::Type::Bool:
+                oss << get<bool>(key);
+                break;
+            case ConfigMeta::Type::String:
+                oss << get<std::string>(key);
+                break;
+            default:
+                oss << "Invalid key";
+                break;
+        }
+        return oss.str();
+    }
+
+private:
+    struct ConfigAccessor {
+        std::function<void*(Config&)> getter;
+        template <ValidConfigType T>
+        T& get(Config& config) const
+        {
+            return *static_cast<T*>(getter(config));
+        }
+    };
+
+    std::unordered_map<std::string, ConfigAccessor> config_map_{
+        {ConfigKeys::EmulatorSpeed, ConfigAccessor{[](Config& c) {
+             return &c.emulator.speed;
+         }}},
+        {ConfigKeys::VideoScale, ConfigAccessor{[](Config& c) {
+             return &c.video.scale;
+         }}},
+        {ConfigKeys::VideoVSync, ConfigAccessor{[](Config& c) {
+             return &c.video.vsync;
+         }}},
+        {ConfigKeys::DebugLogLevel, ConfigAccessor{[](Config& c) {
+             return &c.debug.log_level;
+         }}},
+    };
+
+    static bool parse_bool(std::string_view value)
+    {
+        if (value == "true" || value == "1") {
+            return true;
+        }
+        if (value == "false" || value == "0") {
+            return false;
+        }
+
+        throw std::invalid_argument("Invalid bool value: " + std::string(value));
+    }
+
+    static int parse_int(std::string_view value)
+    {
+        size_t pos = 0;
+        int int_val = std::stoi(std::string(value), &pos);
+        if (pos != value.size()) {
+            throw std::invalid_argument("Invalid integer value: " + std::string(value));
+        }
+        return int_val;
+    }
 };
 
 } // namespace boyboy::common::config

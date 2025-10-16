@@ -1,0 +1,45 @@
+/**
+ * @file version.h
+ * @brief Version information for the BoyBoy emulator.
+ *
+ * @license GPLv3 (see LICENSE file)
+ */
+
+#pragma once
+
+#include <string_view>
+#include <tuple>
+
+namespace boyboy::version {
+
+// ---- Semantic version ----
+// clang-format off
+inline constexpr int VersionMajor = @PROJECT_VERSION_MAJOR@;
+inline constexpr int VersionMinor = @PROJECT_VERSION_MINOR@;
+inline constexpr int VersionPatch = @PROJECT_VERSION_PATCH@;
+// clang-format on
+
+inline constexpr const char* VersionStr = "@PROJECT_VERSION@";
+inline constexpr auto VersionTuple = std::make_tuple(VersionMajor, VersionMinor, VersionPatch);
+
+// ---- Build metadata ----
+inline constexpr std::string_view BuildType = "@BOYBOY_BUILD_TYPE@";
+inline constexpr std::string_view CompilerID = "@BOYBOY_COMPILER_ID@";
+inline constexpr std::string_view CompilerVersion = "@BOYBOY_COMPILER_VERSION@";
+
+inline constexpr std::string_view GitCommit = "@BOYBOY_GIT_COMMIT@";
+inline constexpr std::string_view GitBranch = "@BOYBOY_GIT_BRANCH@";
+inline constexpr std::string_view GitTag = "@BOYBOY_GIT_TAG@";
+
+inline constexpr std::string_view SystemName = "@BOYBOY_SYSTEM_NAME@";
+inline constexpr std::string_view SystemProcessor = "@BOYBOY_SYSTEM_PROCESSOR@";
+inline constexpr std::string_view CmakeVersion = "@BOYBOY_CMAKE_VERSION@";
+inline constexpr std::string_view BuildTimestamp = "@BOYBOY_BUILD_TIMESTAMP@";
+
+inline constexpr std::string_view LicenseShort =
+    "License GPLv3 (GNU General Public License version 3)";
+inline constexpr std::string_view LicenseLong =
+    "For detailed license information, see LICENSE (GNU GPLv3) "
+    "<https://www.gnu.org/licenses/gpl-3.0.html>";
+
+} // namespace boyboy::version

@@ -9,29 +9,36 @@
 
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 
 #include "boyboy/common/config/config.h"
+#include "boyboy/common/config/config_limits.h"
 #include "boyboy/common/config/config_utils.h"
 #include "boyboy/common/config/config_validator.h"
 
 using boyboy::common::config::Config;
+using boyboy::common::config::ConfigKeys;
 using boyboy::common::config::ConfigLimits;
 using boyboy::common::config::load_config;
 using boyboy::common::config::save_config;
 
-TEST(ConfigTest, DefaultConfig)
+class ConfigTest : public ::testing::Test {
+protected:
+    void SetUp() override { config = Config::default_config(); }
+
+    Config config;
+};
+
+TEST_F(ConfigTest, DefaultConfig)
 {
-    Config config = Config::default_config();
     EXPECT_EQ(config.emulator.speed, 1);
     EXPECT_EQ(config.video.scale, 4);
     EXPECT_TRUE(config.video.vsync);
     EXPECT_EQ(config.debug.log_level, "info");
 }
 
-TEST(ConfigTest, ValidateConfig)
+TEST_F(ConfigTest, ValidateConfig)
 {
-    Config config = Config::default_config();
-
     // Valid config should pass
     auto result = boyboy::common::config::ConfigValidator::validate(config, false);
     EXPECT_TRUE(result.valid);
@@ -55,10 +62,8 @@ TEST(ConfigTest, ValidateConfig)
     EXPECT_EQ(config.debug.log_level, "verbose"); // unchanged
 }
 
-TEST(ConfigTest, NormalizeConfig)
+TEST_F(ConfigTest, NormalizeConfig)
 {
-    Config config = Config::default_config();
-
     // Valid config should pass and remain unchanged
     auto result = boyboy::common::config::ConfigValidator::validate(config, true);
     EXPECT_TRUE(result.valid);
@@ -82,11 +87,11 @@ TEST(ConfigTest, NormalizeConfig)
     EXPECT_EQ(config.debug.log_level, ConfigLimits::Debug::LogLevelOptions.default_value);
 }
 
-TEST(ConfigTest, LoadAndSaveConfig)
+TEST_F(ConfigTest, LoadAndSaveConfig)
 {
     namespace fs = std::filesystem;
 
-    Config original_config          = Config::default_config();
+    auto& original_config           = config;
     original_config.emulator.speed  = 2;
     original_config.video.scale     = 3;
     original_config.video.vsync     = false;
@@ -109,7 +114,7 @@ TEST(ConfigTest, LoadAndSaveConfig)
     fs::remove(temp_path);
 }
 
-TEST(ConfigTest, LoadInvalidConfig)
+TEST_F(ConfigTest, LoadInvalidConfig)
 {
     namespace fs = std::filesystem;
 
@@ -134,4 +139,65 @@ TEST(ConfigTest, LoadInvalidConfig)
 
     // Clean up temporary file
     fs::remove(temp_path);
+}
+
+TEST_F(ConfigTest, GetSetKeys)
+{
+    // Get key
+    auto speed = config.get<int>(ConfigKeys::EmulatorSpeed);
+    EXPECT_EQ(speed, ConfigLimits::Emulator::SpeedRange.default_value);
+
+    // Get invalid type
+    EXPECT_THROW(speed = config.get<bool>(ConfigKeys::EmulatorSpeed), std::invalid_argument);
+
+    // Get key reference
+    auto& scale = config.get<int>(ConfigKeys::VideoScale);
+    ++scale;
+    EXPECT_EQ(scale, config.video.scale);
+
+    // Set key
+    config.set<std::string>(ConfigKeys::DebugLogLevel, "off");
+    EXPECT_EQ(config.debug.log_level, "off");
+
+    // Set invalid key
+    EXPECT_THROW(config.set<int>(ConfigKeys::DebugLogLevel, 0), std::invalid_argument);
+
+    // Get and set
+    auto vsync = config.get<bool>(ConfigKeys::VideoVSync);
+    vsync      = !vsync;
+    config.set<bool>(ConfigKeys::VideoVSync, vsync);
+    EXPECT_EQ(config.video.vsync, vsync);
+}
+
+TEST_F(ConfigTest, SetStrValue)
+{
+    // Set int
+    config.set_string(ConfigKeys::EmulatorSpeed, "10");
+    EXPECT_EQ(config.emulator.speed, 10);
+
+    // Set wrong int
+    EXPECT_THROW(config.set_string(ConfigKeys::EmulatorSpeed, "10h"), std::invalid_argument);
+
+    // Set bool
+    config.video.vsync = false; // initial known value
+    config.set_string(ConfigKeys::VideoVSync, "true");
+    EXPECT_TRUE(config.video.vsync);
+    config.set_string(ConfigKeys::VideoVSync, "false");
+    EXPECT_FALSE(config.video.vsync);
+    config.set_string(ConfigKeys::VideoVSync, "1");
+    EXPECT_TRUE(config.video.vsync);
+    config.set_string(ConfigKeys::VideoVSync, "0");
+    EXPECT_FALSE(config.video.vsync);
+
+    // Set wrong bool
+    EXPECT_THROW(config.set_string(ConfigKeys::VideoVSync, "42"), std::invalid_argument);
+    EXPECT_THROW(config.set_string(ConfigKeys::VideoVSync, "True"), std::invalid_argument);
+
+    // Set string
+    config.debug.log_level = "warn";
+    config.set_string(ConfigKeys::DebugLogLevel, "off");
+    EXPECT_EQ(config.debug.log_level, "off");
+
+    // Set unknown key
+    EXPECT_THROW(config.set_string("unknown.key", "random value"), std::invalid_argument);
 }

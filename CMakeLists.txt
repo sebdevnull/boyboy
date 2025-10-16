@@ -38,6 +38,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tomlplusplus)
 
+# --- Fetch CLI11 ---
+FetchContent_Declare(
+    cli11_proj
+    GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+    GIT_TAG v2.5.0
+)
+FetchContent_MakeAvailable(cli11_proj)
+
 # --- System dependencies ---
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -119,6 +127,7 @@ target_include_directories(${BOYBOY_LIB}
     PUBLIC
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/external
+    ${CMAKE_BINARY_DIR}/generated
     PRIVATE
     ${CMAKE_SOURCE_DIR}/src/boyboy
 )
@@ -138,7 +147,15 @@ set_target_properties(${BOYBOY_LIB} PROPERTIES
 )
 
 # --- Executable ---
-add_executable(${BOYBOY_APP} src/boyboy/main.cpp)
+add_executable(${BOYBOY_APP}
+    src/boyboy/main.cpp
+    src/boyboy/frontend/cli/cli_app.cpp
+    src/boyboy/frontend/cli/adapters/cli11_adapter.cpp
+    src/boyboy/app/app.cpp
+    src/boyboy/app/commands/run_command.cpp
+    src/boyboy/app/commands/info_command.cpp
+    src/boyboy/app/commands/config_command.cpp
+)
 target_compile_options(${BOYBOY_APP} PRIVATE
     -Wall -Wextra -Wpedantic
 )
@@ -146,6 +163,7 @@ target_compile_options(${BOYBOY_APP} PRIVATE
 # --- Link BoyBoy lib
 target_link_libraries(${BOYBOY_APP} PRIVATE
     ${BOYBOY_LIB}
+    CLI11::CLI11
 )
 
 # ---- Sanitizer option ----
@@ -155,6 +173,85 @@ if(ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE MATCHES Debug)
     target_compile_options(${BOYBOY_LIB} PRIVATE -fsanitize=address,undefined)
     target_link_options(${BOYBOY_LIB} PRIVATE -fsanitize=address,undefined)
 endif()
+
+# ---- Build metadata ----
+# Build type (Debug/Release/etc.)
+if(CMAKE_BUILD_TYPE)
+    set(BOYBOY_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+else()
+    set(BOYBOY_BUILD_TYPE "Unknown")
+endif()
+
+# Compiler info
+set(BOYBOY_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}")
+set(BOYBOY_COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
+
+# Try to get current Git commit hash
+find_package(Git QUIET)
+if(Git_FOUND)
+    # Short commit hash
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE BOYBOY_GIT_COMMIT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # Detect dirty working tree
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} diff --quiet
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        RESULT_VARIABLE GIT_DIFF_RESULT
+    )
+
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} diff --cached --quiet
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        RESULT_VARIABLE GIT_DIFF_CACHED_RESULT
+    )
+
+    if(NOT GIT_DIFF_RESULT EQUAL 0 OR NOT GIT_DIFF_CACHED_RESULT EQUAL 0)
+        set(BOYBOY_GIT_COMMIT "${BOYBOY_GIT_COMMIT}-dirty")
+    endif()
+
+    # Current branch
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE BOYBOY_GIT_BRANCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # Closest tag (if any)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE BOYBOY_GIT_TAG
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+else()
+    set(BOYBOY_GIT_COMMIT "unknown")
+    set(BOYBOY_GIT_BRANCH "unknown")
+    set(BOYBOY_GIT_TAG "unknown")
+endif()
+
+# System info
+set(BOYBOY_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}")
+set(BOYBOY_SYSTEM_PROCESSOR "${CMAKE_SYSTEM_PROCESSOR}")
+
+# CMake info
+set(BOYBOY_CMAKE_VERSION "${CMAKE_VERSION}")
+
+# Build timestamp
+string(TIMESTAMP BOYBOY_BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S")
+
+# Configure version header
+configure_file(
+    ${CMAKE_SOURCE_DIR}/include/boyboy/version.h.in
+    ${CMAKE_BINARY_DIR}/generated/boyboy/version.h
+    @ONLY
+)
 
 # --- Tests ---
 enable_testing()

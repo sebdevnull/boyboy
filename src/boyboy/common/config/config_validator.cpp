@@ -11,6 +11,7 @@
 
 #include "boyboy/common/config/config.h"
 #include "boyboy/common/config/config_limits.h"
+#include "boyboy/common/log/logging.h"
 
 namespace boyboy::common::config {
 
@@ -39,6 +40,19 @@ ValidationResult ConfigValidator::validate(Config& config, bool normalize)
     );
 
     return result;
+}
+
+void ConfigValidator::check_result(const ValidationResult& result)
+{
+    if (!result.valid) {
+        for (const auto& error : result.errors) {
+            log::error("Config error: {}", error);
+        }
+        throw std::runtime_error("Configuration validation failed");
+    }
+    for (const auto& warning : result.warnings) {
+        log::warn("Config warning: {}", warning);
+    }
 }
 
 template <typename Limit, typename Value>

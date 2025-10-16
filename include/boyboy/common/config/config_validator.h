@@ -24,6 +24,7 @@ struct ValidationResult {
 class ConfigValidator {
 public:
     static ValidationResult validate(Config& config, bool normalize = false);
+    static void check_result(const ValidationResult& result);
 
 private:
     template <typename Limit, typename Value>

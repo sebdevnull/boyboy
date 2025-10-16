@@ -23,6 +23,7 @@ load_config(const std::optional<std::filesystem::path>& path = std::nullopt, boo
 void save_config(
     const Config& config, const std::optional<std::filesystem::path>& path = std::nullopt
 );
+void validate_config(Config& config, bool normalize = true);
 
 std::filesystem::path default_config_path();
 

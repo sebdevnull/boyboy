@@ -77,15 +77,7 @@ const toml::table& get_section(const toml::table& tbl, std::string_view section)
 
     // Validate and normalize config
     auto result = ConfigValidator::validate(config, normalize);
-    if (!result.valid) {
-        for (const auto& error : result.errors) {
-            log::error("Config error: {}", error);
-        }
-        throw std::runtime_error("Configuration validation failed");
-    }
-    for (const auto& warning : result.warnings) {
-        log::warn("Config warning: {}", warning);
-    }
+    ConfigValidator::check_result(result);
 
     return config;
 }
