@@ -14,23 +14,27 @@
 #include "boyboy/common/config/config.h"
 #include "boyboy/common/config/config_loader.h"
 #include "boyboy/common/config/config_validator.h"
+#include "boyboy/common/files/paths.h"
 #include "boyboy/common/log/logging.h"
 
 namespace boyboy::common::config {
 
+constexpr std::string_view DefaultConfigFile = "config.toml";
+const auto DefaultConfigPath = files::ConfigDir / DefaultConfigFile;
+
 using ConfigLoader = TomlConfigLoader;
 
-Config load_config(const std::optional<std::filesystem::path>& path, bool normalize)
+Config load_config(const OptionalPath& path, bool normalize)
 {
     namespace fs = std::filesystem;
 
     if (!path.has_value()) {
         log::info(
-            "No configuration file provided, using default path: {}", default_config_path().string()
+            "No configuration file provided, using default path: {}", DefaultConfigPath.string()
         );
     }
 
-    auto file_path = path.value_or(default_config_path());
+    auto file_path = path.value_or(DefaultConfigPath);
     if (!fs::exists(file_path)) {
         log::warn("Configuration file not found, using default config: {}", file_path.string());
         return Config::default_config();
@@ -48,11 +52,11 @@ Config load_config(const std::optional<std::filesystem::path>& path, bool normal
     return loader.load(file, normalize);
 }
 
-void save_config(const Config& config, const std::optional<std::filesystem::path>& path)
+void save_config(const Config& config, const OptionalPath& path)
 {
     namespace fs = std::filesystem;
 
-    auto file_path = path.value_or(default_config_path());
+    auto file_path = path.value_or(DefaultConfigPath);
     if (auto parent_path = file_path.parent_path(); !parent_path.empty()) {
         // ensure parent dir exists
         fs::create_directories(parent_path);
@@ -79,19 +83,6 @@ void validate_config(Config& config, bool normalize)
 {
     auto result = ConfigValidator::validate(config, normalize);
     ConfigValidator::check_result(result);
-}
-
-std::filesystem::path default_config_path()
-{
-    if (auto* xdg = std::getenv("XDG_CONFIG_HOME")) {
-        return std::filesystem::path(xdg) / DefaultConfigDir / DefaultConfigFile;
-    }
-    if (auto* home = std::getenv("HOME")) {
-        return std::filesystem::path(home) / ".config" / DefaultConfigDir / DefaultConfigFile;
-    }
-
-    // if neither is set point to current dir
-    return DefaultConfigFile;
 }
 
 } // namespace boyboy::common::config
