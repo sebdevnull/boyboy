@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <memory>
 
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
@@ -19,19 +20,19 @@ namespace boyboy::core::cartridge {
 
 using namespace boyboy::common;
 
-Cartridge CartridgeLoader::load(std::string_view path)
+std::unique_ptr<Cartridge> CartridgeLoader::load(std::string_view path)
 {
     return load(load_rom_data(path));
 }
 
-Cartridge CartridgeLoader::load(RomData&& rom_data)
+std::unique_ptr<Cartridge> CartridgeLoader::load(RomData&& rom_data)
 {
-    return {std::move(rom_data)};
+    return std::make_unique<Cartridge>(std::move(rom_data));
 }
 
-Cartridge CartridgeLoader::load(const RomData& rom_data)
+std::unique_ptr<Cartridge> CartridgeLoader::load(const RomData& rom_data)
 {
-    return {rom_data};
+    return std::make_unique<Cartridge>(rom_data);
 }
 
 RomData CartridgeLoader::load_rom_data(std::string_view path)

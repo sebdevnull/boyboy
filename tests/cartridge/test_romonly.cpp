@@ -32,9 +32,7 @@ protected:
         rom_data = make_fake_rom(
             boyboy::core::cartridge::CartridgeType::ROMOnly, 2, 0, "ROM_ONLY_TEST"
         );
-        cart = std::make_unique<boyboy::core::cartridge::Cartridge>(
-            boyboy::core::cartridge::CartridgeLoader::load(rom_data)
-        );
+        cart = boyboy::core::cartridge::CartridgeLoader::load(rom_data);
     }
 };
 

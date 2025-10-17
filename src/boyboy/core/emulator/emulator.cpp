@@ -25,7 +25,7 @@ void Emulator::load(const std::string& path)
     log::info("Loading ROM from {}", path);
 
     cartridge_ = cartridge::CartridgeLoader::load(path);
-    mmu_->map_rom(cartridge_);
+    mmu_->map_rom(*cartridge_);
 }
 
 void Emulator::start()

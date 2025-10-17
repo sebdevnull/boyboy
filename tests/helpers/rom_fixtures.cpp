@@ -61,8 +61,8 @@ void ROMTest ::SetUp()
     cpu.reset();
     mmu->reset();
 
-    io = &mmu->io();
-    cart.unload_rom();
+    io   = &mmu->io();
+    cart = std::make_unique<core::cartridge::Cartridge>(); // empty cart
     serial_capturer.clear();
     serial_output.clear();
     finished = false;
@@ -79,7 +79,7 @@ void ROMTest ::SetUp()
 
 void ROMTest::TearDown()
 {
-    cart.unload_rom();
+    cart->unload_rom();
     cpu::CpuTest::TearDown();
 }
 
@@ -99,18 +99,18 @@ void ROMTest::load(const std::string& path)
         log::warn("[ROM] Error loading ROM {}: {}", path, e.what());
     }
 
-    if (!cart.is_loaded()) {
+    if (!cart || !cart->is_loaded()) {
         throw std::runtime_error("Failed to load ROM: " + path);
     }
 
-    mmu->map_rom(cart);
+    mmu->map_rom(*cart);
 }
 
-void ROMTest::unload() { cart.unload_rom(); }
+void ROMTest::unload() { cart->unload_rom(); }
 
 void ROMTest::run()
 {
-    if (!cart.is_loaded()) {
+    if (!cart->is_loaded()) {
         throw std::runtime_error("ROM not loaded");
     }
 
@@ -227,9 +227,7 @@ void MBCParamTest::SetUp()
 {
     auto p   = GetParam();
     rom_data = make_fake_rom(p.type, p.rom_banks, p.ram_banks, p.name);
-    cart     = std::make_unique<core::cartridge::Cartridge>(
-        core::cartridge::CartridgeLoader::load(rom_data)
-    );
+    cart     = core::cartridge::CartridgeLoader::load(rom_data);
 }
 
 } // namespace boyboy::test::rom

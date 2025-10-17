@@ -75,7 +75,7 @@ void App::save_config( // NOLINT
 std::string App::rom_info(std::string_view rom_path)
 {
     auto cart = core::cartridge::CartridgeLoader::load(rom_path);
-    return cart.get_header().pretty_string();
+    return cart->get_header().pretty_string();
 }
 
 std::string App::version()
