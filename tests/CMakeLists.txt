@@ -63,6 +63,7 @@ set(TEST_SOURCES
     cpu/test_roms.cpp
     config/test_config.cpp
     files/test_utils.cpp
+    files/test_io.cpp
 )
 
 # --- Options ---
