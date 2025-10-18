@@ -47,7 +47,7 @@ struct FileError {
                 return "Read error";
             case Type::WriteError:
                 return "Write error";
-            case Type::Unknown:
+            default:
                 return "Unknown file error";
         }
     }
