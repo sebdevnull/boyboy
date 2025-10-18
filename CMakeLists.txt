@@ -102,6 +102,7 @@ endif()
 add_library(${BOYBOY_LIB} STATIC)
 target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/common/utils.cpp
+    src/boyboy/common/files/utils.cpp
     src/boyboy/common/config/config_utils.cpp
     src/boyboy/common/config/config_validator.cpp
     src/boyboy/common/config/toml_config_loader.cpp
