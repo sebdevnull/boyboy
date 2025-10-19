@@ -33,6 +33,14 @@ ValidationResult ConfigValidator::validate(Config& config, bool normalize)
 
     validate_field(
         result,
+        config.battery.interval_ms,
+        ConfigLimits::Battery::IntervalMsRange,
+        "battery.interval_ms",
+        normalize
+    );
+
+    validate_field(
+        result,
         config.debug.log_level,
         ConfigLimits::Debug::LogLevelOptions,
         "debug.log_level",

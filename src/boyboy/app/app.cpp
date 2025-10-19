@@ -36,9 +36,6 @@ int App::run(std::string_view rom_path)
 {
     log::info("Running BoyBoy emulator...");
 
-    // Apply configuration
-    emulator_.apply_config(config_);
-
     // Load ROM
     try {
         emulator_.load(std::string(rom_path));
@@ -47,6 +44,9 @@ int App::run(std::string_view rom_path)
         log::error("Failed to load ROM: {}", e.what());
         return 1;
     }
+
+    // Apply configuration
+    emulator_.apply_config(config_);
 
     // Run emulator
     emulator_.run();

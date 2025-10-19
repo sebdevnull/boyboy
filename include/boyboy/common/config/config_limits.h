@@ -49,6 +49,12 @@ struct ConfigLimits {
         static constexpr Range<int> ScaleRange = {.min = 1, .max = 10, .default_value = 4};
     };
 
+    struct Battery {
+        static constexpr Range<int> IntervalMsRange = {
+            .min = 0, .max = 3'600'000, .default_value = 5000
+        };
+    };
+
     struct Debug {
         static constexpr std::array<std::string_view, 7> LogLevels = {
             "trace", "debug", "info", "warn", "error", "critical", "off"

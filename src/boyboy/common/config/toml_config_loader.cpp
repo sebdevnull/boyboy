@@ -70,6 +70,20 @@ const toml::table& get_section(const toml::table& tbl, std::string_view section)
     load_field(config.video.scale, video_tbl, ConfigKeys::Video::Scale, ConfigKeys::Video::Section);
     load_field(config.video.vsync, video_tbl, ConfigKeys::Video::VSync, ConfigKeys::Video::Section);
 
+    auto battery_tbl = get_section(tbl, ConfigKeys::Battery::Section);
+    load_field(
+        config.battery.autosave,
+        battery_tbl,
+        ConfigKeys::Battery::Autosave,
+        ConfigKeys::Battery::Section
+    );
+    load_field(
+        config.battery.interval_ms,
+        battery_tbl,
+        ConfigKeys::Battery::IntervalMs,
+        ConfigKeys::Battery::Section
+    );
+
     auto debug_tbl = get_section(tbl, ConfigKeys::Debug::Section);
     load_field(
         config.debug.log_level, debug_tbl, ConfigKeys::Debug::LogLevel, ConfigKeys::Debug::Section
@@ -92,6 +106,10 @@ void TomlConfigLoader::save(const Config& config, std::ostream& output) const
         {ConfigKeys::Video::Scale, config.video.scale},
         {ConfigKeys::Video::VSync, config.video.vsync},
     };
+    auto battery_tbl = toml::table{
+        {ConfigKeys::Battery::Autosave, config.battery.autosave},
+        {ConfigKeys::Battery::IntervalMs, config.battery.interval_ms},
+    };
     auto debug_tbl = toml::table{
         {ConfigKeys::Debug::LogLevel, std::string(config.debug.log_level)},
     };
@@ -99,6 +117,7 @@ void TomlConfigLoader::save(const Config& config, std::ostream& output) const
     auto config_tbl = toml::table{
         {ConfigKeys::Emulator::Section, emulator_tbl},
         {ConfigKeys::Video::Section, video_tbl},
+        {ConfigKeys::Battery::Section, battery_tbl},
     };
 
     output << config_tbl << "\n\n";
