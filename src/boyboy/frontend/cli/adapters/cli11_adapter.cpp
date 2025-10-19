@@ -113,16 +113,16 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
     )");
 
     cmd->add_option("rom", context_.rom_path, "Path to the ROM file")
-        ->option_text("ROM_PATH")
+        ->option_text("<path>")
         ->required();
     cmd->add_option("-c,--config", context_.config_path, "Path to the configuration file")
-        ->option_text("PATH");
+        ->option_text("<path>");
     cmd->add_option("--scale", options_.scale, "Scaling factor for the display (x1, x2, x3, etc.)")
-        ->option_text("SCALE");
+        ->option_text("<scale>");
     cmd->add_option(
            "--speed", options_.speed, "Emulation speed (0 = uncapped, 1 = normal, 2 = double, etc.)"
     )
-        ->option_text("SPEED");
+        ->option_text("<speed>");
     cmd->add_flag(
         "--vsync,!--no-vsync", options_.vsync, "Enable or disable vertical synchronization"
     );
@@ -134,19 +134,19 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
                common::config::ConfigLimits::Debug::LogLevelOptions.option_list()
            )
     )
-        ->option_text("LEVEL")
+        ->option_text("<level>")
         ->check(CLI::IsMember(common::config::ConfigLimits::Debug::LogLevels));
 
     // Battery save options
     cmd->add_option("--bat-path", options_.save_path, "Battery save path for this ROM")
-        ->option_text("PATH");
+        ->option_text("<path>");
     cmd->add_flag(
         "--bat-autosave,!--no-bat-autosave", options_.autosave, "Enable or disable battery autosave"
     );
     cmd->add_option(
            "--bat-interval", options_.save_interval_ms, "Battery autosave interval in milliseconds"
     )
-        ->option_text("INTERVAL_MS");
+        ->option_text("<ms>");
 
     cmd->callback([this, &command]() {
         command.set_scale(options_.scale);
@@ -170,7 +170,7 @@ void CLI11Adapter::register_info(app::commands::InfoCommand& command)
     )");
 
     cmd->add_option("rom", context_.rom_path, "Path to the ROM file")
-        ->option_text("ROM_PATH")
+        ->option_text("<path>")
         ->required();
 
     cmd->callback([this, &command]() { command.execute(app_, context_); });
@@ -182,12 +182,14 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
         std::string(command.name()), std::string(command.description())
     );
     cli_config->add_option("-c,--config", context_.config_path, "Path to the configuration file")
-        ->option_text("PATH");
+        ->option_text("<path>");
     cli_config->require_subcommand(1);
 
     // Get
     auto* get_sub = cli_config->add_subcommand("get", "Get a configuration value");
-    get_sub->add_option("key", options_.cfg_key, "Configuration key")->required();
+    get_sub->add_option("key", options_.cfg_key, "Configuration key")
+        ->option_text("<key>")
+        ->required();
     get_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Get);
         command.set_key(options_.cfg_key);
@@ -201,8 +203,12 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
 
     // Set
     auto* set_sub = cli_config->add_subcommand("set", "Set a configuration value");
-    set_sub->add_option("key", options_.cfg_key, "Configuration key")->required();
-    set_sub->add_option("value", options_.cfg_value, "Configuration value")->required();
+    set_sub->add_option("key", options_.cfg_key, "Configuration key")
+        ->option_text("<key>")
+        ->required();
+    set_sub->add_option("value", options_.cfg_value, "Configuration value")
+        ->option_text("<value>")
+        ->required();
     set_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Set);
         command.set_key(options_.cfg_key);
