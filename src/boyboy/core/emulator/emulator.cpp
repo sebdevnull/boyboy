@@ -44,11 +44,11 @@ void Emulator::start()
     ppu_.set_dma_start_cb([this](uint8_t value) { mmu_->start_dma(value); });
     display_.set_button_cb([this](io::Button b, bool p) { on_button_event(b, p); });
     cartridge_->set_ram_load_cb([this]() {
-        auto res = save::SaveManager::load_eram(cartridge_->get_header().title);
+        auto res = save::SaveManager::instance().load_eram(cartridge_->get_header().title);
         return (res.has_value()) ? res.value() : std::vector<uint8_t>{};
     });
     cartridge_->set_ram_save_cb([this](auto data) {
-        auto res = save::SaveManager::save_eram(cartridge_->get_header().title, data);
+        auto res = save::SaveManager::instance().save_eram(cartridge_->get_header().title, data);
         return res.has_value();
     });
 

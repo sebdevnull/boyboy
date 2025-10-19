@@ -31,7 +31,7 @@ auto SaveManager::save_eram(
     const std::optional<std::filesystem::path>& save_path
 ) -> std::expected<void, std::string>
 {
-    auto file_path = save_path.value_or(eram_path(rom_title));
+    auto file_path = save_path.value_or(eram_save_path_.value_or(eram_path(rom_title)));
     log::debug("[SaveManager] Saving ERAM to: {}", file_path.string());
 
     if (!std::filesystem::exists(file_path)) {
@@ -67,7 +67,7 @@ auto SaveManager::load_eram(
     std::string_view rom_title, const std::optional<std::filesystem::path>& save_path
 ) -> std::expected<std::vector<uint8_t>, std::string>
 {
-    auto file_path = save_path.value_or(eram_path(rom_title));
+    auto file_path = save_path.value_or(eram_save_path_.value_or(eram_path(rom_title)));
     log::debug("[SaveManager] Loading ERAM from: {}", file_path.string());
 
     auto eram_bytes = files::read_binary(file_path);
