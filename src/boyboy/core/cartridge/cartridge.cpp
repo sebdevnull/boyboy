@@ -95,6 +95,30 @@ bool Cartridge::is_cart_supported() const
     }
 }
 
+void Cartridge::tick()
+{
+    mbc_.tick();
+    save_ram();
+}
+
+void Cartridge::load_ram()
+{
+    if (mbc_.has_battery() && on_ram_load_cb_) {
+        auto ram = on_ram_load_cb_();
+        mbc_.set_ram(ram);
+        mbc_.clear_save();
+    }
+}
+
+void Cartridge::save_ram()
+{
+    if (mbc_.has_battery() && mbc_.is_save_pending() && on_ram_save_cb_) {
+        if (on_ram_save_cb_(mbc_.get_ram())) {
+            mbc_.clear_save();
+        }
+    }
+}
+
 uint8_t Cartridge::header_checksum(const RomData& rom_data)
 {
     return std::accumulate(

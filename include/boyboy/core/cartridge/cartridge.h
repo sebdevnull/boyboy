@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -85,6 +86,11 @@ using RomData = std::vector<std::byte>;
 
 class Cartridge {
 public:
+    // Callback definitions for loading/saving battery-backed RAM
+    using RamLoadCb = std::function<std::vector<uint8_t>(void)>;
+    using RamSaveCb = std::function<bool(std::span<const uint8_t>)>;
+
+    // Cartridge header definition
     struct Header {
         std::string title;
         uint8_t cgb_flag;
@@ -131,10 +137,22 @@ public:
     [[nodiscard]] bool is_loaded() const { return rom_loaded_; }
     [[nodiscard]] bool is_cart_supported() const;
 
+    // Tick for battery-backed RAM saves and RTC
+    void tick();
+
+    // RAM load and save
+    void load_ram();
+    void save_ram();
+    [[nodiscard]] auto get_ram() const { return mbc_.get_ram(); };
+    void set_ram(auto ram) { mbc_.set_ram(ram); }
+    void set_ram_load_cb(RamLoadCb&& cb) { on_ram_load_cb_ = std::move(cb); }
+    void set_ram_save_cb(RamSaveCb&& cb) { on_ram_save_cb_ = std::move(cb); }
+
     // Accessors
     [[nodiscard]] const RomData& get_rom_data() const { return rom_data_; }
     [[nodiscard]] const Header& get_header() const { return header_; };
     [[nodiscard]] const mbc::Mbc& get_mbc() const { return mbc_; }
+    [[nodiscard]] mbc::Mbc& get_mbc() { return mbc_; }
 
     // MBC access
     [[nodiscard]] uint8_t mbc_read(uint16_t addr) const { return mbc_.read(addr); }
@@ -145,11 +163,17 @@ public:
     static uint16_t rom_checksum(const RomData& rom_data);
 
 private:
+    // Cartridge state and data
     Header header_{};
     mbc::Mbc mbc_;
     RomData rom_data_;
     bool rom_loaded_ = false;
 
+    // RAM load/save callbacks
+    RamLoadCb on_ram_load_cb_ = nullptr;
+    RamSaveCb on_ram_save_cb_ = nullptr;
+
+    // Utility internal methods
     void load_rom();
     void unload_rom_data();
     void parse_header();
