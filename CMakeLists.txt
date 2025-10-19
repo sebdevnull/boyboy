@@ -107,6 +107,7 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/common/config/config_utils.cpp
     src/boyboy/common/config/config_validator.cpp
     src/boyboy/common/config/toml_config_loader.cpp
+    src/boyboy/common/save/save_manager.cpp
     src/boyboy/core/cpu/cpu.cpp
     src/boyboy/core/cpu/instructions.cpp
     src/boyboy/core/cpu/instructions_table.cpp
