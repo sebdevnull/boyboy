@@ -33,6 +33,9 @@ private:
         std::optional<int> scale;
         std::optional<int> speed;
         std::optional<bool> vsync;
+        std::optional<std::string> save_path;
+        std::optional<bool> autosave;
+        std::optional<int> save_interval_ms;
         // Config
         std::optional<std::string> cfg_key;
         std::optional<std::string> cfg_value;

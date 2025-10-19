@@ -126,7 +126,6 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
     cmd->add_flag(
         "--vsync,!--no-vsync", options_.vsync, "Enable or disable vertical synchronization"
     );
-
     cmd->add_option(
            "--log-level",
            context_.log_level,
@@ -138,10 +137,24 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
         ->option_text("LEVEL")
         ->check(CLI::IsMember(common::config::ConfigLimits::Debug::LogLevels));
 
+    // Battery save options
+    cmd->add_option("--bat-path", options_.save_path, "Battery save path for this ROM")
+        ->option_text("PATH");
+    cmd->add_flag(
+        "--bat-autosave,!--no-bat-autosave", options_.autosave, "Enable or disable battery autosave"
+    );
+    cmd->add_option(
+           "--bat-interval", options_.save_interval_ms, "Battery autosave interval in milliseconds"
+    )
+        ->option_text("INTERVAL_MS");
+
     cmd->callback([this, &command]() {
         command.set_scale(options_.scale);
         command.set_speed(options_.speed);
         command.set_vsync(options_.vsync);
+        command.set_save_path(options_.save_path);
+        command.set_autosave(options_.autosave);
+        command.set_save_interval_ms(options_.save_interval_ms);
         command.execute(app_, context_);
     });
 }
