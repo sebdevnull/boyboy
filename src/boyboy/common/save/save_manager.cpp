@@ -50,7 +50,7 @@ auto SaveManager::save_eram(
     uint16_t cks = checksum(data);
     write_checksum(eram_bytes, cks);
 
-    auto res = files::write_binary(file_path, eram_bytes);
+    auto res = files::atomic_write(file_path, eram_bytes);
     if (!res) {
         log::error(
             "[SaveManager] Error writing ERAM to save file: {}", res.error().error_message()
