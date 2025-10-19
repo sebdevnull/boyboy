@@ -14,6 +14,7 @@
 #include "boyboy/common/config/config.h"
 #include "boyboy/common/config/config_utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/save/save_manager.h"
 #include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/cartridge/cartridge_loader.h"
 #include "boyboy/version.h"
@@ -70,6 +71,11 @@ void App::save_config( // NOLINT
 {
     std::optional<std::filesystem::path> path = get_fs_path(config_path);
     config::save_config(config, path);
+}
+
+void App::set_battery_save_path(std::string_view save_path) // NOLINT
+{
+    save::SaveManager::instance().set_eram_save_path(save_path);
 }
 
 std::string App::rom_info(std::string_view rom_path)
