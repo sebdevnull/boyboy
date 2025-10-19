@@ -71,4 +71,20 @@ std::string printable_char(char c);
 char* as_char_ptr(std::byte* ptr) noexcept;
 const char* as_char_ptr(const std::byte* ptr) noexcept;
 
+// String utils
+
+/**
+ * @brief Normalize a ROM title to be safe to use in file paths.
+ *
+ * Performs the following transformations:
+ * - Converts to lowercase
+ * - Removes apostrophes (')
+ * - Replaces non-alphanumeric characters with underscores
+ * - Ensures there are no duplicated nor trailing underscores
+ *
+ * @param rom_title ROM title to normalize.
+ * @return std::string Normalized ROM title.
+ */
+std::string normalize_rom_title(std::string_view rom_title);
+
 } // namespace boyboy::common::utils

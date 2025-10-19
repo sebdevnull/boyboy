@@ -7,6 +7,8 @@
 
 #include "boyboy/common/utils.h"
 
+#include <algorithm>
+
 namespace boyboy::common::utils {
 
 /**
@@ -58,6 +60,35 @@ const char* as_char_ptr(const std::byte* ptr) noexcept
     );
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     return reinterpret_cast<const char*>(ptr);
+}
+
+std::string normalize_rom_title(std::string_view rom_title)
+{
+    std::string title{rom_title};
+    // To lowercase
+    std::ranges::transform(title, title.begin(), [](unsigned char c) { return std::tolower(c); });
+
+    // Remove apostrophes
+    std::erase(title, '\'');
+
+    // Replace non-alphanumeric with underscore
+    std::ranges::for_each(title, [](char& c) {
+        if (!std::isalnum(static_cast<unsigned char>(c))) {
+            c = '_';
+        }
+    });
+
+    // Collapse multiple underscores into one
+    title.erase(
+        std::ranges::unique(title, [](char a, char b) { return a == '_' && b == '_'; }).begin(),
+        title.end()
+    );
+
+    // Trim leading/trailing underscores
+    title.erase(0, title.find_first_not_of('_'));
+    title.erase(title.find_last_not_of('_') + 1);
+
+    return title;
 }
 
 } // namespace boyboy::common::utils
