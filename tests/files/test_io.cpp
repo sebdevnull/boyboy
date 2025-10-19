@@ -20,6 +20,7 @@
 #include "boyboy/common/files/errors.h"
 #include "boyboy/common/files/io.h"
 
+using boyboy::common::files::atomic_write;
 using boyboy::common::files::FileError;
 using boyboy::common::files::input_stream;
 using boyboy::common::files::output_stream;
@@ -191,6 +192,36 @@ TEST_F(FileIoTest, WriteBinary)
         auto file_path = NonExistentFile;
         {
             auto res = write_binary(file_path, SampleBinary);
+            EXPECT_TRUE(res.has_value());
+        }
+
+        // Read back the file content
+        auto read_bin = read_binary(file_path);
+        EXPECT_TRUE(read_bin.has_value());
+        EXPECT_TRUE(std::ranges::equal(*read_bin, SampleBinary));
+    }
+}
+
+TEST_F(FileIoTest, AtomicWrite)
+{
+    {
+        // Atomic write should work with text files
+        auto file_path = ExistentFile;
+        {
+            auto res = atomic_write(file_path, SampleText);
+            EXPECT_TRUE(res.has_value());
+        }
+
+        // Read back the file content
+        auto read_content = read_text(file_path);
+        EXPECT_TRUE(read_content.has_value());
+        EXPECT_EQ(*read_content, SampleText);
+    }
+    {
+        // Atomic write should work with binary files
+        auto file_path = ExistentFile;
+        {
+            auto res = atomic_write(file_path, SampleBinary);
             EXPECT_TRUE(res.has_value());
         }
 

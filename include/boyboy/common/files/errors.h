@@ -22,6 +22,7 @@ struct FileError {
         BadMode,
         ReadError,
         WriteError,
+        IOError,
         Unknown,
     } type;
 
@@ -47,6 +48,8 @@ struct FileError {
                 return "Read error";
             case Type::WriteError:
                 return "Write error";
+            case Type::IOError:
+                return "IO Error";
             default:
                 return "Unknown file error";
         }

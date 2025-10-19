@@ -7,13 +7,17 @@
 
 #pragma once
 
+#include <concepts>
 #include <cstddef>
+#include <cstdlib>
 #include <expected>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <span>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <vector>
 
 #include "boyboy/common/files/errors.h"
@@ -90,5 +94,63 @@ auto input_stream(const std::filesystem::path& path, std::ios::openmode mode = {
  */
 auto output_stream(const std::filesystem::path& path, std::ios::openmode mode = {})
     -> std::expected<std::ofstream, FileError>;
+
+// ---------- Atomic operations ----------
+
+template <typename T>
+concept AtomicWriteTextType = std::convertible_to<T, std::string_view>;
+
+template <typename T>
+concept AtomicWriteBinType = requires(T t) {
+    { std::span<const std::byte>(t) };
+};
+
+template <typename T>
+concept AtomicWriteType = AtomicWriteTextType<T> || AtomicWriteBinType<T>;
+
+/**
+ * @brief Atomically writes data to a file by first writing to a temporary file and then renaming
+ * it.
+ *
+ * @tparam T Type of data to write (std::string_view for text, std::span<const std::byte> for
+ * binary).
+ * @param path Path to the target file.
+ * @param data Data to write.
+ * @param trunc Whether to truncate the file.
+ * @return std::expected<void, FileError> Nothing or FileError on error.
+ */
+template <AtomicWriteType T>
+auto atomic_write(const std::filesystem::path& path, T&& data, bool trunc = true)
+    -> std::expected<void, FileError>
+{
+    auto tmp_path = path;
+    tmp_path += std::format(".tmp.{}", std::rand());
+
+    // This error should never be thrown
+    std::expected<void, FileError> res = std::unexpected(FileError{
+        FileError::Type::Unknown,
+        path,
+        std::format("Bad type T for atomic write: {}", typeid(T).name())
+    });
+
+    if constexpr (AtomicWriteTextType<T>) {
+        res = write_text(tmp_path, std::forward<T>(data), trunc);
+    }
+    else if constexpr (AtomicWriteBinType<T>) {
+        res = write_binary(tmp_path, std::forward<T>(data), trunc);
+    }
+
+    if (res) {
+        std::error_code ec;
+        std::filesystem::rename(tmp_path, path, ec);
+        if (ec) {
+            return std::unexpected(FileError{
+                FileError::Type::IOError, path, std::format("Rename failed: {}", ec.message())
+            });
+        }
+    }
+
+    return res;
+}
 
 } // namespace boyboy::common::files

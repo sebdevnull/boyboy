@@ -56,6 +56,8 @@ auto write_text(const std::filesystem::path& path, std::string_view data, bool t
         return std::unexpected(FileError{FileError::Type::WriteError, path});
     }
 
+    file->flush();
+
     return {};
 }
 
@@ -101,6 +103,8 @@ auto write_binary(const std::filesystem::path& path, std::span<const std::byte> 
     if (file->fail()) {
         return std::unexpected(FileError{FileError::Type::WriteError, path});
     }
+
+    file->flush();
 
     return {};
 }
