@@ -147,6 +147,10 @@ public:
     void set_ram(auto ram) { mbc_.set_ram(ram); }
     void set_ram_load_cb(RamLoadCb&& cb) { on_ram_load_cb_ = std::move(cb); }
     void set_ram_save_cb(RamSaveCb&& cb) { on_ram_save_cb_ = std::move(cb); }
+    [[nodiscard]] bool is_autosave_enabled() const { return autosave_enabled_; }
+    void enable_autosave(bool enable) { autosave_enabled_ = enable; }
+    [[nodiscard]] uint32_t get_save_interval_ms() const { return mbc_.get_save_interval_ms(); }
+    void set_save_interval_ms(uint32_t interval_ms) { mbc_.set_save_interval_ms(interval_ms); }
 
     // Accessors
     [[nodiscard]] const RomData& get_rom_data() const { return rom_data_; }
@@ -168,6 +172,7 @@ private:
     mbc::Mbc mbc_;
     RomData rom_data_;
     bool rom_loaded_ = false;
+    bool autosave_enabled_ = true;
 
     // RAM load/save callbacks
     RamLoadCb on_ram_load_cb_ = nullptr;

@@ -90,7 +90,8 @@ public:
         save_pending_ = false;
         last_save_ = BatteryClock::now();
     }
-    void set_save_period(uint32_t period_ms) { save_period_ms_ = period_ms; };
+    [[nodiscard]] uint32_t get_save_interval_ms() const { return save_interval_ms_; }
+    void set_save_interval_ms(uint32_t interval_ms) { save_interval_ms_ = interval_ms; }
 
     // Accessors
     [[nodiscard]] MbcType get_type() const { return type_; }
@@ -113,7 +114,7 @@ public:
 
 private:
     using BatteryClock = std::chrono::steady_clock;
-    static constexpr uint32_t DefaultSavePeriodMs = 5000;
+    static constexpr uint32_t DefaultSaveIntervalMs = 5000;
 
     // MBC status and information
     MbcType type_{MbcType::None};
@@ -122,7 +123,7 @@ private:
     bool has_battery_{false};
     bool eram_dirty_{false};
     bool save_pending_{false};
-    uint32_t save_period_ms_ = DefaultSavePeriodMs;
+    uint32_t save_interval_ms_ = DefaultSaveIntervalMs;
     BatteryClock::time_point last_save_{BatteryClock::now()};
 
     // MBC registers

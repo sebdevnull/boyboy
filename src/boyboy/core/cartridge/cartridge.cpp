@@ -98,7 +98,9 @@ bool Cartridge::is_cart_supported() const
 void Cartridge::tick()
 {
     mbc_.tick();
-    save_ram();
+    if (autosave_enabled_) {
+        save_ram();
+    }
 }
 
 void Cartridge::load_ram()

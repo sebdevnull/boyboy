@@ -210,7 +210,7 @@ void Mbc::tick()
     if (has_battery_ && eram_dirty_ && !save_pending_) {
         auto now = BatteryClock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_save_);
-        if (elapsed.count() >= save_period_ms_) {
+        if (elapsed.count() >= save_interval_ms_) {
             save_pending_ = true;
             log::debug("[MBC] Pending ERAM save");
         }
