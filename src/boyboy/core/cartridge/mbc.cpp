@@ -8,9 +8,11 @@
 #include "boyboy/core/cartridge/mbc.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <format>
 #include <ranges>
+#include <vector>
 
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
@@ -23,6 +25,10 @@ using namespace boyboy::common;
 
 void Mbc::load_banks(const Cartridge& cart)
 {
+    // Unload any existing banks first and reset state
+    unload_banks();
+
+    // Get MBC type and check if supported
     type_ = mbc_type(cart);
     if (type_ != MbcType::None && type_ != MbcType::MBC1) {
         // Currently only ROM_ONLY and MBC1 are supported
@@ -30,10 +36,9 @@ void Mbc::load_banks(const Cartridge& cart)
             "Unsupported MBC type: {}", cartridge::to_string(cart.get_header().cartridge_type)
         ));
     }
+    has_battery_ = cart_has_battery(cart);
 
-    // Unload any existing banks first and reset state
-    unload_banks();
-
+    // Get bank count from cartridge header
     const auto& header = cart.get_header();
     rom_bank_cnt_ = cartridge::num_rom_banks(header.rom_size);
     ram_bank_cnt_ = cartridge::num_ram_banks(header.ram_size);
@@ -66,6 +71,10 @@ void Mbc::load_banks(const Cartridge& cart)
 
 void Mbc::unload_banks()
 {
+    // Clear save state
+    clear_save();
+
+    // Reset banks and registers
     rom_banks_.clear();
     rom_banks_.shrink_to_fit();
     ram_banks_.clear();
@@ -76,6 +85,10 @@ void Mbc::unload_banks()
     ram_bank_select_ = 0;
     banking_mode_ = 0;
     ram_enable_ = false;
+
+    // Reset status
+    type_ = MbcType::None;
+    has_battery_ = false;
 }
 
 [[nodiscard]] uint8_t Mbc::read(uint16_t addr) const
@@ -166,8 +179,42 @@ void Mbc::write(uint16_t addr, uint8_t value)
     else if (addr >= mmu::ERAMStart && addr <= mmu::ERAMEnd && ram_bank_cnt_ > 0) {
         // write to RAM bank if any
         selected_ram_bank().at(addr - mmu::ERAMStart) = value;
+        eram_dirty_ = true;
     }
     // else ignore
+}
+
+[[nodiscard]] std::vector<uint8_t> Mbc::get_ram() const
+{
+    auto ram_view = std::views::join(ram_banks_);
+    return {ram_view.begin(), ram_view.end()};
+}
+
+void Mbc::set_ram(std::span<const uint8_t> ram)
+{
+    if (ram.size() != ram_size()) {
+        log::error(
+            "Error setting RAM of different sizes: got {}B, expected {}B", ram.size(), ram_size()
+        );
+        return;
+    }
+
+    for (size_t i = 0; i < ram_banks_.size(); ++i) {
+        auto bank_view = ram | std::views::drop(i * RamBankSize) | std::views::take(RamBankSize);
+        std::ranges::copy(bank_view, ram_banks_[i].begin());
+    }
+}
+
+void Mbc::tick()
+{
+    if (has_battery_ && eram_dirty_ && !save_pending_) {
+        auto now = BatteryClock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_save_);
+        if (elapsed.count() >= save_period_ms_) {
+            save_pending_ = true;
+            log::debug("[MBC] Pending ERAM save");
+        }
+    }
 }
 
 MbcType Mbc::mbc_type(const Cartridge& cart)
@@ -201,6 +248,23 @@ MbcType Mbc::mbc_type(const Cartridge& cart)
             return MbcType::MBC7;
         default:
             return MbcType::Unsupported;
+    }
+}
+
+bool Mbc::cart_has_battery(const Cartridge& cart)
+{
+    switch (cart.get_header().cartridge_type) {
+        case CartridgeType::MBC1RAMBattery:
+        case CartridgeType::MBC2RAMBattery:
+        case CartridgeType::MBC3RAMBattery:
+        case CartridgeType::MBC3TimerBattery:
+        case CartridgeType::MBC3TimerRAMBattery:
+        case CartridgeType::MBC5RAMBattery:
+        case CartridgeType::MBC5RumbleRAMBattery:
+        case CartridgeType::MBC6RAMBattery:
+            return true;
+        default:
+            return false;
     }
 }
 
