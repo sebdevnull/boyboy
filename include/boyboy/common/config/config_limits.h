@@ -46,11 +46,11 @@ struct ConfigLimits {
     };
 
     struct Video {
-        static constexpr Range<int> ScaleRange = {.min = 1, .max = 10, .default_value = 4};
+        static constexpr Range<int> ScaleRange = {.min = 1, .max = 10, .default_value = 2};
     };
 
-    struct Battery {
-        static constexpr Range<int> IntervalMsRange = {
+    struct Saves {
+        static constexpr Range<int> SaveInterval = {
             .min = 0, .max = 3'600'000, .default_value = 5000
         };
     };

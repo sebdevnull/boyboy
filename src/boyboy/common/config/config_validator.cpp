@@ -23,7 +23,7 @@ ValidationResult ConfigValidator::validate(Config& config, bool normalize)
         result,
         config.emulator.speed,
         ConfigLimits::Emulator::SpeedRange,
-        "emulator.speed",
+        ConfigKeys::EmulatorSpeed,
         normalize
     );
 
@@ -33,9 +33,9 @@ ValidationResult ConfigValidator::validate(Config& config, bool normalize)
 
     validate_field(
         result,
-        config.battery.interval_ms,
-        ConfigLimits::Battery::IntervalMsRange,
-        "battery.interval_ms",
+        config.saves.save_interval,
+        ConfigLimits::Saves::SaveInterval,
+        ConfigKeys::SavesSaveInterval,
         normalize
     );
 
@@ -43,7 +43,7 @@ ValidationResult ConfigValidator::validate(Config& config, bool normalize)
         result,
         config.debug.log_level,
         ConfigLimits::Debug::LogLevelOptions,
-        "debug.log_level",
+        ConfigKeys::DebugLogLevel,
         normalize
     );
 

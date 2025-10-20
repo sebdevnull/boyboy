@@ -136,8 +136,8 @@ void Emulator::apply_config(const common::config::Config& config)
     display_.set_vsync(config.video.vsync);
 
     // Battery save settings
-    cartridge_->enable_autosave(config.battery.autosave);
-    cartridge_->set_save_interval_ms(config.battery.interval_ms);
+    cartridge_->enable_autosave(config.saves.autosave);
+    cartridge_->set_save_interval_ms(config.saves.save_interval);
 
     // Logging settings
     log::set_level(config.debug.log_level);
