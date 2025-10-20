@@ -80,7 +80,7 @@ private:
         ROMBank0 = 0,
         ROMBank1,
         VRAM,
-        ERAM,
+        SRAM,
         WRAM0,
         WRAM1,
         ECHO,

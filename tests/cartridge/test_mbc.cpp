@@ -23,8 +23,8 @@ using boyboy::common::utils::PrettyHex;
 using boyboy::core::cartridge::CartridgeType;
 using boyboy::core::cartridge::mbc::Mbc;
 using boyboy::core::cartridge::mbc::MbcType;
-using boyboy::core::mmu::ERAMStart;
 using boyboy::core::mmu::ROMBank1Start;
+using boyboy::core::mmu::SRAMStart;
 
 TEST_P(MBCParamTest, InitialState)
 {
@@ -213,7 +213,7 @@ TEST_P(MBCParamTest, RamBankSelection)
     EXPECT_TRUE(mbc.is_ram_enabled()) << "RAM should be enabled for RAM bank read/write test";
     for (uint8_t bank = 0; bank < p.ram_banks; bank++) {
         cart->mbc_write(Mbc::RAMBankNumberStart, bank);
-        uint16_t addr = ERAMStart;
+        uint16_t addr = SRAMStart;
         for (uint8_t val = 0; val < 0x10; val++) {
             cart->mbc_write(addr + val, val + (bank * 0x10)); // Distinguish banks by offset
             uint8_t read_val = cart->mbc_read(addr + val);

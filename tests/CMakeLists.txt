@@ -22,6 +22,7 @@ set_target_properties(gmock_main PROPERTIES CXX_CLANG_TIDY "")
 set(TEST_SOURCES
     test_main.cpp
     helpers/rom_fixtures.cpp
+    helpers/file_fixtures.cpp
     cartridge/test_cartridge.cpp
     cartridge/test_romonly.cpp
     cartridge/test_mbc.cpp
@@ -61,6 +62,8 @@ set(TEST_SOURCES
     cpu/instructions/instructions_16bit.cpp
     cpu/test_roms.cpp
     config/test_config.cpp
+    files/test_utils.cpp
+    files/test_io.cpp
 )
 
 # --- Options ---

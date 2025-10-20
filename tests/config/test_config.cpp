@@ -31,10 +31,12 @@ protected:
 
 TEST_F(ConfigTest, DefaultConfig)
 {
-    EXPECT_EQ(config.emulator.speed, 1);
-    EXPECT_EQ(config.video.scale, 4);
+    EXPECT_EQ(config.emulator.speed, ConfigLimits::Emulator::SpeedRange.default_value);
+    EXPECT_EQ(config.video.scale, ConfigLimits::Video::ScaleRange.default_value);
     EXPECT_TRUE(config.video.vsync);
-    EXPECT_EQ(config.debug.log_level, "info");
+    EXPECT_TRUE(config.saves.autosave);
+    EXPECT_EQ(config.saves.save_interval, ConfigLimits::Saves::SaveInterval.default_value);
+    EXPECT_EQ(config.debug.log_level, ConfigLimits::Debug::LogLevelOptions.default_value);
 }
 
 TEST_F(ConfigTest, ValidateConfig)

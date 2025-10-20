@@ -7,7 +7,7 @@
  * ------------------------------------- MBC1 Registers ------------------------------------
  * 0x0000-0x1FFF - RAM Enable (Write Only)
  *                 0x0A - Enable RAM
- *                 Must be enabled before writing to ERAM
+ *                 Must be enabled before writing to SRAM
  * 0x2000-0x3FFF - ROM Bank Number (Write Only)
  *                 Lower 5 bits select the ROM bank number (0-31), higher bits discarded
  *                 Writing 0 selects bank 1 instead (0 is fixed)
@@ -31,6 +31,7 @@
 #pragma once
 
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <vector>
 
@@ -74,12 +75,32 @@ public:
     [[nodiscard]] uint8_t read(uint16_t addr) const;
     void write(uint16_t addr, uint8_t value);
 
+    // Full SRAM data access
+    [[nodiscard]] std::vector<uint8_t> get_ram() const;
+    void set_ram(std::span<const uint8_t> ram);
+
+    // Tick for battery-backed RAM saves and RTC
+    void tick();
+
+    // Save state
+    [[nodiscard]] bool is_save_pending() const { return save_pending_; };
+    void clear_save()
+    {
+        sram_dirty_ = false;
+        save_pending_ = false;
+        last_save_ = BatteryClock::now();
+    }
+    [[nodiscard]] uint32_t get_save_interval_ms() const { return save_interval_ms_; }
+    void set_save_interval_ms(uint32_t interval_ms) { save_interval_ms_ = interval_ms; }
+
     // Accessors
     [[nodiscard]] MbcType get_type() const { return type_; }
     [[nodiscard]] bool is_ram_enabled() const { return ram_enable_; }
     [[nodiscard]] uint8_t rom_bank() const { return rom_bank_select_; }
     [[nodiscard]] uint8_t ram_bank() const { return ram_bank_select_; }
     [[nodiscard]] uint8_t banking_mode() const { return banking_mode_; }
+    [[nodiscard]] bool has_battery() const { return has_battery_; }
+    [[nodiscard]] size_t ram_size() const { return ram_banks_.size() * RamBankSize; }
 
     // Registers address ranges
     static constexpr uint16_t RAMEnableStart = 0x0000;
@@ -92,7 +113,18 @@ public:
     static constexpr uint16_t BankingModeSelectEnd = 0x7FFF;
 
 private:
+    using BatteryClock = std::chrono::steady_clock;
+    static constexpr uint32_t DefaultSaveIntervalMs = 5000;
+
+    // MBC status and information
     MbcType type_{MbcType::None};
+
+    // Battery status
+    bool has_battery_{false};
+    bool sram_dirty_{false};
+    bool save_pending_{false};
+    uint32_t save_interval_ms_ = DefaultSaveIntervalMs;
+    BatteryClock::time_point last_save_{BatteryClock::now()};
 
     // MBC registers
     bool ram_enable_{false};     // RAM enable flag
@@ -106,8 +138,7 @@ private:
     uint8_t rom_bank_cnt_{0};
     uint8_t ram_bank_cnt_{0};
 
-    static MbcType mbc_type(const Cartridge& cart);
-
+    // ROM bank selection helpers
     RomBank& selected_rom_bank() { return rom_banks_.at(rom_bank_select_); }
     [[nodiscard]] const RomBank& selected_rom_bank() const
     {
@@ -118,6 +149,10 @@ private:
     {
         return ram_banks_.at(ram_bank_select_);
     }
+
+    // Cartridge type helpers
+    static MbcType mbc_type(const Cartridge& cart);
+    static bool cart_has_battery(const Cartridge& cart);
 };
 
 } // namespace boyboy::core::cartridge::mbc

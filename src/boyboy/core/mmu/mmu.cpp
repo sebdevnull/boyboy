@@ -48,7 +48,7 @@ void Mmu::map_rom(cartridge::Cartridge& cart)
 {
     auto& rom_bank0 = map(MemoryRegionID::ROMBank0);
     auto& rom_bank1 = map(MemoryRegionID::ROMBank1);
-    auto& eram = map(MemoryRegionID::ERAM);
+    auto& sram = map(MemoryRegionID::SRAM);
 
     auto cart_read = [&cart](uint16_t addr) -> uint8_t {
         return cart.mbc_read(addr);
@@ -65,9 +65,9 @@ void Mmu::map_rom(cartridge::Cartridge& cart)
     rom_bank1.read_handler = cart_read;
     rom_bank1.write_handler = cart_write;
 
-    // Map ERAM (0xA000 - 0xBFFF)
-    eram.read_handler = cart_read;
-    eram.write_handler = cart_write;
+    // Map SRAM (0xA000 - 0xBFFF)
+    sram.read_handler = cart_read;
+    sram.write_handler = cart_write;
 
     rom_loaded_ = true;
 }
@@ -386,15 +386,15 @@ void Mmu::init_memory_map()
             common::utils::PrettyHex(value).to_string()
         );
     };
-    auto unloaded_eram_read = [](uint16_t addr) -> uint8_t {
+    auto unloaded_sram_read = [](uint16_t addr) -> uint8_t {
         log::warn(
-            "Read from ERAM before ROM loaded at {}", common::utils::PrettyHex(addr).to_string()
+            "Read from SRAM before ROM loaded at {}", common::utils::PrettyHex(addr).to_string()
         );
         return OpenBusValue;
     };
-    auto unloaded_eram_write = [](uint16_t addr, uint8_t value) {
+    auto unloaded_sram_write = [](uint16_t addr, uint8_t value) {
         log::warn(
-            "Write to ERAM before ROM loaded at {}: {}",
+            "Write to SRAM before ROM loaded at {}: {}",
             common::utils::PrettyHex(addr).to_string(),
             common::utils::PrettyHex(value).to_string()
         );
@@ -422,13 +422,13 @@ void Mmu::init_memory_map()
         .end = VRAMEnd,
         .data = vram_,
     };
-    map(MemoryRegionID::ERAM) = {
-        .id = MemoryRegionID::ERAM,
-        .start = ERAMStart,
-        .end = ERAMEnd,
+    map(MemoryRegionID::SRAM) = {
+        .id = MemoryRegionID::SRAM,
+        .start = SRAMStart,
+        .end = SRAMEnd,
         .data = {},
-        .read_handler = unloaded_eram_read,
-        .write_handler = unloaded_eram_write,
+        .read_handler = unloaded_sram_read,
+        .write_handler = unloaded_sram_write,
     };
     map(MemoryRegionID::WRAM0) = {
         .id = MemoryRegionID::WRAM0,

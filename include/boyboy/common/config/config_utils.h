@@ -9,22 +9,16 @@
 
 #include <filesystem>
 #include <optional>
-#include <string_view>
 
 #include "boyboy/common/config/config.h"
 
 namespace boyboy::common::config {
 
-inline constexpr std::string_view DefaultConfigDir = "boyboy";
-inline constexpr std::string_view DefaultConfigFile = "config.toml";
+// alias for shorter signature
+using OptionalPath = std::optional<std::filesystem::path>;
 
-Config
-load_config(const std::optional<std::filesystem::path>& path = std::nullopt, bool normalize = true);
-void save_config(
-    const Config& config, const std::optional<std::filesystem::path>& path = std::nullopt
-);
+Config load_config(const OptionalPath& path = {}, bool normalize = true);
+void save_config(const Config& config, const OptionalPath& path = {});
 void validate_config(Config& config, bool normalize = true);
-
-std::filesystem::path default_config_path();
 
 } // namespace boyboy::common::config

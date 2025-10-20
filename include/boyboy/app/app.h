@@ -41,6 +41,9 @@ public:
     [[nodiscard]] const common::config::Config& get_config() const { return config_; }
     [[nodiscard]] common::config::Config& get_config() { return config_; }
 
+    // Save configuration
+    void set_battery_save_path(std::string_view save_path);
+
     // ROM information
     [[nodiscard]] static std::string rom_info(std::string_view rom_path);
 

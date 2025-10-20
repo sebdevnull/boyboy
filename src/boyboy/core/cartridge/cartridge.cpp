@@ -72,7 +72,6 @@ bool Cartridge::is_cart_supported() const
         case CartridgeType::ROMOnly:
         case CartridgeType::MBC1:
         case CartridgeType::MBC1RAM:
-        // TODO: support battery-backed RAM
         case CartridgeType::MBC1RAMBattery:
             return true;
         case CartridgeType::MBC2:
@@ -92,6 +91,36 @@ bool Cartridge::is_cart_supported() const
         case CartridgeType::MBC5RumbleRAMBattery:
         default:
             return false;
+    }
+}
+
+void Cartridge::tick()
+{
+    mbc_.tick();
+    if (autosave_enabled_) {
+        save_ram();
+    }
+}
+
+void Cartridge::load_ram()
+{
+    if (mbc_.has_battery() && on_ram_load_cb_) {
+        auto ram = on_ram_load_cb_();
+        if (ram.empty()) {
+            log::warn("[Cartridge] SRAM load callback returned empty data, skipping SRAM load");
+            return;
+        }
+        mbc_.set_ram(ram);
+        mbc_.clear_save();
+    }
+}
+
+void Cartridge::save_ram()
+{
+    if (mbc_.has_battery() && mbc_.is_save_pending() && on_ram_save_cb_) {
+        if (on_ram_save_cb_(mbc_.get_ram())) {
+            mbc_.clear_save();
+        }
     }
 }
 

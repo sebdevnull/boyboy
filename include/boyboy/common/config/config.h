@@ -5,6 +5,9 @@
  * @license GPLv3 (see LICENSE file)
  */
 
+// TODO: improve config system
+// Right now we have to touch 1000 places to add/modify a single config key
+
 #pragma once
 
 #include <concepts>
@@ -35,6 +38,11 @@ struct ConfigKeys {
         static constexpr std::string_view Scale = "scale";
         static constexpr std::string_view VSync = "vsync";
     };
+    struct Saves {
+        static constexpr std::string_view Section = "saves";
+        static constexpr std::string_view Autosave = "autosave";
+        static constexpr std::string_view SaveInterval = "save_interval";
+    };
     struct Debug {
         static constexpr std::string_view Section = "debug";
         static constexpr std::string_view LogLevel = "log_level";
@@ -47,6 +55,10 @@ struct ConfigKeys {
                                                  std::string(Video::Scale);
     inline static const std::string VideoVSync = std::string(Video::Section) + "." +
                                                  std::string(Video::VSync);
+    inline static const std::string SavesAutoSave = std::string(Saves::Section) + "." +
+                                                    std::string(Saves::Autosave);
+    inline static const std::string SavesSaveInterval = std::string(Saves::Section) + "." +
+                                                        std::string(Saves::SaveInterval);
     inline static const std::string DebugLogLevel = std::string(Debug::Section) + "." +
                                                     std::string(Debug::LogLevel);
 
@@ -54,6 +66,8 @@ struct ConfigKeys {
         EmulatorSpeed,
         VideoScale,
         VideoVSync,
+        SavesAutoSave,
+        SavesSaveInterval,
         DebugLogLevel,
     };
 };
@@ -72,6 +86,8 @@ private:
         {ConfigKeys::EmulatorSpeed, Type::Int},
         {ConfigKeys::VideoScale, Type::Int},
         {ConfigKeys::VideoVSync, Type::Bool},
+        {ConfigKeys::SavesAutoSave, Type::Bool},
+        {ConfigKeys::SavesSaveInterval, Type::Int},
         {ConfigKeys::DebugLogLevel, Type::String},
     };
 };
@@ -86,6 +102,11 @@ struct Config {
         int scale = ConfigLimits::Video::ScaleRange.default_value;
         bool vsync = true;
     } video; // NOLINT
+
+    struct Saves {
+        bool autosave = true;
+        int save_interval = ConfigLimits::Saves::SaveInterval.default_value;
+    } saves; // NOLINT
 
     struct Debug {
         std::string log_level = std::string(ConfigLimits::Debug::LogLevelOptions.default_value);
@@ -185,6 +206,12 @@ private:
          }}},
         {ConfigKeys::VideoVSync, ConfigAccessor{[](Config& c) {
              return &c.video.vsync;
+         }}},
+        {ConfigKeys::SavesAutoSave, ConfigAccessor{[](Config& c) {
+             return &c.saves.autosave;
+         }}},
+        {ConfigKeys::SavesSaveInterval, ConfigAccessor{[](Config& c) {
+             return &c.saves.save_interval;
          }}},
         {ConfigKeys::DebugLogLevel, ConfigAccessor{[](Config& c) {
              return &c.debug.log_level;

@@ -10,6 +10,7 @@
 #include <CLI/CLI.hpp>
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include "boyboy/app/app.h"
 #include "boyboy/app/commands/config_command.h"
@@ -25,13 +26,24 @@ inline static constexpr std::string_view RunCommandName = "run";
 inline static constexpr std::string_view InfoCommandName = "info";
 inline static constexpr std::string_view ConfigCommandName = "config";
 
+inline static const std::string GlobalFooter = std::format(
+    "For more information and bug reports, visit <https://github.com/sebdevnull/boyboy>\n\n{}",
+    version::LicenseLong
+);
+
+namespace {
+std::string make_footer(std::string&& footer)
+{
+    return std::move(footer) + "\n" + GlobalFooter;
+}
+} // namespace
+
 CLI11Adapter::CLI11Adapter(app::App& app, app::commands::CommandContext& context)
     : app_(app), context_(context)
 {
     app_parser_.name("boyboy");
     app_parser_.description("BoyBoy - A Game Boy emulator");
     app_parser_.set_help_flag("-h,--help", "Print help message and exit");
-    app_parser_.set_help_all_flag("--help-all", "Print all help messages and exit");
     app_parser_.set_version_flag("-v,--version", app::App::version());
     app_parser_.add_flag_callback(
         "--build-info",
@@ -42,10 +54,7 @@ CLI11Adapter::CLI11Adapter(app::App& app, app::commands::CommandContext& context
         "Display detailed build information and exit"
     );
 
-    app_parser_.footer(std::format(
-        "For more information and bug reports, visit <https://github.com/sebdevnull/boyboy>\n\n{}",
-        version::LicenseLong
-    ));
+    app_parser_.footer(GlobalFooter);
 }
 
 int CLI11Adapter::run(std::span<std::string_view> args)
@@ -102,46 +111,52 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
     auto* cmd = app_parser_.add_subcommand(
         std::string(command.name()), std::string(command.description())
     );
-    cmd->footer(R"(
+    cmd->footer(make_footer(R"(
         Examples:
           boyboy run path/to/rom.gb
           boyboy run path/to/rom.gb --config path/to/config.toml
-          boyboy run path/to/rom.gb --scale 2 --speed 2 --no-vsync
+          boyboy run path/to/rom.gb --scale 2 --speed 2 --vsync off
         
         Notes:
           Any options provided here will override those in the configuration file.
-    )");
+    )"));
 
-    cmd->add_option("rom", context_.rom_path, "Path to the ROM file")
-        ->option_text("ROM_PATH")
-        ->required();
+    cmd->add_option("<rom>", context_.rom_path, "Path to the ROM file")->type_name("")->required();
     cmd->add_option("-c,--config", context_.config_path, "Path to the configuration file")
-        ->option_text("PATH");
-    cmd->add_option("--scale", options_.scale, "Scaling factor for the display (x1, x2, x3, etc.)")
-        ->option_text("SCALE");
-    cmd->add_option(
-           "--speed", options_.speed, "Emulation speed (0 = uncapped, 1 = normal, 2 = double, etc.)"
-    )
-        ->option_text("SPEED");
-    cmd->add_flag(
-        "--vsync,!--no-vsync", options_.vsync, "Enable or disable vertical synchronization"
-    );
-
+        ->type_name("<file>");
+    cmd->add_option("--scale", options_.scale, "Display scaling factor")->type_name("<factor>");
+    cmd->add_option("--speed", options_.speed, "Emulation speed multiplier (0 = uncapped)")
+        ->type_name("<mult>");
+    cmd->add_option("--vsync", options_.vsync, "Enable or disable vertical synchronization")
+        ->type_name("<bool>");
     cmd->add_option(
            "--log-level",
            context_.log_level,
            std::format(
-               "Set the logging level ({})",
+               "Logging level: {}",
                common::config::ConfigLimits::Debug::LogLevelOptions.option_list()
            )
     )
-        ->option_text("LEVEL")
+        ->option_text("<level>")
         ->check(CLI::IsMember(common::config::ConfigLimits::Debug::LogLevels));
+
+    // Battery save options
+    cmd->add_option("--save-file", options_.save_path, "Battery save file for this ROM")
+        ->type_name("<file>");
+    cmd->add_option("--autosave", options_.autosave, "Enable or disable battery autosave")
+        ->type_name("<bool>");
+    cmd->add_option(
+           "--save-interval", options_.save_interval_ms, "Battery autosave interval in milliseconds"
+    )
+        ->type_name("<t>");
 
     cmd->callback([this, &command]() {
         command.set_scale(options_.scale);
         command.set_speed(options_.speed);
         command.set_vsync(options_.vsync);
+        command.set_save_path(options_.save_path);
+        command.set_autosave(options_.autosave);
+        command.set_save_interval_ms(options_.save_interval_ms);
         command.execute(app_, context_);
     });
 }
@@ -151,14 +166,12 @@ void CLI11Adapter::register_info(app::commands::InfoCommand& command)
     auto* cmd = app_parser_.add_subcommand(
         std::string(command.name()), std::string(command.description())
     );
-    cmd->footer(R"(
+    cmd->footer(make_footer(R"(
         Examples:
           boyboy info path/to/rom.gb
-    )");
+    )"));
 
-    cmd->add_option("rom", context_.rom_path, "Path to the ROM file")
-        ->option_text("ROM_PATH")
-        ->required();
+    cmd->add_option("<rom>", context_.rom_path, "Path to the ROM file")->type_name("")->required();
 
     cmd->callback([this, &command]() { command.execute(app_, context_); });
 }
@@ -169,38 +182,40 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
         std::string(command.name()), std::string(command.description())
     );
     cli_config->add_option("-c,--config", context_.config_path, "Path to the configuration file")
-        ->option_text("PATH");
+        ->type_name("<file>");
     cli_config->require_subcommand(1);
 
     // Get
     auto* get_sub = cli_config->add_subcommand("get", "Get a configuration value");
-    get_sub->add_option("key", options_.cfg_key, "Configuration key")->required();
+    get_sub->add_option("<key>", options_.cfg_key, "Configuration key")->type_name("")->required();
     get_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Get);
         command.set_key(options_.cfg_key);
         command.execute(app_, context_);
     });
-    get_sub->footer(R"(
+    get_sub->footer(make_footer(R"(
         Examples:
           boyboy config get emulator.speed
           boyboy config -c path/to/config.toml get video.vsync
-    )");
+    )"));
 
     // Set
     auto* set_sub = cli_config->add_subcommand("set", "Set a configuration value");
-    set_sub->add_option("key", options_.cfg_key, "Configuration key")->required();
-    set_sub->add_option("value", options_.cfg_value, "Configuration value")->required();
+    set_sub->add_option("<key>", options_.cfg_key, "Configuration key")->type_name("")->required();
+    set_sub->add_option("<value>", options_.cfg_value, "Configuration value")
+        ->type_name("")
+        ->required();
     set_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Set);
         command.set_key(options_.cfg_key);
         command.set_value(options_.cfg_value);
         command.execute(app_, context_);
     });
-    set_sub->footer(R"(
+    set_sub->footer(make_footer(R"(
         Examples:
           boyboy config set emulator.speed 2
           boyboy config -c path/to/config.toml set video.vsync true
-    )");
+    )"));
 
     // List
     auto* list_sub = cli_config->add_subcommand("list", "List configuration values");
@@ -208,11 +223,11 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::List);
         command.execute(app_, context_);
     });
-    list_sub->footer(R"(
+    list_sub->footer(make_footer(R"(
         Examples:
           boyboy config list
           boyboy config -c path/to/config.toml list
-    )");
+    )"));
 
     // Reset
     auto* reset_sub = cli_config->add_subcommand("reset", "Reset configuration to default");
@@ -220,11 +235,11 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Reset);
         command.execute(app_, context_);
     });
-    reset_sub->footer(R"(
+    reset_sub->footer(make_footer(R"(
         Examples:
           boyboy config reset
           boyboy config -c path/to/config.toml reset
-    )");
+    )"));
 }
 
 } // namespace boyboy::frontend::cli

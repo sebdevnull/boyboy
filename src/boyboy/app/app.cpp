@@ -14,6 +14,7 @@
 #include "boyboy/common/config/config.h"
 #include "boyboy/common/config/config_utils.h"
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/save/save_manager.h"
 #include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/cartridge/cartridge_loader.h"
 #include "boyboy/version.h"
@@ -36,9 +37,6 @@ int App::run(std::string_view rom_path)
 {
     log::info("Running BoyBoy emulator...");
 
-    // Apply configuration
-    emulator_.apply_config(config_);
-
     // Load ROM
     try {
         emulator_.load(std::string(rom_path));
@@ -47,6 +45,9 @@ int App::run(std::string_view rom_path)
         log::error("Failed to load ROM: {}", e.what());
         return 1;
     }
+
+    // Apply configuration
+    emulator_.apply_config(config_);
 
     // Run emulator
     emulator_.run();
@@ -72,10 +73,15 @@ void App::save_config( // NOLINT
     config::save_config(config, path);
 }
 
+void App::set_battery_save_path(std::string_view save_path) // NOLINT
+{
+    save::SaveManager::instance().set_sram_save_path(save_path);
+}
+
 std::string App::rom_info(std::string_view rom_path)
 {
     auto cart = core::cartridge::CartridgeLoader::load(rom_path);
-    return cart.get_header().pretty_string();
+    return cart->get_header().pretty_string();
 }
 
 std::string App::version()
