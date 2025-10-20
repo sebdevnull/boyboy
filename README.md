@@ -30,6 +30,7 @@ BoyBoy provides a hands-on platform for learning about emulator development and 
     - [Running a ROM](#running-a-rom)
     - [Managing Configuration](#managing-configuration)
     - [Inspecting ROM Information](#inspecting-rom-information)
+  - [Known Issues](#known-issues)
   - [Test ROMs](#test-roms-1)
   - [Legal notice](#legal-notice)
 
@@ -279,6 +280,15 @@ Use the `info` subcommand to display metadata about a ROM.
   ```bash
   boyboy info path/to/rom.gb
   ```
+
+---
+
+## Known Issues
+
+- **D-Bus/SDL2 memory leaks**: On Linux, running BoyBoy with AddressSanitizer (on debug builds) may report small leaks from `dbus` symbols.
+These leaks are caused by SDL2 interacting with the D-Bus system and are **harmless**.  
+When running a debug build, use the provided wrapper script (`scripts/run_boyboy.sh`) to automatically suppress these leaks.  
+For more information about suppressed leaks, check `config/asan_suppress.txt`.
 
 ---
 

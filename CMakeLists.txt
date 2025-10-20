@@ -173,8 +173,11 @@ target_link_libraries(${BOYBOY_APP} PRIVATE
 option(ENABLE_SANITIZERS "Enable address/UB sanitizers" ON)
 if(ENABLE_SANITIZERS AND CMAKE_BUILD_TYPE MATCHES Debug)
     message(STATUS "Sanitizers enabled")
-    target_compile_options(${BOYBOY_LIB} PRIVATE -fsanitize=address,undefined)
-    target_link_options(${BOYBOY_LIB} PRIVATE -fsanitize=address,undefined)
+
+    foreach(tgt ${BOYBOY_LIB} ${BOYBOY_APP})
+        target_compile_options(${tgt} PRIVATE -fsanitize=address,undefined)
+        target_link_options(${tgt} PRIVATE -fsanitize=address,undefined)
+    endforeach()
 endif()
 
 # ---- Build metadata ----
