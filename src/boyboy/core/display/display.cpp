@@ -32,6 +32,17 @@ bool Display::init(const std::string& title)
         return false;
     }
 
+    // RAII guard to ensure SDL_Quit is called on error
+    struct SDLGuard { // NOLINT
+        ~SDLGuard()
+        {
+            if (should_quit) {
+                SDL_Quit();
+            }
+        };
+        bool should_quit = true;
+    } sdl_guard;
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -75,6 +86,7 @@ bool Display::init(const std::string& title)
     log::info("OpenGL Version: {}", gl_version_to_string(GL_VERSION));
     log::info("OpenGL Renderer: {}", gl_version_to_string(GL_RENDERER));
 
+    sdl_guard.should_quit = false;
     return true;
 }
 
@@ -94,6 +106,8 @@ void Display::shutdown()
     SDL_DestroyWindow(window_);
 
     SDL_Quit();
+
+    log::debug("Display shut down");
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
@@ -101,19 +115,23 @@ void Display::poll_events(bool& running)
 {
     SDL_Event event;
     while (SDL_PollEvent(&event) != 0) {
-        if (event.type == SDL_QUIT) {
-            running = false;
-            return;
-        }
-        if (event.type == SDL_KEYDOWN) {
-            if (event.key.keysym.sym == SDLK_ESCAPE) {
+        switch (event.type) {
+            case SDL_QUIT:
                 running = false;
-                return;
-            }
-            handle_key_event(event, true);
-        }
-        else if (event.type == SDL_KEYUP) {
-            handle_key_event(event, false);
+                break;
+            case SDL_KEYDOWN:
+                handle_key_event(event, true);
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    SDL_Event quit_event;
+                    quit_event.type = SDL_QUIT;
+                    SDL_PushEvent(&quit_event);
+                }
+                break;
+            case SDL_KEYUP:
+                handle_key_event(event, false);
+                break;
+            default:
+                break;
         }
     }
 }
