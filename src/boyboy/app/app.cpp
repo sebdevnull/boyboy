@@ -75,7 +75,7 @@ void App::save_config( // NOLINT
 
 void App::set_battery_save_path(std::string_view save_path) // NOLINT
 {
-    save::SaveManager::instance().set_eram_save_path(save_path);
+    save::SaveManager::instance().set_sram_save_path(save_path);
 }
 
 std::string App::rom_info(std::string_view rom_path)

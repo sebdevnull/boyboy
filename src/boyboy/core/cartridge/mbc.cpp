@@ -99,8 +99,8 @@ void Mbc::unload_banks()
     if (rom_bank_cnt_ > 1 && addr >= mmu::ROMBank1Start && addr <= mmu::ROMBank1End) {
         return selected_rom_bank().at(addr - mmu::ROMBank1Start);
     }
-    if (ram_enable_ && ram_bank_cnt_ > 0 && addr >= mmu::ERAMStart && addr <= mmu::ERAMEnd) {
-        return selected_ram_bank().at(addr - mmu::ERAMStart);
+    if (ram_enable_ && ram_bank_cnt_ > 0 && addr >= mmu::SRAMStart && addr <= mmu::SRAMEnd) {
+        return selected_ram_bank().at(addr - mmu::SRAMStart);
     }
 
     // return openbus otherwise
@@ -176,10 +176,10 @@ void Mbc::write(uint16_t addr, uint8_t value)
         banking_mode_ = value & 0x01;
         log::trace("Banking mode set to {}", banking_mode_);
     }
-    else if (addr >= mmu::ERAMStart && addr <= mmu::ERAMEnd && ram_bank_cnt_ > 0) {
+    else if (addr >= mmu::SRAMStart && addr <= mmu::SRAMEnd && ram_bank_cnt_ > 0) {
         // write to RAM bank if any
-        selected_ram_bank().at(addr - mmu::ERAMStart) = value;
-        eram_dirty_ = true;
+        selected_ram_bank().at(addr - mmu::SRAMStart) = value;
+        sram_dirty_ = true;
     }
     // else ignore
 }
@@ -207,12 +207,12 @@ void Mbc::set_ram(std::span<const uint8_t> ram)
 
 void Mbc::tick()
 {
-    if (has_battery_ && eram_dirty_ && !save_pending_) {
+    if (has_battery_ && sram_dirty_ && !save_pending_) {
         auto now = BatteryClock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_save_);
         if (elapsed.count() >= save_interval_ms_) {
             save_pending_ = true;
-            log::debug("[MBC] Pending ERAM save");
+            log::debug("[MBC] Pending SRAM save");
         }
     }
 }

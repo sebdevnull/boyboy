@@ -82,7 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 ### Changed
 
 - Improve MMU memory mapping with read-only and unmapped regions.
-- Refactor MMU ROM and ERAM mapping logic to use MBC interface.
+- Refactor MMU ROM and SRAM mapping logic to use MBC interface.
 
 ### Fixed
 

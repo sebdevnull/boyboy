@@ -25,8 +25,8 @@ static constexpr uint16_t ROMEnd = ROMBank1End;
 static constexpr uint16_t VRAMStart = 0x8000;
 static constexpr uint16_t VRAMEnd = 0x9FFF;
 
-static constexpr uint16_t ERAMStart = 0xA000;
-static constexpr uint16_t ERAMEnd = 0xBFFF;
+static constexpr uint16_t SRAMStart = 0xA000;
+static constexpr uint16_t SRAMEnd = 0xBFFF;
 
 static constexpr uint16_t WRAM0Start = 0xC000;
 static constexpr uint16_t WRAM0End = 0xCFFF;
@@ -57,7 +57,7 @@ static constexpr size_t ROMBank0Size = ROMBank0End - ROMBank0Start + 1;
 static constexpr size_t ROMBank1Size = ROMBank1End - ROMBank1Start + 1;
 static constexpr size_t ROMBankSize = ROMBank0Size + ROMBank1Size;
 static constexpr size_t VRAMSize = VRAMEnd - VRAMStart + 1;
-static constexpr size_t ERAMSize = ERAMEnd - ERAMStart + 1;
+static constexpr size_t SRAMSize = SRAMEnd - SRAMStart + 1;
 static constexpr size_t WRAM0Size = WRAM0End - WRAM0Start + 1;
 static constexpr size_t WRAM1Size = WRAM1End - WRAM1Start + 1;
 static constexpr size_t WRAMSize = WRAM0Size + WRAM1Size;

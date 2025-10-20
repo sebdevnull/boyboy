@@ -14,11 +14,11 @@
 #include "boyboy/core/mmu/constants.h"
 
 using boyboy::common::utils::PrettyHex;
-using boyboy::core::mmu::ERAMStart;
 using boyboy::core::mmu::ROMBank0End;
 using boyboy::core::mmu::ROMBank0Start;
 using boyboy::core::mmu::ROMBank1End;
 using boyboy::core::mmu::ROMBank1Start;
+using boyboy::core::mmu::SRAMStart;
 
 // Helpers
 #include "helpers/rom_fixtures.h"
@@ -91,7 +91,7 @@ TEST_F(RomOnlyTest, RomBankWriteIgnored)
 TEST_F(RomOnlyTest, RamAccessIgnored)
 {
     // Attempt to read from external RAM (should return 0xFF)
-    uint16_t addr = ERAMStart;
+    uint16_t addr = SRAMStart;
     uint8_t val   = cart->mbc_read(addr);
     EXPECT_EQ(val, 0xFF) << "Value read from external RAM at address " << PrettyHex(addr)
                          << " should be 0xFF for ROM-only cartridge";

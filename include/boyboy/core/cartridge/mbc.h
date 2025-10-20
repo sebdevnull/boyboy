@@ -7,7 +7,7 @@
  * ------------------------------------- MBC1 Registers ------------------------------------
  * 0x0000-0x1FFF - RAM Enable (Write Only)
  *                 0x0A - Enable RAM
- *                 Must be enabled before writing to ERAM
+ *                 Must be enabled before writing to SRAM
  * 0x2000-0x3FFF - ROM Bank Number (Write Only)
  *                 Lower 5 bits select the ROM bank number (0-31), higher bits discarded
  *                 Writing 0 selects bank 1 instead (0 is fixed)
@@ -75,7 +75,7 @@ public:
     [[nodiscard]] uint8_t read(uint16_t addr) const;
     void write(uint16_t addr, uint8_t value);
 
-    // Full ERAM data access
+    // Full SRAM data access
     [[nodiscard]] std::vector<uint8_t> get_ram() const;
     void set_ram(std::span<const uint8_t> ram);
 
@@ -86,7 +86,7 @@ public:
     [[nodiscard]] bool is_save_pending() const { return save_pending_; };
     void clear_save()
     {
-        eram_dirty_ = false;
+        sram_dirty_ = false;
         save_pending_ = false;
         last_save_ = BatteryClock::now();
     }
@@ -121,7 +121,7 @@ private:
 
     // Battery status
     bool has_battery_{false};
-    bool eram_dirty_{false};
+    bool sram_dirty_{false};
     bool save_pending_{false};
     uint32_t save_interval_ms_ = DefaultSaveIntervalMs;
     BatteryClock::time_point last_save_{BatteryClock::now()};

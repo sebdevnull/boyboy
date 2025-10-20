@@ -73,7 +73,7 @@ TEST_F(MmuTest, MemoryRegionsRW)
 {
     // We don't test all regions in detail, just a few to verify read/write and mirroring
     // Some things to note:
-    //      - ROM and ERAM should return 0xFF because they aren't mapped to anything
+    //      - ROM and SRAM should return 0xFF because they aren't mapped to anything
     //      - IO registers have their own tests
     //      - NotUsable is always 0x00 on read and ignores writes
     //      - ROM is read-only
@@ -82,7 +82,7 @@ TEST_F(MmuTest, MemoryRegionsRW)
     //      - Reading from unmapped areas returns open bus value (last value on bus)
     //      - OAM is inaccessible during DMA transfer (ignores writes, reads return open bus)
     //      - Echo area's behavior is strange in DMG: with normal cartridge, mirrors WRAM,
-    //        but with some cartridges it mirrors WRAM AND ERAM; it writes to both and reads
+    //        but with some cartridges it mirrors WRAM AND SRAM; it writes to both and reads
     //        are a bitwise AND of both. We ignore this for now and just mirror WRAM0.
 
     // ROMBank0
@@ -103,12 +103,12 @@ TEST_F(MmuTest, MemoryRegionsRW)
     mmu.write_byte(VRAMStart, 0xAA);
     EXPECT_EQ(mmu.read_byte(VRAMStart), 0xAA) << "VRAM should be writable";
 
-    // ERAM
-    unmapped_val = mmu.read_byte(ERAMStart);
-    EXPECT_EQ(unmapped_val, OpenBusValue) << "Unmapped ERAM should read open bus value";
-    mmu.write_byte(ERAMStart, 0);
-    EXPECT_EQ(mmu.read_byte(ERAMStart), OpenBusValue)
-        << "Unmapped ERAM should read open bus value after write";
+    // SRAM
+    unmapped_val = mmu.read_byte(SRAMStart);
+    EXPECT_EQ(unmapped_val, OpenBusValue) << "Unmapped SRAM should read open bus value";
+    mmu.write_byte(SRAMStart, 0);
+    EXPECT_EQ(mmu.read_byte(SRAMStart), OpenBusValue)
+        << "Unmapped SRAM should read open bus value after write";
 
     // WRAM0
     mmu.write_byte(WRAM0Start, 0xCC);
