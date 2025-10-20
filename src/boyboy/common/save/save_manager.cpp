@@ -10,12 +10,14 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
+#include <expected>
 #include <filesystem>
 #include <numeric>
 #include <span>
 #include <string_view>
 #include <vector>
 
+#include "boyboy/common/files/errors.h"
 #include "boyboy/common/files/io.h"
 #include "boyboy/common/files/paths.h"
 #include "boyboy/common/log/logging.h"
@@ -69,6 +71,15 @@ auto SaveManager::load_sram(
 {
     auto file_path = save_path.value_or(sram_save_path_.value_or(sram_path(rom_title)));
     log::debug("[SaveManager] Loading SRAM from: {}", file_path.string());
+
+    if (!std::filesystem::exists(file_path)) {
+        log::warn(
+            "[SaveManager] SRAM save file does not exist, skipping load: {}", file_path.string()
+        );
+        return std::unexpected(
+            files::FileError{files::FileError::Type::NotFound, file_path}.error_message()
+        );
+    }
 
     auto sram_bytes = files::read_binary(file_path);
     if (!sram_bytes) {

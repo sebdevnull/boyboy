@@ -72,7 +72,6 @@ bool Cartridge::is_cart_supported() const
         case CartridgeType::ROMOnly:
         case CartridgeType::MBC1:
         case CartridgeType::MBC1RAM:
-        // TODO: support battery-backed RAM
         case CartridgeType::MBC1RAMBattery:
             return true;
         case CartridgeType::MBC2:
@@ -107,6 +106,10 @@ void Cartridge::load_ram()
 {
     if (mbc_.has_battery() && on_ram_load_cb_) {
         auto ram = on_ram_load_cb_();
+        if (ram.empty()) {
+            log::warn("[Cartridge] SRAM load callback returned empty data, skipping SRAM load");
+            return;
+        }
         mbc_.set_ram(ram);
         mbc_.clear_save();
     }
