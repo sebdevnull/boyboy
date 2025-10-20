@@ -1,0 +1,4 @@
+# D-Bus related leaks
+leak:dbus_strdup
+leak:dbus_string_init_preallocated
+leak:dbus_connection_set_data
