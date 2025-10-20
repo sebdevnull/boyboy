@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Added
+
+- **Files Module** with general file I/O handling and shared file paths and utilities
+  - Text files read and write: `read_text()` and `write_text()`
+  - Binary files read and write: `read_binary()` and `write_binary()`
+  - Stream handling: `input_stream()` and `output_stream`
+  - Atomic operations: `atomic_write()`
+  - Shared utilities and validation: `paths.h`, `errors.h` and `utils.h`
+- **SRAM save and load** functionality for battery-backed RAM MBC chips
+  - `SaveManager` for save and load handling
+  - Load save file on start and save to file on periodic intervals and shutdown
+- **Config** options for save files:
+  - `saves.autosave` for enabling/disabling autosave
+  - `saves.save_interval` for configuring autosave interval
+- **CLI** options for save files:
+  - `--save-path` for custom saving path
+  - `--autosave` for enabling/disabling autosave
+  - `--save-interval` for setting autosave interval
+
+### Changed
+
+- `config_utils` and `CartridgeLoader` now use `files` module for files operations
+- `CartridgeLoader` now returns a `unique_ptr` to `Cartridge`
+- Rename `ERAM` to `SRAM`
+- CLI and configuration improvements
+
 ---
 
 ## [0.5.0] - 2025-10-16
