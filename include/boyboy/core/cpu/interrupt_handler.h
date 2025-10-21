@@ -30,7 +30,7 @@ public:
     InterruptHandler(InterruptHandler&&) = delete;
     InterruptHandler& operator=(InterruptHandler&&) = delete;
 
-    void service();
+    uint8_t service();
     void request(uint8_t interrupt);
     void enable(uint8_t interrupt);
     [[nodiscard]] bool is_requested(uint8_t interrupt) const;

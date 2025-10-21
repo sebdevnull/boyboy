@@ -133,13 +133,14 @@ uint8_t Cpu::step()
 {
     BB_PROFILE_SCOPE(profiling::FrameTimer::Cpu);
 
-    interrupt_handler_.service();
+    uint8_t cycles = interrupt_handler_.service();
+    cycles_ += cycles;
 
     if (halted_) {
         // TODO: This should be 0 cycles, but until we have a clock, we use 4 cycles
         // to keep other components ticking
         cycles_ += 4;
-        return 4;
+        return cycles + 4;
     }
 
 #ifdef DISASSEMBLY_LOG
@@ -154,7 +155,7 @@ uint8_t Cpu::step()
         instr_type = InstructionType::CBPrefixed;
     }
 
-    uint8_t cycles = execute(opcode, instr_type);
+    cycles += execute(opcode, instr_type);
 
     // IME is enabled after the instruction following EI
     if (ime_scheduled_ &&

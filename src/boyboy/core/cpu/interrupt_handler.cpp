@@ -17,10 +17,10 @@ namespace boyboy::core::cpu {
 constexpr auto IF = boyboy::core::io::IoReg::Interrupts::IF;
 constexpr auto IE = boyboy::core::io::IoReg::Interrupts::IE;
 
-void InterruptHandler::service()
+uint8_t InterruptHandler::service()
 {
     if (!cpu_.get_ime()) {
-        return;
+        return 0;
     }
 
     uint8_t ier = get_ie();
@@ -28,13 +28,14 @@ void InterruptHandler::service()
     uint8_t pending = ier & ifr;
 
     if (pending == 0) {
-        return;
+        return 0;
     }
 
     // Disable interrupts and wake CPU if halted
     cpu_.set_ime(false);
     cpu_.set_halted(false);
 
+    uint8_t cycles = 0;
     for (size_t i = 0; i < InterruptVectors::Vectors.size(); ++i) {
         uint8_t mask = (1 << i);
         if ((pending & mask) != 0) {
@@ -45,11 +46,13 @@ void InterruptHandler::service()
             cpu_.push_pc();
             // Jump to interrupt vector
             cpu_.set_pc(InterruptVectors::Vectors.at(i));
-            // Interrupt handling takes 5 machine cycles
-            cpu_.add_cycles(5 * 4);
+            // Interrupt handling takes 5 machine cycles (20 T-cycles)
+            cycles = 20;
             break;
         }
     }
+
+    return cycles;
 }
 
 void InterruptHandler::request(uint8_t interrupt)
