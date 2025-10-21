@@ -203,6 +203,7 @@ void Ppu::reset()
     frame_count_ = 0;
     window_line_counter_ = 0;
     set_mode(Mode::OAMScan);
+    set_ly(0);
 }
 
 void Ppu::set_ly(uint8_t ly)
@@ -247,9 +248,6 @@ void Ppu::set_mode(Mode new_mode)
     // Update STAT mode bits
     mode_ = new_mode;
     STAT_ = (STAT_ & ~registers::STAT::PPUModeMask) | static_cast<uint8_t>(mode_);
-
-    // Update LY=LYC flag
-    // update_lyc();
 
     check_interrupts();
 }
