@@ -86,6 +86,8 @@ using FrameBuffer = std::array<Pixel, FramebufferSize>;
 using MemoryReadCB = std::function<uint8_t(uint16_t)>;
 using MemoryWriteCB = std::function<void(uint16_t, uint8_t)>;
 using DmaStartCB = std::function<void(uint8_t)>;
+using LockVRamCB = std::function<void(bool)>;
+using LockOamCB = std::function<void(bool)>;
 
 // Color palette
 const auto Palette = palettes::PocketGray;
@@ -145,14 +147,20 @@ public:
     void update_lyc(); // check and update LYC=LY flag
     void enable_lcd(bool enable)
     {
-        LCDC_ = (LCDC_ & ~registers::LCDC::LCDAndPPUEnable) |
-                (enable ? registers::LCDC::LCDAndPPUEnable : 0x00);
+        write(
+            io::IoReg::Ppu::LCDC,
+            (LCDC_ & ~registers::LCDC::LCDAndPPUEnable) |
+                (enable ? registers::LCDC::LCDAndPPUEnable : 0x00)
+        );
     }
 
     // Memory callbacks for PPU to access VRAM/OAM through MMU
+    // TODO: add Mmu reference
     void set_mem_read_cb(MemoryReadCB cb) { mem_read_cb_ = std::move(cb); }
     void set_mem_write_cb(MemoryWriteCB cb) { mem_write_cb_ = std::move(cb); }
     void set_dma_start_cb(DmaStartCB cb) { dma_start_cb_ = std::move(cb); }
+    void set_lock_vram_cb(LockVRamCB cb) { lock_vram_cb_ = std::move(cb); }
+    void set_lock_oam_cb(LockOamCB cb) { lock_oam_cb_ = std::move(cb); }
 
     // Get color from palette
     [[nodiscard]] static Pixel palette_color(uint8_t color_id, uint8_t palette)
@@ -167,9 +175,11 @@ private:
     MemoryReadCB mem_read_cb_;
     MemoryWriteCB mem_write_cb_;
     DmaStartCB dma_start_cb_;
+    LockVRamCB lock_vram_cb_;
+    LockOamCB lock_oam_cb_;
 
     // PPU state
-    Mode mode_ = Mode::OAMScan;
+    Mode mode_ = Mode::HBlank;
     Mode previous_mode_ = mode_;
     uint8_t previous_ly_ = 0;
     int cycles_ = 0;

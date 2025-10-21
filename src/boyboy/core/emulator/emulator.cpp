@@ -39,9 +39,12 @@ void Emulator::start()
     log::info("Starting emulator...");
 
     // Hook system callbacks
+    // TODO: replace ppu callbacks with Mmu reference or better component system
     ppu_.set_mem_read_cb([this](uint16_t addr) { return mmu_->read_byte(addr); });
     ppu_.set_mem_write_cb([this](uint16_t addr, uint8_t value) { mmu_->write_byte(addr, value); });
     ppu_.set_dma_start_cb([this](uint8_t value) { mmu_->start_dma(value); });
+    ppu_.set_lock_vram_cb([this](bool lock) { mmu_->lock_vram(lock); });
+    ppu_.set_lock_oam_cb([this](bool lock) { mmu_->lock_oam(lock); });
     display_.set_button_cb([this](io::Button b, bool p) { on_button_event(b, p); });
     cartridge_->set_ram_load_cb([this]() {
         auto res = save::SaveManager::instance().load_sram(cartridge_->get_header().title);
