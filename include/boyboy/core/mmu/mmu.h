@@ -54,11 +54,46 @@ public:
     void map_rom(cartridge::Cartridge& cart);
 
     // Memory access
-    [[nodiscard]] uint8_t read_byte(uint16_t addr) const;
+
+    /**
+     * @brief Read a byte from memory.
+     *
+     * Unmapped or locked regions will return OpenBus (0xFF).
+     *
+     * @param addr Address to read from.
+     * @param unlocked Whether to bypass VRAM/OAM locks (for PPU access).
+     * @return uint8_t Value read from memory.
+     */
+    [[nodiscard]] uint8_t read_byte(uint16_t addr, bool unlocked = false) const;
+
+    /**
+     * @brief Write a byte to memory.
+     *
+     * Unmapped or locked regions writes will be ignored.
+     *
+     * @param addr Address to write to.
+     * @param value Value to write.
+     * @param unlocked Whether to bypass VRAM/OAM locks (for PPU access).
+     */
+    void write_byte(uint16_t addr, uint8_t value, bool unlocked = false);
+
+    // Memory access convenience methods for CPU/PPU
+    // PPU has full memory access, while CPU might be locked from VRAM/OAM depending on PPU mode
+    [[nodiscard]] uint8_t cpu_read(uint16_t addr) const { return read_byte(addr, false); }
+    [[nodiscard]] uint8_t ppu_read(uint16_t addr) const { return read_byte(addr, true); }
+    void cpu_write(uint16_t addr, uint8_t value) { write_byte(addr, value, false); }
+    void ppu_write(uint16_t addr, uint8_t value) { write_byte(addr, value, true); }
+
+    // Memory access for wider ranges than 1 byte (not used in core)
     [[nodiscard]] uint16_t read_word(uint16_t addr) const;
-    void write_byte(uint16_t addr, uint8_t value);
     void write_word(uint16_t addr, uint16_t value);
     void copy(uint16_t dst_addr, std::span<uint8_t> src);
+
+    // Memory lock handling for VRAM/OAM CPU-PPU exclusion
+    void lock_vram(bool lock) { lock_vram_ = lock; };
+    void lock_oam(bool lock) { lock_oam_ = lock; };
+    [[nodiscard]] bool is_vram_locked() const { return lock_vram_; }
+    [[nodiscard]] bool is_oam_locked() const { return lock_oam_; }
 
     // DMA transfer
     void start_dma(uint8_t value);
@@ -143,6 +178,10 @@ private:
     // ROM load status flag
     bool rom_loaded_ = false;
 
+    // Memory lock status
+    bool lock_vram_{false};
+    bool lock_oam_{false};
+
     // Memory banks
     std::array<uint8_t, VRAMSize> vram_{}; // video ram
     std::array<uint8_t, WRAMSize> wram_{}; // work ram
@@ -172,6 +211,13 @@ private:
     [[nodiscard]] const MemoryRegion& region_lookup(uint16_t addr) const
     {
         return *region_lut_[addr];
+    }
+
+    // Memory region lock check
+    [[nodiscard]] bool is_region_locked(MemoryRegionID region_id) const
+    {
+        return (region_id == MemoryRegionID::VRAM && lock_vram_) ||
+               (region_id == MemoryRegionID::OAM && lock_oam_);
     }
 
     // I/O read/write handlers

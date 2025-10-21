@@ -32,15 +32,22 @@ using namespace boyboy::common;
 
 void Mmu::reset()
 {
+    // Reset memory regions
     vram_.fill(0);
     wram_.fill(0);
     oam_.fill(0);
     hram_.fill(0);
     ier_ = 0;
 
+    // Reset components
     io_.reset();
     dma_.reset();
 
+    // Reset memory locks
+    lock_vram_ = false;
+    lock_oam_ = false;
+
+    // Reinitialize memory map
     init_memory_map();
 }
 
@@ -74,11 +81,16 @@ void Mmu::map_rom(cartridge::Cartridge& cart)
 
 // NOLINTBEGIN(misc-no-recursion)
 
-uint8_t Mmu::read_byte(uint16_t addr) const
+uint8_t Mmu::read_byte(uint16_t addr, bool unlocked) const
 {
     BB_PROFILE_START(profiling::HotSection::MmuRead);
 
     const auto& region = region_lookup(addr);
+
+    // Check if region is accessible
+    if (!unlocked && is_region_locked(region.id)) {
+        return OpenBusValue;
+    }
 
     if (region.mirrored) {
         if (!region.mirror) {
@@ -144,7 +156,7 @@ uint16_t Mmu::read_word(uint16_t addr) const
     return common::utils::to_u16(region.data[local_addr + 1], region.data[local_addr]);
 }
 
-void Mmu::write_byte(uint16_t addr, uint8_t value)
+void Mmu::write_byte(uint16_t addr, uint8_t value, bool unlocked)
 {
     BB_PROFILE_START(profiling::HotSection::MmuWrite);
 
@@ -160,6 +172,11 @@ void Mmu::write_byte(uint16_t addr, uint8_t value)
     }
 
     auto& region = region_lookup(addr);
+
+    // Check if region is accessible
+    if (!unlocked && is_region_locked(region.id)) {
+        return;
+    }
 
     if (region.read_only) {
         log::warn(
