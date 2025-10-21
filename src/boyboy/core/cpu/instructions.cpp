@@ -12,6 +12,7 @@
 #include <cstdint>
 
 #include "boyboy/common/errors.h"
+#include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/cpu.h"
 #include "boyboy/core/cpu/cpu_constants.h"
@@ -1177,6 +1178,14 @@ void Cpu::halt()
         // instruction, effectively causing the next instruction to be executed twice.
         // We won't enter halt mode, but we will continue execution normally.
         // Most ROMs will run a NOP after HALT to avoid the bug, so it will not be an issue.
+        halt_bug_ = true;
+
+        log::debug(
+            "CPU HALT bug triggered: IME={}, IE={}, IF={}",
+            get_ime(),
+            interrupt_handler_.get_ie(),
+            interrupt_handler_.get_if()
+        );
     }
 }
 // STOP

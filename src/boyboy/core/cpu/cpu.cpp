@@ -10,6 +10,7 @@
 #include <cstdint>
 
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/instructions.h"
 #include "boyboy/core/cpu/instructions_table.h"
 #include "boyboy/core/profiling/profiler_utils.h"
@@ -120,6 +121,14 @@ void Cpu::set_register(Reg16Name reg, uint16_t value)
     }
 }
 
+void Cpu::set_halted(bool halted)
+{
+    if (halted != halted_) {
+        log::debug("CPU HALT mode {}", halted ? "entered" : "exited");
+    }
+    halted_ = halted;
+}
+
 uint8_t Cpu::step()
 {
     BB_PROFILE_SCOPE(profiling::FrameTimer::Cpu);
@@ -162,6 +171,16 @@ uint8_t Cpu::fetch()
     BB_PROFILE_START(profiling::HotSection::CpuFetch);
     uint8_t result = read_byte(registers_.pc++);
     BB_PROFILE_STOP(profiling::HotSection::CpuFetch);
+
+    if (halt_bug_) {
+        // when halt bug occurs we don't increment PC
+        registers_.pc--;
+        halt_bug_ = false;
+        log::debug(
+            "CPU HALT bug handled, not advancing PC={}", utils::PrettyHex{get_pc()}.to_string()
+        );
+    }
+
     return result;
 }
 

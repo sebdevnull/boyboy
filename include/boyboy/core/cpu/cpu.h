@@ -74,7 +74,7 @@ public:
     void set_ime(bool ime) { ime_ = ime; }
     void schedule_ime() { ime_scheduled_ = true; }
     [[nodiscard]] bool is_halted() const { return halted_; }
-    void set_halted(bool halted) { halted_ = halted; }
+    void set_halted(bool halted);
     [[nodiscard]] uint64_t get_cycles() const { return cycles_; }
     void set_cycles(uint64_t cycles) { cycles_ = cycles; }
     void add_cycles(uint8_t cycles) { cycles_ += cycles; }
@@ -124,6 +124,7 @@ private:
     bool ime_{false}; // Interrupt Master Enable flag
     bool ime_scheduled_{false};
     bool halted_{false};
+    bool halt_bug_{false};
 
     // Helper functions
     uint16_t fetch_n16()

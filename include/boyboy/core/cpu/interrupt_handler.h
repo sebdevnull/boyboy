@@ -37,15 +37,16 @@ public:
     [[nodiscard]] bool is_enabled(uint8_t interrupt) const;
     [[nodiscard]] uint8_t pending() const;
 
+    [[nodiscard]] uint8_t get_ie() const;
+    [[nodiscard]] uint8_t get_if() const;
+
 private:
     Cpu& cpu_;
     mmu::Mmu& mmu_;
 
     void clear_interrupt(uint8_t interrupt);
 
-    [[nodiscard]] uint8_t get_ie() const;
     void set_ie(uint8_t value);
-    [[nodiscard]] uint8_t get_if() const;
     void set_if(uint8_t value);
 };
 
