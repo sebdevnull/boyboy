@@ -195,7 +195,7 @@ TEST_F(MmuTest, RegionLock)
     mmu.reset();
     EXPECT_FALSE(mmu.is_vram_locked());
     EXPECT_FALSE(mmu.is_oam_locked());
-    
+
     mmu.write_byte(VRAMStart, TestByte);
     mmu.write_byte(OAMStart, TestByte);
     EXPECT_EQ(mmu.read_byte(VRAMStart), TestByte);
