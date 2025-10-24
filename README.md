@@ -95,9 +95,9 @@ The following features are planned for future releases, in rough order of priori
 
 **Core:**
 
-- **Save states** – Save and restore game state
-- **Boot ROM** – Authentic startup sequence  
+- **Boot ROM** – Authentic startup sequence
 - **Timing accuracy** – More accurate CPU and PPU timing
+- **Emulator state saves** – Save and restore emulator state
 - **Optimizations** – Further performance improvements
 
 **Hardware:**
@@ -173,34 +173,39 @@ Make sure you have **CMake 3.27+** and a C++23 compiler.
 1. Create and configure a build:
 
     ```bash
-    cmake --preset debug   # or 'release'
+    cmake --preset release   # or 'debug'
     ```
 
 2. Build the project:
 
     ```bash
-    cmake --build --preset debug
+    cmake --build --preset release
     ```
 
 3. Run tests:
 
     ```bash
-    ctest --preset debug
+    ctest --preset release
     ```
+
+Or run the complete workflow in one command:
+
+  ```bash
+  ctest --workflow --preset release
+  ```
 
 ---
 
 ## Usage
 
 After building BoyBoy, you can run the emulator, manage configuration, or inspect ROM metadata using the command-line interface.  
-For additional information on how to run the emulator or a specific command run with `--help` or `--help-all`.
+For additional information on how to run the emulator or a specific command run with `--help`.
 
 **Help examples:**
 
   ```bash
   boyboy --help
   boyboy run --help
-  boyboy --help-all
   ```
 
 ---
@@ -217,18 +222,21 @@ Use the `run` subcommand to start a ROM. Command-line options override any confi
 
 #### Options
 
-- `-c, --config PATH` : Path to a configuration file  
-- `--scale SCALE` : Display scaling factor (`x1`, `x2`, `x3`, etc.)  
-- `--speed SPEED` : Emulation speed (`0 = uncapped`, `1 = normal`, `2 = double`, etc.)  
-- `--vsync` / `--no-vsync` : Enable or disable vertical synchronization  
-- `--log-level LEVEL` : Logging verbosity (`trace`, `debug`, `info`, `warn`, `error`, `critical`, `off`)  
+- `-c, --config <file>` : Path to a configuration file  
+- `--scale <factor>` : Display scaling factor (`x1`, `x2`, `x3`, etc.)  
+- `--speed <multiplier>` : Emulation speed (`0 = uncapped`, `1 = normal`, `2 = double`, etc.)  
+- `--vsync <bool>`: Enable or disable vertical synchronization  
+- `--log-level <level>` : Logging verbosity (`trace`, `debug`, `info`, `warn`, `error`, `critical`, `off`)
+- `--save-file <file>`: Battery save file for the ROM being run
+- `--autosave <bool>`: Enable or disable battery autosave
+- `--save-interval <ms>`: Autosave interval in milliseconds
 
 #### Examples
 
   ```bash
   boyboy run path/to/rom.gb
   boyboy run path/to/rom.gb --config path/to/config.toml
-  boyboy run path/to/rom.gb --scale 2 --speed 2 --no-vsync
+  boyboy run path/to/rom.gb --scale 2 --speed 2 --vsync 0
   ```
 
 ---
@@ -245,12 +253,12 @@ Use the `config` subcommand to view or modify emulator settings.
 
 #### Options
 
-- `-c, --config PATH` : Path to the configuration file  
+- `-c, --config <file>` : Path to the configuration file  
 
 #### Subcommands
 
-- `get` : Get a configuration value  
-- `set` : Set a configuration value  
+- `get <key>` : Get a configuration value  
+- `set <key> <value>` : Set a configuration value  
 - `list` : List all configuration values  
 - `reset` : Reset configuration to default  
 
@@ -272,7 +280,7 @@ Use the `info` subcommand to display metadata about a ROM.
 #### Usage
 
   ```bash
-  boyboy info ROM_PATH
+  boyboy info <rom>
   ```
 
 #### Example
