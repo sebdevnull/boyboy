@@ -18,29 +18,29 @@ The emulator currently supports ROM-Only and MBC1 cartridges. Battery-backed RAM
 | Baseball | MBC1 | Game starts but controllers do not respond | ❌ |
 | Castelvania 2 | MBC1 | Game starts with blank screen | ❌ |
 | Contra | MBC1 | Game starts with blank screen | ❌ |
-| Donkey Kong | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
-| Donkey Kong Land | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
-| Donkey Kong Land 2 | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
-| Donkey Kong Land III | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
+| Donkey Kong | MBC1+RAM+BATTERY | Fully playable | ✅ |
+| Donkey Kong Land | MBC1+RAM+BATTERY | Fully playable | ✅ |
+| Donkey Kong Land 2 | MBC1+RAM+BATTERY | Fully playable | ✅ |
+| Donkey Kong Land III | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | DuckTales | MBC1 | Fully playable | ✅ |
 | Final Fantasy Legend II | MBC1+RAM+BATTERY | Game starts with blank screen | ❌ |
-| Final Fantasy Legend III | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
-| James Bond 007 | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
+| Final Fantasy Legend III | MBC1+RAM+BATTERY | Fully playable | ✅ |
+| James Bond 007 | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | Jungle Strike | MBC1 | Fully playable | ✅ |
 | Kirby's Dream Land | MBC1 | Fully playable | ✅ |
 | Kirby's Dream Land 2 | MBC1+RAM+BATTERY | Game starts with blank screen | ❌ |
-| Mario's Picross | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
+| Mario's Picross | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | Mega Man V | MBC1 | Fully playable | ✅ |
-| Metroid II | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
-| Mole Mania | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
+| Metroid II | MBC1+RAM+BATTERY | Fully playable | ✅ |
+| Mole Mania | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | NBA Jam | MBC1 | Fully playable | ✅ |
 | NBA Jam TE | MBC1 | Fully playable | ✅ |
 | Pacman | MBC1 | Fully playable | ✅ |
 | Paperboy | MBC1 | Fully playable | ✅ |
 | Super Mario Land | MBC1 | Fully playable | ✅ |
-| Super Mario Land 2: 6 Golden Coins  | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
-| Super Mario Land 3: Wario Land | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
-| The Legend of Zelda: Link's Awakening | MBC1+RAM+BATTERY | Game playable, battery-backed RAM not implemented | ⏳ |
+| Super Mario Land 2: 6 Golden Coins  | MBC1+RAM+BATTERY | Fully playable | ✅ |
+| Super Mario Land 3: Wario Land | MBC1+RAM+BATTERY | Fully playable | ✅ |
+| The Legend of Zelda: Link's Awakening | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | Tumble Pop | MBC1 | Game starts, screen goes blank after intro | ❌ |
 
 >Only ROMs that have been legally obtained by the user should be used with this emulator.  
