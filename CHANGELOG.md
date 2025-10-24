@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-10-24
+
 ### Added
 
 - **Core** improvements:
@@ -30,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org).
   - `--save-path` for custom saving path
   - `--autosave` for enabling/disabling autosave
   - `--save-interval` for setting autosave interval
+- Add script `scripts/run_boyboy.sh` for running debug build with ASan suppressions for known external issues and `config/asan_suppress.txt` for said suppressions
 
 ### Changed
 
@@ -178,7 +181,8 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 - Set up CMake build system with presets.
 - Unit and integration tests for CPU instructions, interrupts, MMU, ROM loading, and I/O registers.
 
-[Unreleased]: https://github.com/sebdevnull/boyboy/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/sebdevnull/boyboy/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/sebdevnull/boyboy/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/sebdevnull/boyboy/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/sebdevnull/boyboy/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/sebdevnull/boyboy/compare/v0.2.0...v0.3.0
