@@ -164,6 +164,7 @@ TEST_F(MmuTest, RegionLock)
     mmu.write_byte(OAMStart, TestByte);
     EXPECT_EQ(mmu.read_byte(VRAMStart), TestByte);
     EXPECT_EQ(mmu.read_byte(OAMStart), TestByte);
+    EXPECT_EQ(mmu.read_byte(NotUsableStart), 0);
 
     // Should lock correctly
     mmu.lock_vram(true);
@@ -174,10 +175,12 @@ TEST_F(MmuTest, RegionLock)
     // Should read openbus while locked
     EXPECT_EQ(mmu.read_byte(VRAMStart), OpenBusValue);
     EXPECT_EQ(mmu.read_byte(OAMStart), OpenBusValue);
+    EXPECT_EQ(mmu.read_byte(NotUsableStart), OpenBusValue);
 
     // Should read normally if unrestricted
     EXPECT_EQ(mmu.read_byte(VRAMStart, true), TestByte);
     EXPECT_EQ(mmu.read_byte(OAMStart, true), TestByte);
+    EXPECT_EQ(mmu.read_byte(NotUsableStart, true), 0);
 
     // Should not write while locked
     mmu.write_byte(VRAMStart, 0);
