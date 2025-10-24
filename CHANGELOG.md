@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ### Added
 
+- **Core** improvements:
+  - CPU halt bug emulation
+  - MMU VRAM and OAM lock on PPU access
 - **Files Module** with general file I/O handling and shared file paths and utilities
   - Text files read and write: `read_text()` and `write_text()`
   - Binary files read and write: `read_binary()` and `write_binary()`
@@ -30,10 +33,17 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ### Changed
 
+- Core `Timer` emulation more accurate and close to the real circuit
 - `config_utils` and `CartridgeLoader` now use `files` module for files operations
 - `CartridgeLoader` now returns a `unique_ptr` to `Cartridge`
 - Rename `ERAM` to `SRAM`
 - CLI and configuration improvements
+
+### Fixed
+
+- PPU missing LY on reset
+- Interrupt handler cycles not being factored
+- Mmu Not Usable (0xFEA0) region lock alongside OAM
 
 ---
 

@@ -30,12 +30,15 @@ public:
     InterruptHandler(InterruptHandler&&) = delete;
     InterruptHandler& operator=(InterruptHandler&&) = delete;
 
-    void service();
+    uint8_t service();
     void request(uint8_t interrupt);
     void enable(uint8_t interrupt);
     [[nodiscard]] bool is_requested(uint8_t interrupt) const;
     [[nodiscard]] bool is_enabled(uint8_t interrupt) const;
     [[nodiscard]] uint8_t pending() const;
+
+    [[nodiscard]] uint8_t get_ie() const;
+    [[nodiscard]] uint8_t get_if() const;
 
 private:
     Cpu& cpu_;
@@ -43,9 +46,7 @@ private:
 
     void clear_interrupt(uint8_t interrupt);
 
-    [[nodiscard]] uint8_t get_ie() const;
     void set_ie(uint8_t value);
-    [[nodiscard]] uint8_t get_if() const;
     void set_if(uint8_t value);
 };
 

@@ -150,3 +150,57 @@ TEST_F(MmuTest, MemoryRegionsRW)
     mmu.write_byte(IEAddr, 0x44);
     EXPECT_EQ(mmu.read_byte(IEAddr), 0x44) << "IEReg should be writable";
 }
+
+TEST_F(MmuTest, RegionLock)
+{
+    const uint8_t TestByte = 0xAA;
+
+    // Regions should be unlocked at start
+    EXPECT_FALSE(mmu.is_vram_locked());
+    EXPECT_FALSE(mmu.is_oam_locked());
+
+    // Should be able to read and write normally while unlocked
+    mmu.write_byte(VRAMStart, TestByte);
+    mmu.write_byte(OAMStart, TestByte);
+    EXPECT_EQ(mmu.read_byte(VRAMStart), TestByte);
+    EXPECT_EQ(mmu.read_byte(OAMStart), TestByte);
+    EXPECT_EQ(mmu.read_byte(NotUsableStart), 0);
+
+    // Should lock correctly
+    mmu.lock_vram(true);
+    mmu.lock_oam(true);
+    EXPECT_TRUE(mmu.is_vram_locked());
+    EXPECT_TRUE(mmu.is_oam_locked());
+
+    // Should read openbus while locked
+    EXPECT_EQ(mmu.read_byte(VRAMStart), OpenBusValue);
+    EXPECT_EQ(mmu.read_byte(OAMStart), OpenBusValue);
+    EXPECT_EQ(mmu.read_byte(NotUsableStart), OpenBusValue);
+
+    // Should read normally if unrestricted
+    EXPECT_EQ(mmu.read_byte(VRAMStart, true), TestByte);
+    EXPECT_EQ(mmu.read_byte(OAMStart, true), TestByte);
+    EXPECT_EQ(mmu.read_byte(NotUsableStart, true), 0);
+
+    // Should not write while locked
+    mmu.write_byte(VRAMStart, 0);
+    mmu.write_byte(OAMStart, 0);
+    EXPECT_EQ(mmu.read_byte(VRAMStart, true), TestByte);
+    EXPECT_EQ(mmu.read_byte(OAMStart, true), TestByte);
+
+    // Should write normally if unrestricted
+    mmu.write_byte(VRAMStart, 0, true);
+    mmu.write_byte(OAMStart, 0, true);
+    EXPECT_EQ(mmu.read_byte(VRAMStart, true), 0);
+    EXPECT_EQ(mmu.read_byte(OAMStart, true), 0);
+
+    // After reset should be unlocked
+    mmu.reset();
+    EXPECT_FALSE(mmu.is_vram_locked());
+    EXPECT_FALSE(mmu.is_oam_locked());
+
+    mmu.write_byte(VRAMStart, TestByte);
+    mmu.write_byte(OAMStart, TestByte);
+    EXPECT_EQ(mmu.read_byte(VRAMStart), TestByte);
+    EXPECT_EQ(mmu.read_byte(OAMStart), TestByte);
+}

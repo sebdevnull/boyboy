@@ -22,6 +22,8 @@ protected:
         mmu_.reset();
         ppu_.reset();
         ppu_.set_mem_read_cb([this](uint16_t addr) { return mmu_.read_byte(addr); });
+        ppu_.set_lock_vram_cb([this](bool lock) { mmu_.lock_vram(lock); });
+        ppu_.set_lock_oam_cb([this](bool lock) { mmu_.lock_oam(lock); });
     }
 
     Mmu mmu_;
@@ -39,7 +41,8 @@ protected:
 
 TEST_F(PpuTest, InitialState)
 {
-    EXPECT_EQ(ppu_.mode(), Mode::OAMScan);
+    EXPECT_TRUE(ppu_.lcd_off());
+    EXPECT_EQ(ppu_.mode(), Mode::HBlank);
     EXPECT_EQ(ppu_.ly(), 0);
     EXPECT_FALSE(ppu_.frame_ready());
 }
@@ -323,4 +326,62 @@ TEST_F(PpuTest, BG4x4TilemapScroll)
         Pixel px = framebuffer.at(x); // first line in framebuffer
         EXPECT_EQ(px, expected_px) << "Pixel mismatch at (0," << x << ")";
     }
+}
+
+TEST_F(PpuTest, PpuModeMemLock)
+{
+    // Ppu starts with LCD off, both should be unlocked
+    EXPECT_TRUE(ppu_.lcd_off());
+    EXPECT_EQ(ppu_.mode(), Mode::HBlank);
+    EXPECT_FALSE(mmu_.is_vram_locked());
+    EXPECT_FALSE(mmu_.is_oam_locked());
+
+    // When LCD ON, Ppu starts in mode 2 (OAMScan), OAM should be locked
+    ppu_.enable_lcd(true);
+    EXPECT_FALSE(ppu_.lcd_off());
+    EXPECT_EQ(ppu_.mode(), Mode::OAMScan);
+    EXPECT_FALSE(mmu_.is_vram_locked());
+    EXPECT_TRUE(mmu_.is_oam_locked());
+
+    // Advance to mode 3 (Transfer), both should be locked
+    ppu_.tick(Cycles::OAMScan);
+    EXPECT_EQ(ppu_.mode(), Mode::Transfer);
+    EXPECT_TRUE(mmu_.is_vram_locked());
+    EXPECT_TRUE(mmu_.is_oam_locked());
+
+    // Advance to mode 0 (HBlank), both should be unlocked
+    ppu_.tick(Cycles::Transfer);
+    EXPECT_EQ(ppu_.mode(), Mode::HBlank);
+    EXPECT_FALSE(mmu_.is_vram_locked());
+    EXPECT_FALSE(mmu_.is_oam_locked());
+
+    // Finish first scanline and return to mode 2
+    ppu_.tick(Cycles::HBlank);
+
+    // Render remaining scanlines to advance to mode 1 (VBlank)
+    // Both should be unlocked
+    for (int line = 1; line < VisibleScanlines; ++line) {
+        ppu_.tick(Cycles::OAMScan);
+        ppu_.tick(Cycles::Transfer);
+        ppu_.tick(Cycles::HBlank);
+    }
+    EXPECT_EQ(ppu_.mode(), Mode::VBlank);
+    EXPECT_FALSE(mmu_.is_vram_locked());
+    EXPECT_FALSE(mmu_.is_oam_locked());
+
+    // Finish frame and go back to mode 3 so that both are locked
+    for (int line = 0; line < VBlankScanlines; ++line) {
+        ppu_.tick(Cycles::VBlank);
+    }
+    EXPECT_EQ(ppu_.mode(), Mode::OAMScan);
+    ppu_.tick(Cycles::OAMScan);
+    EXPECT_EQ(ppu_.mode(), Mode::Transfer);
+    EXPECT_TRUE(mmu_.is_vram_locked());
+    EXPECT_TRUE(mmu_.is_oam_locked());
+
+    // Turn off LCD, both should be unlocked (because of mode 0)
+    ppu_.enable_lcd(false);
+    EXPECT_EQ(ppu_.mode(), Mode::HBlank);
+    EXPECT_FALSE(mmu_.is_vram_locked());
+    EXPECT_FALSE(mmu_.is_oam_locked());
 }

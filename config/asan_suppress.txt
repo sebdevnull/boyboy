@@ -2,3 +2,4 @@
 leak:dbus_strdup
 leak:dbus_string_init_preallocated
 leak:dbus_connection_set_data
+leak:dbus_message_loader_queue_messages

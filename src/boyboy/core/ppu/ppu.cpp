@@ -197,12 +197,11 @@ void Ppu::reset()
     framebuffer_.fill(0);
     cycles_ = 0;
     cycles_in_mode_ = 0;
-    // mode_ = Mode::OAMScan;
     previous_mode_ = mode_;
     frame_ready_ = false;
     frame_count_ = 0;
     window_line_counter_ = 0;
-    set_mode(Mode::OAMScan);
+    enable_lcd(false);
 }
 
 void Ppu::set_ly(uint8_t ly)
@@ -248,8 +247,14 @@ void Ppu::set_mode(Mode new_mode)
     mode_ = new_mode;
     STAT_ = (STAT_ & ~registers::STAT::PPUModeMask) | static_cast<uint8_t>(mode_);
 
-    // Update LY=LYC flag
-    // update_lyc();
+    // Lock VRAM on mode 3 (Transfer)
+    if (lock_vram_cb_) {
+        lock_vram_cb_(mode_ == Mode::Transfer);
+    }
+    // Lock OAM on modes 2 and 3 (OAMScan and Transfer)
+    if (lock_oam_cb_) {
+        lock_oam_cb_(mode_ == Mode::OAMScan || mode_ == Mode::Transfer);
+    }
 
     check_interrupts();
 }
