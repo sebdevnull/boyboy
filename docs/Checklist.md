@@ -41,7 +41,7 @@ Implementation status of every major component and feature in **BoyBoy**.
   - [ ] MBC3
   - [ ] MBC5
   - [ ] Other MBC types
-  - [ ] Battery-backed RAM support
+  - [x] Battery-backed RAM support ✅
   - [ ] RTC support
 
 ## I/O & Peripherals
@@ -69,7 +69,8 @@ Implementation status of every major component and feature in **BoyBoy**.
 - [x] Frame rendering ✅
 - [x] OpenGL rendering backend ✅
 - [ ] Window management ⏳
-  - [ ] Scaling & resizing ⏳
+  - [x] Scaling ✅
+  - [ ] Resizing
   - [ ] Fullscreen mode
 - [ ] Frame rate control ⏳
   - [ ] Frame limiting ⏳
@@ -105,7 +106,9 @@ Implementation status of every major component and feature in **BoyBoy**.
   - [x] Input handling ✅
   - [ ] Basic controls (load, start, pause, reset)
 - [x] Configuration file support ✅
-- [ ] Save states
+- [ ] Save files ⏳
+  - [x] Battery-backed RAM saves ✅
+  - [ ] Emulator state saves
 - [ ] Debugging tools ⏳
   - [ ] CPU/Memory viewer ⏳
   - [ ] Breakpoints
