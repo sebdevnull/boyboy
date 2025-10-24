@@ -27,16 +27,21 @@
 #include <cstdint>
 #include <cstdlib>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <span>
 
-#include "boyboy/core/io/io.h"
 #include "boyboy/core/mmu/constants.h"
 
-// Forward declaration
-namespace boyboy::core::cartridge {
+// Forward declarations
+namespace boyboy::core {
+namespace cartridge {
 class Cartridge;
 }
+namespace io {
+class Io;
+}
+} // namespace boyboy::core
 
 namespace boyboy::core::mmu {
 
@@ -45,7 +50,7 @@ public:
     using IoWriteCallback = std::function<void(uint16_t, uint8_t)>;
     using IoReadCallback = std::function<void(uint16_t, uint8_t)>;
 
-    Mmu() { reset(); }
+    Mmu(std::shared_ptr<io::Io> io);
 
     // Reset MMU state
     void reset();
@@ -100,8 +105,8 @@ public:
     void tick_dma(uint16_t cycles);
 
     // Access to I/O handler
-    [[nodiscard]] io::Io& io() { return io_; }
-    [[nodiscard]] const io::Io& io() const { return io_; }
+    [[nodiscard]] std::shared_ptr<io::Io> io() { return io_; }
+    [[nodiscard]] const std::shared_ptr<io::Io>& io() const { return io_; }
 
     // IO read/write callbacks
     void set_io_write_callback(IoWriteCallback callback);
@@ -169,7 +174,7 @@ private:
     Dma dma_;
 
     // I/O handler
-    io::Io io_;
+    std::shared_ptr<io::Io> io_;
 
     // Optional I/O read/write callbacks
     IoWriteCallback io_write_callback_ = nullptr;

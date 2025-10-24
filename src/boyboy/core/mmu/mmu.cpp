@@ -23,12 +23,18 @@
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cartridge/cartridge.h"
+#include "boyboy/core/io/io.h"
 #include "boyboy/core/mmu/constants.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 
 namespace boyboy::core::mmu {
 
 using namespace boyboy::common;
+
+Mmu::Mmu(std::shared_ptr<io::Io> io) : io_(std::move(io))
+{
+    reset();
+}
 
 void Mmu::reset()
 {
@@ -40,7 +46,7 @@ void Mmu::reset()
     ier_ = 0;
 
     // Reset components
-    io_.reset();
+    io_->reset();
     dma_.reset();
 
     // Reset memory locks
@@ -568,7 +574,7 @@ void Mmu::init_region_lut()
 
 void Mmu::io_write(uint16_t addr, uint8_t value)
 {
-    io_.write(addr, value);
+    io_->write(addr, value);
     if (io_write_callback_) {
         io_write_callback_(addr, value);
     }
@@ -576,7 +582,7 @@ void Mmu::io_write(uint16_t addr, uint8_t value)
 
 [[nodiscard]] uint8_t Mmu::io_read(uint16_t addr) const
 {
-    uint8_t value = io_.read(addr);
+    uint8_t value = io_->read(addr);
     if (io_read_callback_) {
         io_read_callback_(addr, value);
     }
