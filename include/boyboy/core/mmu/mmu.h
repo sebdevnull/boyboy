@@ -216,8 +216,9 @@ private:
     // Memory region lock check
     [[nodiscard]] bool is_region_locked(MemoryRegionID region_id) const
     {
-        return (region_id == MemoryRegionID::VRAM && lock_vram_) ||
-               (region_id == MemoryRegionID::OAM && lock_oam_);
+        return (lock_vram_ && region_id == MemoryRegionID::VRAM) ||
+               (lock_oam_ &&
+                (region_id == MemoryRegionID::OAM || region_id == MemoryRegionID::NotUsable));
     }
 
     // I/O read/write handlers
