@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org).
   - `--save-path` for custom saving path
   - `--autosave` for enabling/disabling autosave
   - `--save-interval` for setting autosave interval
+- Add script `scripts/run_boyboy.sh` for running debug build with ASan suppressions for known external issues and `config/asan_suppress.txt` for said suppressions
 
 ### Changed
 
