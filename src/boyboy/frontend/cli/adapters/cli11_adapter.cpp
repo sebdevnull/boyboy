@@ -38,8 +38,8 @@ std::string make_footer(std::string&& footer)
 }
 } // namespace
 
-CLI11Adapter::CLI11Adapter(app::App& app, app::commands::CommandContext& context)
-    : app_(app), context_(context)
+CLI11Adapter::CLI11Adapter(std::shared_ptr<app::App> app, app::commands::CommandContext& context)
+    : app_(std::move(app)), context_(context)
 {
     app_parser_.name("boyboy");
     app_parser_.description("BoyBoy - A Game Boy emulator");
@@ -157,7 +157,7 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
         command.set_save_path(options_.save_path);
         command.set_autosave(options_.autosave);
         command.set_save_interval_ms(options_.save_interval_ms);
-        command.execute(app_, context_);
+        command.execute(*app_, context_);
     });
 }
 
@@ -173,7 +173,7 @@ void CLI11Adapter::register_info(app::commands::InfoCommand& command)
 
     cmd->add_option("<rom>", context_.rom_path, "Path to the ROM file")->type_name("")->required();
 
-    cmd->callback([this, &command]() { command.execute(app_, context_); });
+    cmd->callback([this, &command]() { command.execute(*app_, context_); });
 }
 
 void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
@@ -191,7 +191,7 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
     get_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Get);
         command.set_key(options_.cfg_key);
-        command.execute(app_, context_);
+        command.execute(*app_, context_);
     });
     get_sub->footer(make_footer(R"(
         Examples:
@@ -209,7 +209,7 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Set);
         command.set_key(options_.cfg_key);
         command.set_value(options_.cfg_value);
-        command.execute(app_, context_);
+        command.execute(*app_, context_);
     });
     set_sub->footer(make_footer(R"(
         Examples:
@@ -221,7 +221,7 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
     auto* list_sub = cli_config->add_subcommand("list", "List configuration values");
     list_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::List);
-        command.execute(app_, context_);
+        command.execute(*app_, context_);
     });
     list_sub->footer(make_footer(R"(
         Examples:
@@ -233,7 +233,7 @@ void CLI11Adapter::register_config(app::commands::ConfigCommand& command)
     auto* reset_sub = cli_config->add_subcommand("reset", "Reset configuration to default");
     reset_sub->callback([this, &command]() {
         command.set_subcommand(app::commands::ConfigCommand::SubCommand::Reset);
-        command.execute(app_, context_);
+        command.execute(*app_, context_);
     });
     reset_sub->footer(make_footer(R"(
         Examples:

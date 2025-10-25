@@ -7,6 +7,7 @@
 
 #include "boyboy/frontend/cli/cli_app.h"
 
+#include "boyboy/app/app.h"
 #include "boyboy/app/commands/command_registry.h"
 #include "boyboy/frontend/cli/adapters/cli11_adapter.h"
 
@@ -14,7 +15,10 @@ namespace boyboy::frontend::cli {
 
 using CLIAdapter = CLI11Adapter;
 
-CLIApp::CLIApp() : cli_adapter_(std::make_unique<CLIAdapter>(app_, context_)) {}
+CLIApp::CLIApp()
+    : app_(std::make_shared<app::App>()), cli_adapter_(std::make_unique<CLIAdapter>(app_, context_))
+{
+}
 
 int CLIApp::run(std::span<std::string_view> args)
 {
