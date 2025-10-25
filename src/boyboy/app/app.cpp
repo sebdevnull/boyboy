@@ -17,11 +17,15 @@
 #include "boyboy/common/save/save_manager.h"
 #include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/cartridge/cartridge_loader.h"
+#include "boyboy/core/emulator/emulator.h"
 #include "boyboy/version.h"
 
 namespace boyboy::app {
 
 using namespace boyboy::common;
+
+App::App() : emulator_(std::make_unique<core::emulator::Emulator>()) {};
+App::~App() = default;
 
 namespace {
 std::optional<std::filesystem::path> get_fs_path(std::optional<std::string_view> path)
@@ -39,7 +43,7 @@ int App::run(std::string_view rom_path)
 
     // Load ROM
     try {
-        emulator_.load(std::string(rom_path));
+        emulator_->load(std::string(rom_path));
     }
     catch (const std::runtime_error& e) {
         log::error("Failed to load ROM: {}", e.what());
@@ -47,10 +51,10 @@ int App::run(std::string_view rom_path)
     }
 
     // Apply configuration
-    emulator_.apply_config(config_);
+    emulator_->apply_config(config_);
 
     // Run emulator
-    emulator_.run();
+    emulator_->run();
 
     log::info("Exiting BoyBoy emulator");
 
