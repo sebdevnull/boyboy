@@ -8,18 +8,47 @@
 #include "boyboy/core/emulator/emulator.h"
 
 #include <chrono>
+#include <memory>
 #include <thread>
 
 #include "boyboy/common/config/config.h"
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/save/save_manager.h"
+#include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/cartridge/cartridge_loader.h"
+#include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/display/display.h"
+#include "boyboy/core/io/buttons.h"
+#include "boyboy/core/io/io.h"
+#include "boyboy/core/io/joypad.h"
+#include "boyboy/core/io/serial.h"
+#include "boyboy/core/io/timer.h"
+#include "boyboy/core/mmu/mmu.h"
 #include "boyboy/core/ppu/ppu.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 
 namespace boyboy::core::emulator {
 
 using namespace boyboy::common;
+
+Emulator::Emulator()
+    : io_(std::make_shared<io::Io>()),
+      mmu_(std::make_shared<mmu::Mmu>(io_)),
+      cpu_(std::make_shared<cpu::Cpu>(mmu_)),
+      ppu_(std::make_shared<ppu::Ppu>(mmu_.get())),
+      timer_(std::make_shared<io::Timer>()),
+      joypad_(std::make_shared<io::Joypad>()),
+      serial_(std::make_shared<io::Serial>()),
+      display_(std::make_shared<display::Display>()),
+      cartridge_(std::make_unique<cartridge::Cartridge>())
+{
+    io_->register_component(ppu_);
+    io_->register_component(timer_);
+    io_->register_component(joypad_);
+    io_->register_component(serial_);
+}
+
+Emulator::~Emulator() = default;
 
 void Emulator::load(const std::string& path)
 {
@@ -39,13 +68,7 @@ void Emulator::start()
     log::info("Starting emulator...");
 
     // Hook system callbacks
-    // TODO: replace ppu callbacks with Mmu reference or better component system
-    ppu_.set_mem_read_cb([this](uint16_t addr) { return mmu_->read_byte(addr); });
-    ppu_.set_mem_write_cb([this](uint16_t addr, uint8_t value) { mmu_->write_byte(addr, value); });
-    ppu_.set_dma_start_cb([this](uint8_t value) { mmu_->start_dma(value); });
-    ppu_.set_lock_vram_cb([this](bool lock) { mmu_->lock_vram(lock); });
-    ppu_.set_lock_oam_cb([this](bool lock) { mmu_->lock_oam(lock); });
-    display_.set_button_cb([this](io::Button b, bool p) { on_button_event(b, p); });
+    display_->set_button_cb([this](io::Button b, bool p) { on_button_event(b, p); });
     cartridge_->set_ram_load_cb([this]() {
         auto res = save::SaveManager::instance().load_sram(cartridge_->get_header().title);
         return (res.has_value()) ? res.value() : std::vector<uint8_t>{};
@@ -56,11 +79,11 @@ void Emulator::start()
     });
 
     cartridge_->load_ram();
-    display_.init();
+    display_->init();
 
     // Enable LCD: it seems that some games expect it to be on at start, probably because the boot
     // ROM does it so we will enable it until we implement the boot ROM (if we ever do)
-    ppu_.enable_lcd(true);
+    ppu_->enable_lcd(true);
 
     started_ = true;
 }
@@ -80,7 +103,7 @@ void Emulator::stop()
     BB_HOT_PROFILE_REPORT();
     BB_FRAME_PROFILE_REPORT();
 
-    display_.shutdown();
+    display_->shutdown();
     started_ = false;
 }
 
@@ -94,11 +117,9 @@ void Emulator::run()
         std::chrono::duration<double>(ppu::FrameDuration)
     );
 
-    // TODO: allow configurable frame rate for high refresh rate monitors and "turbo" mode.
-    // For now we run at the native frame rate (59.73Hz)
     running_ = true;
     while (running_) {
-        display_.poll_events(running_);
+        display_->poll_events(running_);
         emulate_frame();
         render_frame();
 
@@ -121,9 +142,9 @@ void Emulator::run()
 void Emulator::reset()
 {
     log::info("Resetting emulator...");
-    cpu_.reset();
-    mmu_.reset();
-    io_.reset();
+    cpu_->reset();
+    mmu_->reset();
+    io_->reset();
 }
 
 void Emulator::apply_config(const common::config::Config& config)
@@ -135,8 +156,8 @@ void Emulator::apply_config(const common::config::Config& config)
     frame_rate_limited_ = speed_ != 0;
 
     // Video settings
-    display_.set_scale(config.video.scale);
-    display_.set_vsync(config.video.vsync);
+    display_->set_scale(config.video.scale);
+    display_->set_vsync(config.video.vsync);
 
     // Battery save settings
     cartridge_->enable_autosave(config.saves.autosave);
@@ -151,22 +172,22 @@ void Emulator::apply_config(const common::config::Config& config)
 void Emulator::on_button_event(io::Button button, bool pressed)
 {
     if (pressed) {
-        joypad_.press(button);
+        joypad_->press(button);
     }
     else {
-        joypad_.release(button);
+        joypad_->release(button);
     }
 }
 
 void Emulator::emulate_frame()
 {
-    while (!ppu_.frame_ready()) {
-        auto cycles = cpu_.step();
+    while (!ppu_->frame_ready()) {
+        auto cycles = cpu_->step();
         instruction_count_++;
         cycle_count_ += cycles;
 
         mmu_->tick_dma(cycles);
-        io_.tick(cycles);
+        io_->tick(cycles);
         cartridge_->tick();
     }
 
@@ -181,8 +202,8 @@ void Emulator::emulate_frame()
 
 void Emulator::render_frame()
 {
-    display_.render_frame(ppu_.framebuffer());
-    ppu_.consume_frame();
+    display_->render_frame(ppu_->framebuffer());
+    ppu_->consume_frame();
 
     // Update and log frame statistics
     BB_PROFILE_FRAME(instruction_count_, cycle_count_);

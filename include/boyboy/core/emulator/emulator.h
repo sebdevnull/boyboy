@@ -10,15 +10,33 @@
 #include <memory>
 #include <string>
 
-#include "boyboy/core/cartridge/cartridge.h"
-#include "boyboy/core/cpu/cpu.h"
-#include "boyboy/core/display/display.h"
-#include "boyboy/core/io/io.h"
-#include "boyboy/core/io/joypad.h"
-#include "boyboy/core/mmu/mmu.h"
-#include "boyboy/core/ppu/ppu.h"
+// Core components forward declarations
+namespace boyboy::core {
+namespace cpu {
+class Cpu;
+}
+namespace mmu {
+class Mmu;
+}
+namespace ppu {
+class Ppu;
+}
+namespace io {
+class Io;
+class Timer;
+class Joypad;
+class Serial;
+enum class Button : uint8_t;
+} // namespace io
+namespace display {
+class Display;
+}
+namespace cartridge {
+class Cartridge;
+}
+} // namespace boyboy::core
 
-// Forward declaration
+// Config forward declaration
 namespace boyboy::common::config {
 struct Config;
 }
@@ -27,7 +45,12 @@ namespace boyboy::core::emulator {
 
 class Emulator {
 public:
-    Emulator() : mmu_(std::make_shared<mmu::Mmu>()), cpu_(mmu_) {}
+    Emulator();
+    ~Emulator();
+    Emulator(Emulator&) = delete;
+    Emulator(Emulator&&) = delete;
+    Emulator& operator=(Emulator&) = delete;
+    Emulator& operator=(Emulator&&) = delete;
 
     // Emulator operations
     void load(const std::string& path);
@@ -50,12 +73,14 @@ public:
 
 private:
     // System components
+    std::shared_ptr<io::Io> io_;
     std::shared_ptr<mmu::Mmu> mmu_;
-    cpu::Cpu cpu_;
-    io::Io& io_ = mmu_->io();
-    ppu::Ppu& ppu_ = io_.ppu();
-    io::Joypad& joypad_ = io_.joypad();
-    display::Display display_;
+    std::shared_ptr<cpu::Cpu> cpu_;
+    std::shared_ptr<ppu::Ppu> ppu_;
+    std::shared_ptr<io::Timer> timer_;
+    std::shared_ptr<io::Joypad> joypad_;
+    std::shared_ptr<io::Serial> serial_;
+    std::shared_ptr<display::Display> display_;
     std::unique_ptr<cartridge::Cartridge> cartridge_;
 
     // Emulator state
@@ -68,6 +93,7 @@ private:
     uint64_t instruction_count_ = 0;
     uint64_t cycle_count_ = 0;
 
+    // Emulation methods
     void emulate_frame();
     void render_frame();
 };
