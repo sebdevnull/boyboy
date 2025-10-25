@@ -10,7 +10,6 @@
 #include <iostream>
 #include <ostream>
 
-#include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/iocomponent.h"
 
 namespace boyboy::core::io {
