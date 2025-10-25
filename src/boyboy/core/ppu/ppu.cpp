@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <memory>
 
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
@@ -24,11 +23,6 @@ namespace boyboy::core::ppu {
 
 using namespace boyboy::common;
 using io::IoReg;
-
-Ppu::Ppu(std::shared_ptr<mmu::Mmu> mmu) : mmu_(std::move(mmu))
-{
-    reset();
-}
 
 void Ppu::tick(uint16_t cycles)
 {

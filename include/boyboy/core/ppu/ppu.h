@@ -9,7 +9,6 @@
 
 #include <array>
 #include <cstdint>
-#include <memory>
 #include <ostream>
 
 #include "boyboy/common/utils.h"
@@ -123,7 +122,7 @@ inline std::ostream& operator<<(std::ostream& os, const Sprite& sprite)
 
 class Ppu : public io::IoComponent {
 public:
-    Ppu(std::shared_ptr<mmu::Mmu> mmu);
+    Ppu(mmu::Mmu* mmu) : mmu_(mmu) { reset(); }
 
     // IoComponent interface
     void tick(uint16_t cycles) override;
@@ -163,7 +162,7 @@ public:
     void test_framebuffer();
 
 private:
-    std::shared_ptr<mmu::Mmu> mmu_;
+    mmu::Mmu* mmu_;
 
     // PPU state
     Mode mode_ = Mode::HBlank;
