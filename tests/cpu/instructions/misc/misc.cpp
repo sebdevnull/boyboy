@@ -40,49 +40,49 @@ class IllegalOpcodeTest : public CpuTest {};
 // NOP
 TEST_F(NopTest, NOPDefault)
 {
-    uint16_t initial_pc = cpu.get_pc();
+    uint16_t initial_pc = cpu->get_pc();
 
     // Load NOP instruction at current PC
-    cpu.write_byte(initial_pc, static_cast<uint8_t>(Opcode::NOP));
+    cpu->write_byte(initial_pc, static_cast<uint8_t>(Opcode::NOP));
 
     // Fetch
-    uint8_t opcode = cpu.fetch();
+    uint8_t opcode = cpu->fetch();
     EXPECT_EQ(opcode, static_cast<uint8_t>(Opcode::NOP));
 
     // Execute
-    cpu.execute(opcode);
-    EXPECT_EQ(cpu.get_pc(), initial_pc + 1);
+    cpu->execute(opcode);
+    EXPECT_EQ(cpu->get_pc(), initial_pc + 1);
 
-    EXPECT_FALSE(cpu.get_flags());
+    EXPECT_FALSE(cpu->get_flags());
 }
 
 // EI
 TEST_F(EiTest, Works)
 {
-    cpu.set_ime(false);
+    cpu->set_ime(false);
     run(Opcode::EI);
-    EXPECT_FALSE(cpu.get_ime()) << "IME flag should be delayed after EI";
+    EXPECT_FALSE(cpu->get_ime()) << "IME flag should be delayed after EI";
 
     // Next instruction should set IME
-    cpu.write_byte(cpu.get_pc(), static_cast<uint8_t>(Opcode::NOP));
-    cpu.step();
-    EXPECT_TRUE(cpu.get_ime()) << "IME flag not set after EI";
+    cpu->write_byte(cpu->get_pc(), static_cast<uint8_t>(Opcode::NOP));
+    cpu->step();
+    EXPECT_TRUE(cpu->get_ime()) << "IME flag not set after EI";
 }
 
 // DI
 TEST_F(DiTest, Works)
 {
-    cpu.set_ime(true);
+    cpu->set_ime(true);
     run(Opcode::DI);
-    EXPECT_FALSE(cpu.get_ime()) << "IME flag not cleared after DI";
+    EXPECT_FALSE(cpu->get_ime()) << "IME flag not cleared after DI";
 }
 
 // HALT
 TEST_F(HaltTest, Works)
 {
-    EXPECT_FALSE(cpu.is_halted()) << "CPU should not be halted at start";
+    EXPECT_FALSE(cpu->is_halted()) << "CPU should not be halted at start";
     run(Opcode::HALT);
-    EXPECT_TRUE(cpu.is_halted()) << "CPU not halted after HALT instruction";
+    EXPECT_TRUE(cpu->is_halted()) << "CPU not halted after HALT instruction";
 }
 
 // STOP
@@ -95,16 +95,16 @@ TEST_F(StopTest, Works)
 // Illegal opcodes
 TEST_F(IllegalOpcodeTest, Throws)
 {
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_D3), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_DB), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_DD), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_E3), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_E4), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_EB), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_EC), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_ED), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_F4), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_FC), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::ILLEGAL_FD), IllegalOpcode);
-    EXPECT_THROW(cpu.execute(Opcode::PREFIX), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_D3), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_DB), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_DD), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_E3), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_E4), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_EB), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_EC), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_ED), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_F4), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_FC), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::ILLEGAL_FD), IllegalOpcode);
+    EXPECT_THROW(cpu->execute(Opcode::PREFIX), IllegalOpcode);
 }

@@ -28,8 +28,8 @@ TEST_P(CpuRegister8Test, SetAndGetRegister8)
 {
     auto [reg, value] = GetParam();
 
-    cpu.set_register(reg, value);
-    EXPECT_EQ(cpu.get_register(reg), value);
+    cpu->set_register(reg, value);
+    EXPECT_EQ(cpu->get_register(reg), value);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -54,8 +54,8 @@ TEST_P(CpuRegister16Test, SetAndGetRegister16)
 {
     auto [reg, value] = GetParam();
 
-    cpu.set_register(reg, value);
-    EXPECT_EQ(cpu.get_register(reg), value);
+    cpu->set_register(reg, value);
+    EXPECT_EQ(cpu->get_register(reg), value);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -79,8 +79,8 @@ TEST_P(CpuFlagTest, SetAndGetFlag)
 {
     auto [flag, value] = GetParam();
 
-    cpu.set_flag(flag, value);
-    EXPECT_EQ(cpu.get_flag(flag), value);
+    cpu->set_flag(flag, value);
+    EXPECT_EQ(cpu->get_flag(flag), value);
 }
 
 INSTANTIATE_TEST_SUITE_P(

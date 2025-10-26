@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
+#include <memory>
 
 // boyboy
 #include "boyboy/core/cpu/interrupts.h"
@@ -24,8 +25,11 @@ class IoTimerTest : public ::testing::Test {
 protected:
     void SetUp() override
     {
-        io_.reset();
-        timer_ = &io_.timer();
+        io_    = std::make_shared<Io>();
+        timer_ = std::make_shared<Timer>();
+
+        io_->register_component(timer_);
+        io_->init();
 
         // Start with clean DIV counter (0)
         reset_div();
@@ -43,8 +47,8 @@ protected:
     void write_tma(uint8_t val) { write_reg(IoReg::Timer::TMA, val); }
     void write_tac(uint8_t val) { write_reg(IoReg::Timer::TAC, val); }
 
-    Io io_;
-    Timer* timer_;
+    std::shared_ptr<Io> io_;
+    std::shared_ptr<Timer> timer_;
 
     static constexpr uint8_t Tma                 = 0xAB;
     static constexpr uint8_t OverflowDelayCycles = Timer::InterruptDelay + Timer::TimaReloadDelay;
@@ -130,27 +134,27 @@ TEST_F(IoTimerTest, TimaOverflowsToTma)
     write_tima(0xFE);
     write_tma(Tma);
     EXPECT_EQ(read_tima(), 0xFE);
-    EXPECT_FALSE(io_.read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
 
     // Increment TIMA to 0xFF
     timer_->tick(Timer::Frequency::Tima256M);
     EXPECT_EQ(read_tima(), 0xFF);
-    EXPECT_FALSE(io_.read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
 
     // Overflow TIMA, no interrupt or reload yet
     timer_->tick(Timer::Frequency::Tima256M);
     EXPECT_EQ(read_tima(), 0);
-    EXPECT_FALSE(io_.read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
 
     // Advance 4 cycles, interrupt should be requested; no reload yet
     timer_->tick(Timer::InterruptDelay);
     EXPECT_EQ(read_tima(), 0);
-    EXPECT_TRUE(io_.read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
 
     // Advance 4 more cycles, interrupt should be still be requested and TIMA reloaded with TMA
     timer_->tick(Timer::TimaReloadDelay);
     EXPECT_EQ(read_tima(), Tma);
-    EXPECT_TRUE(io_.read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
 }
 
 TEST_F(IoTimerTest, TimaMultipleOverflows)
