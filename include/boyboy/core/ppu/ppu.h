@@ -122,14 +122,15 @@ inline std::ostream& operator<<(std::ostream& os, const Sprite& sprite)
 
 class Ppu : public io::IoComponent {
 public:
-    Ppu(mmu::Mmu* mmu) : mmu_(mmu) { reset(); }
+    Ppu(mmu::Mmu* mmu) : mmu_(mmu) {}
 
     // IoComponent interface
+    void init() override;
+    void reset() override;
     void tick(uint16_t cycles) override;
     [[nodiscard]] uint8_t read(uint16_t addr) const override;
     void write(uint16_t addr, uint8_t value) override;
     void set_interrupt_cb(cpu::InterruptRequestCallback callback) override;
-    void reset() override;
 
     // Frame management
     [[nodiscard]] bool frame_ready() const { return frame_ready_; }

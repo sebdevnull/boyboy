@@ -12,7 +12,6 @@
 #include <string_view>
 
 #include "boyboy/common/utils.h"
-#include "boyboy/core/cpu/cpu_constants.h"
 #include "boyboy/core/cpu/instructions.h"
 #include "boyboy/core/cpu/interrupt_handler.h"
 #include "boyboy/core/cpu/opcodes.h"
@@ -23,10 +22,7 @@ namespace boyboy::core::cpu {
 
 class Cpu {
 public:
-    Cpu(std::shared_ptr<mmu::Mmu> mmu) : mmu_(std::move(mmu)), interrupt_handler_(*this, *mmu_)
-    {
-        reset();
-    }
+    Cpu(std::shared_ptr<mmu::Mmu> mmu) : mmu_(std::move(mmu)), interrupt_handler_(*this, *mmu_) {}
     ~Cpu() = default;
 
     // delete move and copy
@@ -35,23 +31,9 @@ public:
     Cpu(Cpu&&) = delete;
     Cpu& operator=(Cpu&&) = delete;
 
-    // Reset CPU state
-    void reset()
-    {
-        // Registers
-        registers_.af = AFStartValue;
-        registers_.bc = BCStartValue;
-        registers_.de = DEStartValue;
-        registers_.hl = HLStartValue;
-        registers_.sp = SPStartValue;
-        registers_.pc = PCStartValue;
-
-        // Reset flags and state
-        ime_ = false;
-        ime_scheduled_ = false;
-        halted_ = false;
-        cycles_ = 0;
-    }
+    // Init and reset CPU state
+    void init();
+    void reset();
 
     // Register accessors
     [[nodiscard]] uint8_t get_register(Reg8Name reg) const;

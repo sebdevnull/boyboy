@@ -14,6 +14,22 @@
 
 namespace boyboy::core::io {
 
+void Io::init()
+{
+    registers_.fill(0);
+    for (auto& component : components_) {
+        component->init();
+    }
+}
+
+void Io::reset()
+{
+    registers_.fill(0);
+    for (auto& component : components_) {
+        component->reset();
+    }
+}
+
 void Io::tick(uint16_t cycles)
 {
     for (auto& component : components_) {
@@ -61,14 +77,6 @@ void Io::write(uint16_t addr, uint8_t value)
 
     // Default behavior: write the value to the register
     registers_.at(io_addr(addr)) = value;
-}
-
-void Io::reset()
-{
-    registers_.fill(0);
-    for (auto& component : components_) {
-        component->reset();
-    }
 }
 
 [[nodiscard]] const std::shared_ptr<ppu::Ppu>& Io::ppu() const

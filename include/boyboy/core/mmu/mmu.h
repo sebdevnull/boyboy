@@ -52,7 +52,8 @@ public:
 
     Mmu(std::shared_ptr<io::Io> io);
 
-    // Reset MMU state
+    // Init and reset MMU state
+    void init();
     void reset();
 
     // Maps ROM memory into own memory map

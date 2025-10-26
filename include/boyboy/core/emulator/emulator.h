@@ -53,11 +53,12 @@ public:
     Emulator& operator=(Emulator&&) = delete;
 
     // Emulator operations
+    void init();
+    void reset();
     void load(const std::string& path);
     void start();
     void stop();
     void run();
-    void reset();
 
     // State accessors
     [[nodiscard]] bool is_running() const { return running_; }

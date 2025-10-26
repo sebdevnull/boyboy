@@ -42,13 +42,30 @@ Emulator::Emulator()
       display_(std::make_shared<display::Display>()),
       cartridge_(std::make_unique<cartridge::Cartridge>())
 {
+}
+
+Emulator::~Emulator() = default;
+
+void Emulator::init()
+{
+    log::info("Initializing emulator...");
     io_->register_component(ppu_);
     io_->register_component(timer_);
     io_->register_component(joypad_);
     io_->register_component(serial_);
+
+    mmu_->init();
+    io_->init();
+    cpu_->init();
 }
 
-Emulator::~Emulator() = default;
+void Emulator::reset()
+{
+    log::info("Resetting emulator...");
+    cpu_->reset();
+    mmu_->reset();
+    io_->reset();
+}
 
 void Emulator::load(const std::string& path)
 {
@@ -137,14 +154,6 @@ void Emulator::run()
     }
 
     stop();
-}
-
-void Emulator::reset()
-{
-    log::info("Resetting emulator...");
-    cpu_->reset();
-    mmu_->reset();
-    io_->reset();
 }
 
 void Emulator::apply_config(const common::config::Config& config)

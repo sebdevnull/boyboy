@@ -41,6 +41,8 @@ int App::run(std::string_view rom_path)
 {
     log::info("Running BoyBoy emulator...");
 
+    emulator_->init();
+
     // Load ROM
     try {
         emulator_->load(std::string(rom_path));

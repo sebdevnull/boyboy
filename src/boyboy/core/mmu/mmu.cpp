@@ -31,30 +31,31 @@ namespace boyboy::core::mmu {
 
 using namespace boyboy::common;
 
-Mmu::Mmu(std::shared_ptr<io::Io> io) : io_(std::move(io))
-{
-    reset();
-}
+Mmu::Mmu(std::shared_ptr<io::Io> io) : io_(std::move(io)) {}
 
-void Mmu::reset()
+void Mmu::init()
 {
-    // Reset memory regions
+    // Init memory regions
     vram_.fill(0);
     wram_.fill(0);
     oam_.fill(0);
     hram_.fill(0);
     ier_ = 0;
 
-    // Reset components
-    io_->reset();
-    dma_.reset();
-
-    // Reset memory locks
+    // Set memory unlocked
     lock_vram_ = false;
     lock_oam_ = false;
 
-    // Reinitialize memory map
+    // Initialize memory map
     init_memory_map();
+
+    // Init DMA
+    dma_.reset();
+}
+
+void Mmu::reset()
+{
+    init();
 }
 
 void Mmu::map_rom(cartridge::Cartridge& cart)

@@ -25,6 +25,23 @@
 
 namespace boyboy::core::io {
 
+void Timer::init()
+{
+    tima_ = 0;
+    tma_ = 0;
+    tac_ = 0;
+    div_counter_ = DivCounterStartValue;
+    tima_counter_ = 0;
+    interrupt_scheduler_.reset();
+    tima_reload_scheduler_.reset();
+    stopped_ = false;
+}
+
+void Timer::reset()
+{
+    init();
+}
+
 void Timer::tick(uint16_t cycles)
 {
     if (stopped_) {
@@ -95,18 +112,6 @@ void Timer::write(uint16_t addr, uint8_t value)
 void Timer::set_interrupt_cb(cpu::InterruptRequestCallback callback)
 {
     request_interrupt_ = std::move(callback);
-}
-
-void Timer::reset()
-{
-    tima_ = 0;
-    tma_ = 0;
-    tac_ = 0;
-    div_counter_ = DivCounterStartValue;
-    tima_counter_ = 0;
-    interrupt_scheduler_.reset();
-    tima_reload_scheduler_.reset();
-    stopped_ = false;
 }
 
 void Timer::start()

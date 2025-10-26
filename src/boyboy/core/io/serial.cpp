@@ -17,6 +17,10 @@ namespace boyboy::core::io {
 
 using namespace boyboy::common;
 
+void Serial::init() {}
+
+void Serial::reset() {}
+
 void Serial::tick([[maybe_unused]] uint16_t cycles) {}
 
 [[nodiscard]] uint8_t Serial::read([[maybe_unused]] uint16_t addr) const
@@ -41,7 +45,5 @@ void Serial::set_interrupt_cb(cpu::InterruptRequestCallback callback)
 {
     request_interrupt_ = std::move(callback);
 }
-
-void Serial::reset() {}
 
 } // namespace boyboy::core::io

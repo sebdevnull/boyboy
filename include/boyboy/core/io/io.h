@@ -31,10 +31,11 @@ class Serial;
 class Io {
 public:
     // I/O operations
+    void init();
+    void reset();
     [[nodiscard]] uint8_t read(uint16_t addr) const;
     void write(uint16_t addr, uint8_t value);
     void tick(uint16_t cycles);
-    void reset();
 
     /**
      * @brief Register an I/O component.

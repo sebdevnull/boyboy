@@ -24,6 +24,25 @@ namespace boyboy::core::ppu {
 using namespace boyboy::common;
 using io::IoReg;
 
+void Ppu::init()
+{
+    registers_.fill(0);
+    framebuffer_.fill(0);
+    cycles_ = 0;
+    cycles_in_mode_ = 0;
+    frame_ready_ = false;
+    frame_count_ = 0;
+    window_line_counter_ = 0;
+    mode_ = Mode::HBlank;
+    previous_mode_ = mode_;
+    previous_ly_ = LY_;
+}
+
+void Ppu::reset()
+{
+    init();
+}
+
 void Ppu::tick(uint16_t cycles)
 {
     BB_PROFILE_SCOPE(profiling::FrameTimer::Ppu);
@@ -180,19 +199,6 @@ void Ppu::write(uint16_t addr, uint8_t value)
 void Ppu::set_interrupt_cb(cpu::InterruptRequestCallback callback)
 {
     request_interrupt_ = std::move(callback);
-}
-
-void Ppu::reset()
-{
-    registers_.fill(0);
-    framebuffer_.fill(0);
-    cycles_ = 0;
-    cycles_in_mode_ = 0;
-    previous_mode_ = mode_;
-    frame_ready_ = false;
-    frame_count_ = 0;
-    window_line_counter_ = 0;
-    enable_lcd(false);
 }
 
 void Ppu::set_ly(uint8_t ly)
