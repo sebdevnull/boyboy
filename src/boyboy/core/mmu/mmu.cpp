@@ -573,7 +573,7 @@ void Mmu::init_region_lut()
     }
 }
 
-void Mmu::io_write(uint16_t addr, uint8_t value)
+inline void Mmu::io_write(uint16_t addr, uint8_t value)
 {
     io_->write(addr, value);
     if (io_write_callback_) {
@@ -581,7 +581,7 @@ void Mmu::io_write(uint16_t addr, uint8_t value)
     }
 }
 
-[[nodiscard]] uint8_t Mmu::io_read(uint16_t addr) const
+[[nodiscard]] inline uint8_t Mmu::io_read(uint16_t addr) const
 {
     uint8_t value = io_->read(addr);
     if (io_read_callback_) {
