@@ -98,6 +98,10 @@ private:
     {
         return static_cast<uint8_t>(addr - mmu::IOStart);
     }
+
+    // Generic component read/write
+    [[nodiscard]] uint8_t component_read(const IoComponent* comp, uint16_t addr) const;
+    void component_write(IoComponent* comp, uint16_t addr, uint8_t value);
 };
 
 } // namespace boyboy::core::io
