@@ -9,7 +9,6 @@
 
 #include <array>
 #include <cstdint>
-#include <functional>
 #include <ostream>
 
 #include "boyboy/common/utils.h"
@@ -18,6 +17,10 @@
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/ppu/palettes.h"
 #include "boyboy/core/ppu/registers.h"
+
+namespace boyboy::core::mmu {
+class Mmu;
+}
 
 namespace boyboy::core::ppu {
 
@@ -83,11 +86,6 @@ static constexpr double FrameDuration = 1.0 / FrameRate; // seconds
 // Types definitions
 using Pixel = uint32_t; // RGBA format
 using FrameBuffer = std::array<Pixel, FramebufferSize>;
-using MemoryReadCB = std::function<uint8_t(uint16_t)>;
-using MemoryWriteCB = std::function<void(uint16_t, uint8_t)>;
-using DmaStartCB = std::function<void(uint8_t)>;
-using LockVRamCB = std::function<void(bool)>;
-using LockOamCB = std::function<void(bool)>;
 
 // Color palette
 const auto Palette = palettes::PocketGray;
@@ -124,14 +122,15 @@ inline std::ostream& operator<<(std::ostream& os, const Sprite& sprite)
 
 class Ppu : public io::IoComponent {
 public:
-    Ppu() { reset(); }
+    Ppu(mmu::Mmu* mmu) : mmu_(mmu) {}
 
     // IoComponent interface
+    void init() override;
+    void reset() override;
     void tick(uint16_t cycles) override;
     [[nodiscard]] uint8_t read(uint16_t addr) const override;
     void write(uint16_t addr, uint8_t value) override;
     void set_interrupt_cb(cpu::InterruptRequestCallback callback) override;
-    void reset() override;
 
     // Frame management
     [[nodiscard]] bool frame_ready() const { return frame_ready_; }
@@ -154,14 +153,6 @@ public:
         );
     }
 
-    // Memory callbacks for PPU to access VRAM/OAM through MMU
-    // TODO: add Mmu reference
-    void set_mem_read_cb(MemoryReadCB cb) { mem_read_cb_ = std::move(cb); }
-    void set_mem_write_cb(MemoryWriteCB cb) { mem_write_cb_ = std::move(cb); }
-    void set_dma_start_cb(DmaStartCB cb) { dma_start_cb_ = std::move(cb); }
-    void set_lock_vram_cb(LockVRamCB cb) { lock_vram_cb_ = std::move(cb); }
-    void set_lock_oam_cb(LockOamCB cb) { lock_oam_cb_ = std::move(cb); }
-
     // Get color from palette
     [[nodiscard]] static Pixel palette_color(uint8_t color_id, uint8_t palette)
     {
@@ -172,11 +163,7 @@ public:
     void test_framebuffer();
 
 private:
-    MemoryReadCB mem_read_cb_;
-    MemoryWriteCB mem_write_cb_;
-    DmaStartCB dma_start_cb_;
-    LockVRamCB lock_vram_cb_;
-    LockOamCB lock_oam_cb_;
+    mmu::Mmu* mmu_;
 
     // PPU state
     Mode mode_ = Mode::HBlank;
@@ -225,11 +212,6 @@ private:
     // Interrupt handling
     void check_interrupts();
     void request_interrupt(uint8_t interrupt);
-
-    // Memory access helpers
-    [[nodiscard]] uint8_t mem_read(uint16_t addr) const;
-    void mem_write(uint16_t addr, uint8_t value);
-    void dma_start(uint8_t value);
 
     // Helpers to check LCDC flags
     [[nodiscard]] bool bg_enabled() const

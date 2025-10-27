@@ -21,12 +21,13 @@ namespace boyboy::core::io {
 
 class Joypad : public IoComponent {
 public:
-    // Implement IoComponent interface
+    // IoComponent interface
+    void init() override;
+    void reset() override;
     void tick(uint16_t cycles) override;
     [[nodiscard]] uint8_t read(uint16_t addr) const override;
     void write(uint16_t addr, uint8_t value) override;
     void set_interrupt_cb(cpu::InterruptRequestCallback callback) override;
-    void reset() override;
 
     // Button operations
     void press(Button button);

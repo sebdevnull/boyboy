@@ -17,6 +17,12 @@ class IoComponent {
 public:
     virtual ~IoComponent() = default;
 
+    // Initialize component
+    virtual void init() = 0;
+
+    // Reset component state
+    virtual void reset() = 0;
+
     // Called every N CPU cycles to update the component state
     virtual void tick(uint16_t cycles) = 0;
 
@@ -26,9 +32,6 @@ public:
 
     // Set callback to request CPU interrupts
     virtual void set_interrupt_cb(cpu::InterruptRequestCallback callback) = 0;
-
-    // Reset component state
-    virtual void reset() = 0;
 
     // Delete move and copy
     IoComponent(const IoComponent&) = delete;

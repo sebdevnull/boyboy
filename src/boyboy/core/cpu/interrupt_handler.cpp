@@ -11,6 +11,7 @@
 
 #include "boyboy/core/cpu/cpu.h"
 #include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/io/registers.h"
 
 namespace boyboy::core::cpu {
 

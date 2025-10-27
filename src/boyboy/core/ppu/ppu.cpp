@@ -15,14 +15,33 @@
 #include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/mmu/constants.h"
+#include "boyboy/core/mmu/mmu.h"
 #include "boyboy/core/ppu/registers.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 
 namespace boyboy::core::ppu {
 
 using namespace boyboy::common;
-
 using io::IoReg;
+
+void Ppu::init()
+{
+    registers_.fill(0);
+    framebuffer_.fill(0);
+    cycles_ = 0;
+    cycles_in_mode_ = 0;
+    frame_ready_ = false;
+    frame_count_ = 0;
+    window_line_counter_ = 0;
+    mode_ = Mode::HBlank;
+    previous_mode_ = mode_;
+    previous_ly_ = LY_;
+}
+
+void Ppu::reset()
+{
+    init();
+}
 
 void Ppu::tick(uint16_t cycles)
 {
@@ -76,9 +95,7 @@ void Ppu::tick(uint16_t cycles)
         case Mode::HBlank:
             if (cycles_in_mode_ >= Cycles::HBlank) {
                 cycles_in_mode_ -= Cycles::HBlank;
-                // LY_++;
                 inc_ly();
-                // log::trace("PPU LY incremented to {}", LY_);
                 if (LY_ == VisibleScanlines) {
                     // Enter VBlank
                     set_mode(Mode::VBlank);
@@ -95,12 +112,9 @@ void Ppu::tick(uint16_t cycles)
         case Mode::VBlank:
             if (cycles_in_mode_ >= Cycles::VBlank) {
                 cycles_in_mode_ -= Cycles::VBlank;
-                // LY_++;
                 inc_ly();
-                // log::trace("PPU LY incremented to {}", LY_);
                 if (LY_ >= TotalScanlines) {
                     // Restart scanning from line 0
-                    // LY_ = 0;
                     set_ly(0);
                     window_line_counter_ = 0;
                     set_mode(Mode::OAMScan);
@@ -108,8 +122,6 @@ void Ppu::tick(uint16_t cycles)
             }
             break;
     }
-
-    // check_interrupts();
 }
 
 uint8_t Ppu::read(uint16_t addr) const
@@ -139,7 +151,6 @@ void Ppu::write(uint16_t addr, uint8_t value)
         if (!lcd_off() && !lcd_enabled) {
             log::info("LCD disabled");
             log::debug("PPU state before LCD OFF: mode={}, LY={}", to_string(mode_), LY_);
-            // LY_ = 0;
             set_ly(0);
             cycles_in_mode_ = 0;
             window_line_counter_ = 0;
@@ -149,7 +160,6 @@ void Ppu::write(uint16_t addr, uint8_t value)
         else if (lcd_off() && lcd_enabled) {
             log::info("LCD enabled");
             log::debug("PPU state before LCD ON: mode={}, LY={}", to_string(mode_), LY_);
-            // LY_ = 0;
             set_ly(0);
             cycles_in_mode_ = 0;
             window_line_counter_ = 0;
@@ -179,7 +189,7 @@ void Ppu::write(uint16_t addr, uint8_t value)
         return;
     }
     else if (addr == IoReg::Ppu::DMA) {
-        dma_start(value);
+        mmu_->start_dma(value);
         return;
     }
 
@@ -189,19 +199,6 @@ void Ppu::write(uint16_t addr, uint8_t value)
 void Ppu::set_interrupt_cb(cpu::InterruptRequestCallback callback)
 {
     request_interrupt_ = std::move(callback);
-}
-
-void Ppu::reset()
-{
-    registers_.fill(0);
-    framebuffer_.fill(0);
-    cycles_ = 0;
-    cycles_in_mode_ = 0;
-    previous_mode_ = mode_;
-    frame_ready_ = false;
-    frame_count_ = 0;
-    window_line_counter_ = 0;
-    enable_lcd(false);
 }
 
 void Ppu::set_ly(uint8_t ly)
@@ -247,21 +244,14 @@ void Ppu::set_mode(Mode new_mode)
     mode_ = new_mode;
     STAT_ = (STAT_ & ~registers::STAT::PPUModeMask) | static_cast<uint8_t>(mode_);
 
-    // Lock VRAM on mode 3 (Transfer)
-    if (lock_vram_cb_) {
-        lock_vram_cb_(mode_ == Mode::Transfer);
-    }
-    // Lock OAM on modes 2 and 3 (OAMScan and Transfer)
-    if (lock_oam_cb_) {
-        lock_oam_cb_(mode_ == Mode::OAMScan || mode_ == Mode::Transfer);
-    }
+    mmu_->lock_vram(mode_ == Mode::Transfer);
+    mmu_->lock_oam(mode_ == Mode::OAMScan || mode_ == Mode::Transfer);
 
     check_interrupts();
 }
 
 void Ppu::render_scanline()
 {
-    // log::trace("Rendering scanline {}", LY_);
     render_background();
     render_window();
     render_sprites();
@@ -289,7 +279,7 @@ void Ppu::render_background()
         tile_col = bg_x / 8;
 
         uint16_t tile_index_addr = tilemap_addr + tile_row + tile_col;
-        uint8_t tile_index = mem_read(tile_index_addr);
+        uint8_t tile_index = mmu_->read_byte(tile_index_addr, true);
 
         uint16_t tile_addr = 0;
         if (tiledata_addr == registers::LCDC::BGAndWindowTileData1) {
@@ -300,8 +290,8 @@ void Ppu::render_background()
         }
 
         uint8_t line = bg_y % 8;
-        uint8_t lsb = mem_read(tile_addr + (line * 2));
-        uint8_t msb = mem_read(tile_addr + (line * 2) + 1);
+        uint8_t lsb = mmu_->read_byte(tile_addr + (line * 2), true);
+        uint8_t msb = mmu_->read_byte(tile_addr + (line * 2) + 1, true);
 
         uint8_t bit = 7 - (bg_x % 8);
         uint8_t color_index = ((msb >> bit) & 0x1) << 1 | ((lsb >> bit) & 0x1);
@@ -335,7 +325,7 @@ void Ppu::render_window()
         uint8_t px_in_tile_x = win_x % 8;
         uint8_t px_in_tile_y = win_y % 8;
 
-        uint8_t tile_index = mem_read(tilemap_addr + (tile_row * 32) + tile_col);
+        uint8_t tile_index = mmu_->read_byte(tilemap_addr + (tile_row * 32) + tile_col, true);
         uint16_t tile_addr = 0;
         if (tiledata_addr == registers::LCDC::BGAndWindowTileData1) {
             tile_addr = tiledata_addr + (tile_index * 16);
@@ -344,8 +334,8 @@ void Ppu::render_window()
             tile_addr = tiledata_addr + (static_cast<int8_t>(tile_index) * 16);
         }
 
-        uint8_t lsb = mem_read(tile_addr + (px_in_tile_y * 2));
-        uint8_t msb = mem_read(tile_addr + (px_in_tile_y * 2) + 1);
+        uint8_t lsb = mmu_->read_byte(tile_addr + (px_in_tile_y * 2), true);
+        uint8_t msb = mmu_->read_byte(tile_addr + (px_in_tile_y * 2) + 1, true);
 
         uint8_t color_index = ((msb >> (7 - px_in_tile_x)) & 0x1) << 1 |
                               ((lsb >> (7 - px_in_tile_x)) & 0x1);
@@ -455,8 +445,8 @@ uint8_t Ppu::sprite_pixel_color(const Sprite& sprite, uint8_t y_in_sprite, uint8
     // sprites always use 0x8000 method
     uint16_t tile_addr = registers::LCDC::OBJTileData + (tile_index * 16);
 
-    uint8_t lsb = mem_read(tile_addr + (y_in_sprite * 2));
-    uint8_t msb = mem_read(tile_addr + (y_in_sprite * 2) + 1);
+    uint8_t lsb = mmu_->read_byte(tile_addr + (y_in_sprite * 2), true);
+    uint8_t msb = mmu_->read_byte(tile_addr + (y_in_sprite * 2) + 1, true);
 
     if (sprite.x_flipped()) {
         x_in_sprite = 7 - x_in_sprite;
@@ -473,10 +463,10 @@ std::array<Sprite, 40> Ppu::read_oam() const
     std::array<Sprite, 40> sprites{};
     for (size_t i = 0; i < 40; ++i) {
         uint16_t base_addr = mmu::OAMStart + (i * 4);
-        sprites.at(i).y = mem_read(base_addr);
-        sprites.at(i).x = mem_read(base_addr + 1);
-        sprites.at(i).tile = mem_read(base_addr + 2);
-        sprites.at(i).flags = mem_read(base_addr + 3);
+        sprites.at(i).y = mmu_->read_byte(base_addr, true);
+        sprites.at(i).x = mmu_->read_byte(base_addr + 1, true);
+        sprites.at(i).tile = mmu_->read_byte(base_addr + 2, true);
+        sprites.at(i).flags = mmu_->read_byte(base_addr + 3, true);
     }
     return sprites;
 }
@@ -551,44 +541,13 @@ void Ppu::request_interrupt(uint8_t interrupt)
 
     request_interrupt_(interrupt);
 
-    uint8_t ie_reg = mem_read(IoReg::Interrupts::IE);
-    uint8_t if_reg = mem_read(IoReg::Interrupts::IF);
+    uint8_t ie_reg = mmu_->read_byte(IoReg::Interrupts::IE, true);
+    uint8_t if_reg = mmu_->read_byte(IoReg::Interrupts::IF, true);
     log::trace(
         "IE: {}, IF: {}",
         common::utils::PrettyHex(ie_reg).to_string(),
         common::utils::PrettyHex(if_reg).to_string()
     );
-}
-
-[[nodiscard]] uint8_t Ppu::mem_read(uint16_t addr) const
-{
-    if (!mem_read_cb_) {
-        log::warn(
-            "PPU memory read at {} but no callback set", common::utils::PrettyHex(addr).to_string()
-        );
-        return 0xFF;
-    }
-    return mem_read_cb_(addr);
-}
-void Ppu::mem_write(uint16_t addr, uint8_t value)
-{
-    if (!mem_write_cb_) {
-        log::warn(
-            "PPU memory write at {} but no callback set", common::utils::PrettyHex(addr).to_string()
-        );
-        return;
-    }
-    mem_write_cb_(addr, value);
-}
-void Ppu::dma_start(uint8_t value)
-{
-    if (!dma_start_cb_) {
-        log::warn(
-            "PPU DMA start at {} but no callback set", common::utils::PrettyHex(value).to_string()
-        );
-        return;
-    }
-    dma_start_cb_(value);
 }
 
 } // namespace boyboy::core::ppu

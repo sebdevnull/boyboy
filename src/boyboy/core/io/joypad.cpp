@@ -18,6 +18,17 @@ namespace boyboy::core::io {
 
 using namespace boyboy::common;
 
+void Joypad::init()
+{
+    select_ = ButtonMask::SelectMask; // Neither group selected
+    buttons_ = 0xFF;                  // All buttons released (1)
+}
+
+void Joypad::reset()
+{
+    init();
+}
+
 void Joypad::tick(uint16_t /*cycles*/)
 {
     // Joypad does not need to do anything on tick
@@ -56,12 +67,6 @@ void Joypad::write(uint16_t addr, uint8_t value)
 void Joypad::set_interrupt_cb(cpu::InterruptRequestCallback callback)
 {
     request_interrupt_ = std::move(callback);
-}
-
-void Joypad::reset()
-{
-    select_ = ButtonMask::SelectMask; // Neither group selected
-    buttons_ = 0xFF;                  // All buttons released (1)
 }
 
 void Joypad::press(Button button)

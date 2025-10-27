@@ -10,9 +10,12 @@
 #include <memory>
 #include <span>
 
-#include "boyboy/app/app.h"
 #include "boyboy/app/commands/command.h"
 #include "boyboy/frontend/cli/adapters/cli_adapter.h"
+
+namespace boyboy::app {
+class App;
+}
 
 namespace boyboy::frontend::cli {
 
@@ -22,7 +25,7 @@ public:
     int run(std::span<std::string_view> args);
 
 private:
-    app::App app_;
+    std::shared_ptr<app::App> app_;
     app::commands::CommandContext context_;
     std::unique_ptr<ICLIAdapter> cli_adapter_;
 

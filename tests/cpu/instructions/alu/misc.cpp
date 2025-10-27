@@ -37,26 +37,26 @@ TEST_P(DAATest, Works) { run_test(); }
 
 TEST_F(CPLTest, Works)
 {
-    cpu.set_register(boyboy::core::cpu::Reg8Name::A, 0xAA);
+    cpu->set_register(boyboy::core::cpu::Reg8Name::A, 0xAA);
     CpuTest::set_flags(false, false, false, false);
 
     run(Opcode::CPL);
-    EXPECT_EQ(cpu.get_register(boyboy::core::cpu::Reg8Name::A), 0x55)
+    EXPECT_EQ(cpu->get_register(boyboy::core::cpu::Reg8Name::A), 0x55)
         << "A register not complemented after CPL";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CPL";
-    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag not set after CPL";
-    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag not set after CPL";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag changed after CPL";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CPL";
+    EXPECT_TRUE(cpu->get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag not set after CPL";
+    EXPECT_TRUE(cpu->get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag not set after CPL";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag changed after CPL";
 
     CpuTest::set_flags(false, false, false, false);
 
     run(Opcode::CPL);
-    EXPECT_EQ(cpu.get_register(boyboy::core::cpu::Reg8Name::A), 0xAA)
+    EXPECT_EQ(cpu->get_register(boyboy::core::cpu::Reg8Name::A), 0xAA)
         << "A register not complemented after CPL";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CPL";
-    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag not set after CPL";
-    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag not set after CPL";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag changed after CPL";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CPL";
+    EXPECT_TRUE(cpu->get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag not set after CPL";
+    EXPECT_TRUE(cpu->get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag not set after CPL";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag changed after CPL";
 }
 
 TEST_F(CCFTest, Works)
@@ -64,16 +64,16 @@ TEST_F(CCFTest, Works)
     CpuTest::set_flags(false, false, false, false);
 
     run(Opcode::CCF);
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after CCF";
-    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after CCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after CCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after CCF";
+    EXPECT_TRUE(cpu->get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after CCF";
 
     run(Opcode::CCF);
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after CCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not reset after CCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after CCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after CCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after CCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not reset after CCF";
 }
 
 TEST_F(SCFTest, Works)
@@ -81,16 +81,16 @@ TEST_F(SCFTest, Works)
     CpuTest::set_flags(false, false, false, false);
 
     run(Opcode::SCF);
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after SCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after SCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after SCF";
-    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after SCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after SCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after SCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after SCF";
+    EXPECT_TRUE(cpu->get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after SCF";
 
     run(Opcode::SCF);
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after SCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after SCF";
-    EXPECT_FALSE(cpu.get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after SCF";
-    EXPECT_TRUE(cpu.get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after SCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Zero)) << "Z flag changed after SCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::Substract)) << "N flag changed after SCF";
+    EXPECT_FALSE(cpu->get_flag(boyboy::core::cpu::Flag::HalfCarry)) << "H flag changed after SCF";
+    EXPECT_TRUE(cpu->get_flag(boyboy::core::cpu::Flag::Carry)) << "C flag not set after SCF";
 }
 
 // -----------------------------

@@ -23,6 +23,7 @@
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cartridge/cartridge.h"
+#include "boyboy/core/io/io.h"
 #include "boyboy/core/mmu/constants.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 
@@ -30,25 +31,31 @@ namespace boyboy::core::mmu {
 
 using namespace boyboy::common;
 
-void Mmu::reset()
+Mmu::Mmu(std::shared_ptr<io::Io> io) : io_(std::move(io)) {}
+
+void Mmu::init()
 {
-    // Reset memory regions
+    // Init memory regions
     vram_.fill(0);
     wram_.fill(0);
     oam_.fill(0);
     hram_.fill(0);
     ier_ = 0;
 
-    // Reset components
-    io_.reset();
-    dma_.reset();
-
-    // Reset memory locks
+    // Set memory unlocked
     lock_vram_ = false;
     lock_oam_ = false;
 
-    // Reinitialize memory map
+    // Initialize memory map
     init_memory_map();
+
+    // Init DMA
+    dma_.reset();
+}
+
+void Mmu::reset()
+{
+    init();
 }
 
 void Mmu::map_rom(cartridge::Cartridge& cart)
@@ -566,17 +573,17 @@ void Mmu::init_region_lut()
     }
 }
 
-void Mmu::io_write(uint16_t addr, uint8_t value)
+inline void Mmu::io_write(uint16_t addr, uint8_t value)
 {
-    io_.write(addr, value);
+    io_->write(addr, value);
     if (io_write_callback_) {
         io_write_callback_(addr, value);
     }
 }
 
-[[nodiscard]] uint8_t Mmu::io_read(uint16_t addr) const
+[[nodiscard]] inline uint8_t Mmu::io_read(uint16_t addr) const
 {
-    uint8_t value = io_.read(addr);
+    uint8_t value = io_->read(addr);
     if (io_read_callback_) {
         io_read_callback_(addr, value);
     }

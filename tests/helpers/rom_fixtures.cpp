@@ -11,15 +11,20 @@
 #include <memory>
 #include <stdexcept>
 
-#include "boyboy/core/cartridge/cartridge.h"
-#include "boyboy/core/cartridge/cartridge_loader.h"
-#include "boyboy/core/cartridge/mbc.h"
+#include "boyboy/core/io/io.h"
 #include "common/paths.h"
 
 // boyboy
 #include "boyboy/common/errors.h"
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
+#include "boyboy/core/cartridge/cartridge.h"
+#include "boyboy/core/cartridge/cartridge_loader.h"
+#include "boyboy/core/cartridge/mbc.h"
+#include "boyboy/core/io/joypad.h"
+#include "boyboy/core/io/serial.h"
+#include "boyboy/core/io/timer.h"
+#include "boyboy/core/ppu/ppu.h"
 
 namespace boyboy::test::rom {
 
@@ -53,15 +58,25 @@ void SerialTestCapturer::write_hook(uint16_t addr, uint8_t value)
     }
 }
 
-void ROMTest ::SetUp()
+void ROMTest::SetUp()
 {
-    // We don't call CpuTest::SetUp() because we want "real" CPU initial state
+    CpuTest::SetUp();
+
+    ppu    = std::make_shared<boyboy::core::ppu::Ppu>(mmu.get());
+    joypad = std::make_shared<boyboy::core::io::Joypad>();
+    timer  = std::make_shared<boyboy::core::io::Timer>();
+    serial = std::make_shared<boyboy::core::io::Serial>();
+
+    io->register_component(ppu);
+    io->register_component(timer);
+    io->register_component(joypad);
+    io->register_component(serial);
+    io->init();
+
+    // Reset CPU so that we have "real" CPU initial state
     // (e.g. PC=0x0100, SP=0xFFFE, etc)
+    cpu->reset();
 
-    cpu.reset();
-    mmu->reset();
-
-    io   = &mmu->io();
     cart = std::make_unique<core::cartridge::Cartridge>(); // empty cart
     serial_capturer.clear();
     serial_output.clear();
@@ -120,14 +135,14 @@ void ROMTest::run()
 
     // Run until finished or potential infinite loop detected
     while (!finished) {
-        uint16_t current_pc = cpu.get_pc();
+        uint16_t current_pc = cpu->get_pc();
         if (current_pc == last_pc) {
             repeat_count++;
             if (repeat_count >= LoopThreshold) {
                 log::warn(
                     "[ROM] Detected potential infinite loop at PC={}: {}",
                     utils::PrettyHex(current_pc).to_string(),
-                    cpu.disassemble(current_pc)
+                    cpu->disassemble(current_pc)
                 );
                 break;
             }
@@ -138,8 +153,8 @@ void ROMTest::run()
 
         last_pc = current_pc;
 
-        cycles = cpu.step();
-        io->serial().tick(cycles); // no need to tick all io components
+        cycles = cpu->step();
+        io->tick(cycles);
     }
 
     if (serial_output.empty() && serial_capturer.has_new_data()) {
@@ -149,7 +164,7 @@ void ROMTest::run()
 
     EXPECT_TRUE(passed) << "ROM test did not pass:\n"
                         << "Last PC=" << utils::PrettyHex(last_pc) << "\n"
-                        << "Last Instruction=" << cpu.disassemble(last_pc) << "\n"
+                        << "Last Instruction=" << cpu->disassemble(last_pc) << "\n"
                         << "Serial Output:\n"
                         << serial_output;
 }

@@ -11,6 +11,7 @@
 
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
+#include "boyboy/core/cpu/cpu_constants.h"
 #include "boyboy/core/cpu/instructions.h"
 #include "boyboy/core/cpu/instructions_table.h"
 #include "boyboy/core/profiling/profiler_utils.h"
@@ -18,6 +19,27 @@
 namespace boyboy::core::cpu {
 
 using namespace boyboy::common;
+
+void Cpu::init()
+{
+    // Registers
+    registers_.af = AFStartValue;
+    registers_.bc = BCStartValue;
+    registers_.de = DEStartValue;
+    registers_.hl = HLStartValue;
+    registers_.sp = SPStartValue;
+    registers_.pc = PCStartValue;
+
+    // Reset flags and state
+    ime_ = false;
+    ime_scheduled_ = false;
+    halted_ = false;
+    cycles_ = 0;
+}
+void Cpu::reset()
+{
+    init();
+}
 
 uint8_t Cpu::get_register(Reg8Name reg) const
 {

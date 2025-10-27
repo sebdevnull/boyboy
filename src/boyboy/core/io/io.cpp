@@ -7,38 +7,51 @@
 
 #include "boyboy/core/io/io.h"
 
+#include "boyboy/common/log/logging.h"
+#include "boyboy/core/io/iocomponent.h"
+#include "boyboy/core/io/joypad.h"
+#include "boyboy/core/io/serial.h"
+#include "boyboy/core/io/timer.h"
+#include "boyboy/core/ppu/ppu.h"
+
 namespace boyboy::core::io {
 
-Io::Io()
+void Io::init()
 {
-    // Initialize components' interrupt callbacks
-    for (auto* component : components_) {
-        component->set_interrupt_cb([this](uint8_t interrupt) {
-            this->write(IoReg::Interrupts::IF, interrupt);
-        });
+    registers_.fill(0);
+    for (auto& component : components_) {
+        component->init();
+    }
+}
+
+void Io::reset()
+{
+    registers_.fill(0);
+    for (auto& component : components_) {
+        component->reset();
     }
 }
 
 void Io::tick(uint16_t cycles)
 {
-    for (auto* component : components_) {
+    for (auto& component : components_) {
         component->tick(cycles);
     }
 }
 
 [[nodiscard]] uint8_t Io::read(uint16_t addr) const
 {
-    if (IoReg::Serial::contains(addr)) {
-        return serial_.read(addr);
+    if (IoReg::Ppu::contains(addr)) {
+        return component_read(ppu_.get(), addr);
     }
     if (IoReg::Timer::contains(addr)) {
-        return timer_.read(addr);
-    }
-    if (IoReg::Ppu::contains(addr)) {
-        return ppu_.read(addr);
+        return component_read(timer_.get(), addr);
     }
     if (IoReg::Joypad::contains(addr)) {
-        return joypad_.read(addr);
+        return component_read(joypad_.get(), addr);
+    }
+    if (IoReg::Serial::contains(addr)) {
+        return component_read(serial_.get(), addr);
     }
 
     // Default behavior: return the value in the register
@@ -47,20 +60,20 @@ void Io::tick(uint16_t cycles)
 
 void Io::write(uint16_t addr, uint8_t value)
 {
-    if (IoReg::Serial::contains(addr)) {
-        serial_.write(addr, value);
+    if (IoReg::Ppu::contains(addr)) {
+        component_write(ppu_.get(), addr, value);
         return;
     }
     if (IoReg::Timer::contains(addr)) {
-        timer_.write(addr, value);
-        return;
-    }
-    if (IoReg::Ppu::contains(addr)) {
-        ppu_.write(addr, value);
+        component_write(timer_.get(), addr, value);
         return;
     }
     if (IoReg::Joypad::contains(addr)) {
-        joypad_.write(addr, value);
+        component_write(joypad_.get(), addr, value);
+        return;
+    }
+    if (IoReg::Serial::contains(addr)) {
+        component_write(serial_.get(), addr, value);
         return;
     }
 
@@ -68,12 +81,58 @@ void Io::write(uint16_t addr, uint8_t value)
     registers_.at(io_addr(addr)) = value;
 }
 
-void Io::reset()
+[[nodiscard]] const std::shared_ptr<ppu::Ppu>& Io::ppu() const
 {
-    registers_.fill(0);
-    for (auto* component : components_) {
-        component->reset();
+    return ppu_;
+}
+[[nodiscard]] std::shared_ptr<ppu::Ppu>& Io::ppu()
+{
+    return ppu_;
+}
+[[nodiscard]] const std::shared_ptr<Timer>& Io::timer() const
+{
+    return timer_;
+}
+[[nodiscard]] std::shared_ptr<Timer> Io::timer()
+{
+    return timer_;
+}
+[[nodiscard]] const std::shared_ptr<Joypad>& Io::joypad() const
+{
+    return joypad_;
+}
+[[nodiscard]] std::shared_ptr<Joypad> Io::joypad()
+{
+    return joypad_;
+}
+[[nodiscard]] const std::shared_ptr<Serial>& Io::serial() const
+{
+    return serial_;
+}
+[[nodiscard]] std::shared_ptr<Serial> Io::serial()
+{
+    return serial_;
+}
+
+[[nodiscard]] inline uint8_t Io::component_read(const IoComponent* comp, uint16_t addr) const
+{
+    if (comp == nullptr) {
+        common::log::warn("Attempting to read from IO component with null pointer");
+        return registers_.at(io_addr(addr));
     }
+
+    return comp->read(addr);
+}
+
+inline void Io::component_write(IoComponent* comp, uint16_t addr, uint8_t value)
+{
+    if (comp == nullptr) {
+        common::log::warn("Attempting to write to IO component with null pointer");
+        registers_.at(io_addr(addr)) = value;
+        return;
+    }
+
+    comp->write(addr, value);
 }
 
 } // namespace boyboy::core::io

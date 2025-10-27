@@ -7,15 +7,11 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <string_view>
 
 #include "boyboy/common/config/config.h"
-#include "boyboy/core/emulator/emulator.h"
-
-namespace boyboy::common::config {
-struct Config;
-}
 
 namespace boyboy::core::emulator {
 class Emulator;
@@ -25,6 +21,13 @@ namespace boyboy::app {
 
 class App {
 public:
+    App();
+    ~App();
+    App(App&) = delete;
+    App(App&&) = delete;
+    App& operator=(App&) = delete;
+    App& operator=(App&&) = delete;
+
     // Main application operations
     int run(std::string_view rom_path);
 
@@ -53,7 +56,7 @@ public:
 
 private:
     common::config::Config config_ = common::config::Config::default_config();
-    core::emulator::Emulator emulator_;
+    std::unique_ptr<core::emulator::Emulator> emulator_;
 };
 
 } // namespace boyboy::app

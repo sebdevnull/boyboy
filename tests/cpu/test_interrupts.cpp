@@ -30,35 +30,35 @@ class CpuInterruptsTest : public CpuTest {};
 TEST_F(CpuInterruptsTest, EiDi)
 {
     // Test enabling and disabling interrupts
-    cpu.set_ime(false);
-    EXPECT_FALSE(cpu.get_ime());
-    cpu.set_ime(true);
-    EXPECT_TRUE(cpu.get_ime());
-    cpu.set_ime(false);
-    EXPECT_FALSE(cpu.get_ime());
+    cpu->set_ime(false);
+    EXPECT_FALSE(cpu->get_ime());
+    cpu->set_ime(true);
+    EXPECT_TRUE(cpu->get_ime());
+    cpu->set_ime(false);
+    EXPECT_FALSE(cpu->get_ime());
 }
 
 TEST_F(CpuInterruptsTest, EiSchedulesIME)
 {
     // Test that EI schedules IME to be enabled after next instruction
-    cpu.set_ime(false);
-    EXPECT_FALSE(cpu.get_ime());
+    cpu->set_ime(false);
+    EXPECT_FALSE(cpu->get_ime());
 
     // Execute EI
     set_next_instruction(boyboy::core::cpu::Opcode::EI);
-    cpu.step();
-    EXPECT_FALSE(cpu.get_ime()); // IME should still be false immediately after EI
+    cpu->step();
+    EXPECT_FALSE(cpu->get_ime()); // IME should still be false immediately after EI
 
     // Execute a NOP to trigger IME enabling
     set_next_instruction(boyboy::core::cpu::Opcode::NOP);
-    cpu.step();
-    EXPECT_TRUE(cpu.get_ime()); // IME should now be true
+    cpu->step();
+    EXPECT_TRUE(cpu->get_ime()); // IME should now be true
 }
 
 TEST_F(CpuInterruptsTest, EnableInterrupts)
 {
     // Test enabling and disabling specific interrupts
-    auto& interrupt_handler = cpu.get_interrupt_handler();
+    auto& interrupt_handler = cpu->get_interrupt_handler();
 
     // Initially, no interrupts should be enabled
     for (uint8_t i = 0; i < 5; ++i) {
@@ -68,7 +68,7 @@ TEST_F(CpuInterruptsTest, EnableInterrupts)
 
     // Enable all interrupts
     for (uint8_t i = 0; i < 5; ++i) {
-        cpu.enable_interrupt(1 << i);
+        cpu->enable_interrupt(1 << i);
         EXPECT_TRUE(interrupt_handler.is_enabled(1 << i))
             << "Interrupt " << static_cast<int>(i) << " should be enabled";
     }
@@ -77,7 +77,7 @@ TEST_F(CpuInterruptsTest, EnableInterrupts)
 TEST_F(CpuInterruptsTest, RequestInterrupts)
 {
     // Test requesting specific interrupts
-    auto& interrupt_handler = cpu.get_interrupt_handler();
+    auto& interrupt_handler = cpu->get_interrupt_handler();
 
     // Initially, no interrupts should be requested
     for (uint8_t i = 0; i < 5; ++i) {
@@ -87,7 +87,7 @@ TEST_F(CpuInterruptsTest, RequestInterrupts)
 
     // Request all interrupts
     for (uint8_t i = 0; i < 5; ++i) {
-        cpu.request_interrupt(1 << i);
+        cpu->request_interrupt(1 << i);
         EXPECT_TRUE(interrupt_handler.is_requested(1 << i))
             << "Interrupt " << static_cast<int>(i) << " should be requested";
     }
@@ -96,15 +96,15 @@ TEST_F(CpuInterruptsTest, RequestInterrupts)
 TEST_F(CpuInterruptsTest, VBlankInterrupt)
 {
     // Initial PC and SP values (redundant but explicit for clarity)
-    cpu.set_pc(PCStartValue);
-    cpu.set_sp(SPStartValue);
+    cpu->set_pc(PCStartValue);
+    cpu->set_sp(SPStartValue);
 
     // Test that V-Blank interrupt is handled correctly
-    cpu.set_ime(true);
-    cpu.enable_interrupt(Interrupts::VBlank);  // Enable V-Blank interrupt
-    cpu.request_interrupt(Interrupts::VBlank); // Request V-Blank interrupt
+    cpu->set_ime(true);
+    cpu->enable_interrupt(Interrupts::VBlank);  // Enable V-Blank interrupt
+    cpu->request_interrupt(Interrupts::VBlank); // Request V-Blank interrupt
 
-    auto& interrupt_handler = cpu.get_interrupt_handler();
+    auto& interrupt_handler = cpu->get_interrupt_handler();
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank))
         << "V-Blank interrupt should be enabled";
     EXPECT_TRUE(interrupt_handler.is_requested(Interrupts::VBlank))
@@ -116,25 +116,26 @@ TEST_F(CpuInterruptsTest, VBlankInterrupt)
         << "V-Blank interrupt should be cleared after servicing";
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank))
         << "V-Blank interrupt should still be enabled after servicing";
-    EXPECT_FALSE(cpu.get_ime()) << "IME should be disabled after servicing interrupt";
-    EXPECT_EQ(cpu.get_pc(), InterruptVectors::VBlank) << "PC should jump to V-Blank vector";
-    EXPECT_EQ(cpu.get_sp(), SPStartValue - 2) << "SP should be decremented by 2";
-    EXPECT_EQ(cpu.read_word(cpu.get_sp()), PCStartValue) << "Original PC should be pushed to stack";
-    EXPECT_TRUE(cpu.is_halted() == false) << "CPU should not be in HALT state";
+    EXPECT_FALSE(cpu->get_ime()) << "IME should be disabled after servicing interrupt";
+    EXPECT_EQ(cpu->get_pc(), InterruptVectors::VBlank) << "PC should jump to V-Blank vector";
+    EXPECT_EQ(cpu->get_sp(), SPStartValue - 2) << "SP should be decremented by 2";
+    EXPECT_EQ(cpu->read_word(cpu->get_sp()), PCStartValue)
+        << "Original PC should be pushed to stack";
+    EXPECT_TRUE(cpu->is_halted() == false) << "CPU should not be in HALT state";
 }
 
 TEST_F(CpuInterruptsTest, NoInterruptWhenIMEOff)
 {
     // Initial PC and SP values (redundant but explicit for clarity)
-    uint16_t initial_pc = cpu.get_pc();
-    uint16_t initial_sp = cpu.get_sp();
+    uint16_t initial_pc = cpu->get_pc();
+    uint16_t initial_sp = cpu->get_sp();
 
     // Test that no interrupt is serviced when IME is off
-    cpu.set_ime(false);
-    cpu.enable_interrupt(Interrupts::VBlank);  // Enable V-Blank interrupt
-    cpu.request_interrupt(Interrupts::VBlank); // Request V-Blank interrupt
+    cpu->set_ime(false);
+    cpu->enable_interrupt(Interrupts::VBlank);  // Enable V-Blank interrupt
+    cpu->request_interrupt(Interrupts::VBlank); // Request V-Blank interrupt
 
-    auto& interrupt_handler = cpu.get_interrupt_handler();
+    auto& interrupt_handler = cpu->get_interrupt_handler();
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank));
     EXPECT_TRUE(interrupt_handler.is_requested(Interrupts::VBlank));
 
@@ -144,22 +145,22 @@ TEST_F(CpuInterruptsTest, NoInterruptWhenIMEOff)
         << "Interrupt should still be requested";
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank))
         << "Interrupt should still be enabled";
-    EXPECT_FALSE(cpu.get_ime()) << "IME should still be false";
-    EXPECT_EQ(cpu.get_pc(), initial_pc) << "PC should not change";
-    EXPECT_EQ(cpu.get_sp(), initial_sp) << "SP should not change";
+    EXPECT_FALSE(cpu->get_ime()) << "IME should still be false";
+    EXPECT_EQ(cpu->get_pc(), initial_pc) << "PC should not change";
+    EXPECT_EQ(cpu->get_sp(), initial_sp) << "SP should not change";
 }
 
 TEST_F(CpuInterruptsTest, NoInterruptWhenNoneRequested)
 {
     // Initial PC and SP values (redundant but explicit for clarity)
-    uint16_t initial_pc = cpu.get_pc();
-    uint16_t initial_sp = cpu.get_sp();
+    uint16_t initial_pc = cpu->get_pc();
+    uint16_t initial_sp = cpu->get_sp();
 
     // Test that no interrupt is serviced when none are requested
-    cpu.set_ime(true);
-    cpu.enable_interrupt(Interrupts::VBlank); // Enable V-Blank interrupt
+    cpu->set_ime(true);
+    cpu->enable_interrupt(Interrupts::VBlank); // Enable V-Blank interrupt
 
-    auto& interrupt_handler = cpu.get_interrupt_handler();
+    auto& interrupt_handler = cpu->get_interrupt_handler();
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank));
     EXPECT_FALSE(interrupt_handler.is_requested(Interrupts::VBlank));
 
@@ -169,26 +170,26 @@ TEST_F(CpuInterruptsTest, NoInterruptWhenNoneRequested)
         << "No interrupt should be requested";
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank))
         << "Interrupt should still be enabled";
-    EXPECT_TRUE(cpu.get_ime()) << "IME should still be true";
-    EXPECT_EQ(cpu.get_pc(), initial_pc) << "PC should not change";
-    EXPECT_EQ(cpu.get_sp(), initial_sp) << "SP should not change";
+    EXPECT_TRUE(cpu->get_ime()) << "IME should still be true";
+    EXPECT_EQ(cpu->get_pc(), initial_pc) << "PC should not change";
+    EXPECT_EQ(cpu->get_sp(), initial_sp) << "SP should not change";
 }
 
 TEST_F(CpuInterruptsTest, MultipleInterrupts)
 {
     // Test that only the highest priority interrupt is serviced
     uint16_t initial_pc = WRAM0Start; // Set PC to a known value in writable memory
-    cpu.set_pc(initial_pc);
-    cpu.set_sp(SPStartValue);
-    cpu.set_ime(true);
-    cpu.enable_interrupt(Interrupts::VBlank);  // Enable V-Blank interrupt
-    cpu.enable_interrupt(Interrupts::LCDStat); // Enable LCD STAT interrupt
+    cpu->set_pc(initial_pc);
+    cpu->set_sp(SPStartValue);
+    cpu->set_ime(true);
+    cpu->enable_interrupt(Interrupts::VBlank);  // Enable V-Blank interrupt
+    cpu->enable_interrupt(Interrupts::LCDStat); // Enable LCD STAT interrupt
 
     // Request both interrupts
-    cpu.request_interrupt(Interrupts::VBlank);  // V-Blank
-    cpu.request_interrupt(Interrupts::LCDStat); // LCD STAT
+    cpu->request_interrupt(Interrupts::VBlank);  // V-Blank
+    cpu->request_interrupt(Interrupts::LCDStat); // LCD STAT
 
-    auto& interrupt_handler = cpu.get_interrupt_handler();
+    auto& interrupt_handler = cpu->get_interrupt_handler();
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank)) << "V-Blank should be enabled";
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::LCDStat)) << "LCD STAT should be enabled";
     EXPECT_TRUE(interrupt_handler.is_requested(Interrupts::VBlank))
@@ -206,13 +207,13 @@ TEST_F(CpuInterruptsTest, MultipleInterrupts)
         << "V-Blank should still be enabled";
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::LCDStat))
         << "LCD STAT should still be enabled";
-    EXPECT_FALSE(cpu.get_ime()) << "IME should be disabled after servicing";
-    EXPECT_EQ(cpu.get_pc(), InterruptVectors::VBlank) << "PC should jump to V-Blank vector";
-    EXPECT_EQ(cpu.get_sp(), SPStartValue - 2) << "SP should be decremented by 2";
-    EXPECT_EQ(cpu.read_word(cpu.get_sp()), initial_pc) << "Original PC should be pushed to stack";
+    EXPECT_FALSE(cpu->get_ime()) << "IME should be disabled after servicing";
+    EXPECT_EQ(cpu->get_pc(), InterruptVectors::VBlank) << "PC should jump to V-Blank vector";
+    EXPECT_EQ(cpu->get_sp(), SPStartValue - 2) << "SP should be decremented by 2";
+    EXPECT_EQ(cpu->read_word(cpu->get_sp()), initial_pc) << "Original PC should be pushed to stack";
 
     // Service again to handle LCD STAT
-    cpu.set_ime(true); // Re-enable IME for next interrupt
+    cpu->set_ime(true); // Re-enable IME for next interrupt
     interrupt_handler.service();
 
     EXPECT_FALSE(interrupt_handler.is_requested(Interrupts::LCDStat))
@@ -221,10 +222,10 @@ TEST_F(CpuInterruptsTest, MultipleInterrupts)
         << "V-Blank should still be enabled";
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::LCDStat))
         << "LCD STAT should still be enabled";
-    EXPECT_FALSE(cpu.get_ime()) << "IME should be disabled after servicing";
-    EXPECT_EQ(cpu.get_pc(), InterruptVectors::LCDStat) << "PC should jump to LCD STAT vector";
-    EXPECT_EQ(cpu.get_sp(), SPStartValue - 4) << "SP should be decremented by another 2";
-    EXPECT_EQ(cpu.read_word(cpu.get_sp()), InterruptVectors::VBlank)
+    EXPECT_FALSE(cpu->get_ime()) << "IME should be disabled after servicing";
+    EXPECT_EQ(cpu->get_pc(), InterruptVectors::LCDStat) << "PC should jump to LCD STAT vector";
+    EXPECT_EQ(cpu->get_sp(), SPStartValue - 4) << "SP should be decremented by another 2";
+    EXPECT_EQ(cpu->read_word(cpu->get_sp()), InterruptVectors::VBlank)
         << "Previous PC should be pushed to stack";
 }
 
@@ -232,20 +233,20 @@ TEST_F(CpuInterruptsTest, HaltThenInterrupt)
 {
     // Test that CPU exits HALT state when an interrupt is requested
     uint16_t initial_pc = WRAM0Start; // Set PC to a known value in writable memory
-    cpu.set_pc(initial_pc);
-    cpu.set_sp(SPStartValue);
-    cpu.set_ime(true);
-    cpu.enable_interrupt(Interrupts::VBlank); // Enable V-Blank interrupt
+    cpu->set_pc(initial_pc);
+    cpu->set_sp(SPStartValue);
+    cpu->set_ime(true);
+    cpu->enable_interrupt(Interrupts::VBlank); // Enable V-Blank interrupt
 
     // Enter HALT state (PC += 1 for HALT instruction)
     set_next_instruction(boyboy::core::cpu::Opcode::HALT);
-    cpu.step();
-    EXPECT_TRUE(cpu.is_halted());
+    cpu->step();
+    EXPECT_TRUE(cpu->is_halted());
 
     // Request V-Blank interrupt
-    cpu.request_interrupt(Interrupts::VBlank);
+    cpu->request_interrupt(Interrupts::VBlank);
 
-    auto& interrupt_handler = cpu.get_interrupt_handler();
+    auto& interrupt_handler = cpu->get_interrupt_handler();
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank))
         << "V-Blank interrupt should be enabled";
     EXPECT_TRUE(interrupt_handler.is_requested(Interrupts::VBlank))
@@ -258,10 +259,10 @@ TEST_F(CpuInterruptsTest, HaltThenInterrupt)
         << "Interrupt should be cleared after servicing";
     EXPECT_TRUE(interrupt_handler.is_enabled(Interrupts::VBlank))
         << "Interrupt should still be enabled after servicing";
-    EXPECT_FALSE(cpu.get_ime()) << "IME should be disabled after servicing interrupt";
-    EXPECT_EQ(cpu.get_pc(), InterruptVectors::VBlank) << "PC should jump to V-Blank vector";
-    EXPECT_EQ(cpu.get_sp(), SPStartValue - 2) << "SP should be decremented by 2";
-    EXPECT_EQ(cpu.read_word(cpu.get_sp()), initial_pc + 1)
+    EXPECT_FALSE(cpu->get_ime()) << "IME should be disabled after servicing interrupt";
+    EXPECT_EQ(cpu->get_pc(), InterruptVectors::VBlank) << "PC should jump to V-Blank vector";
+    EXPECT_EQ(cpu->get_sp(), SPStartValue - 2) << "SP should be decremented by 2";
+    EXPECT_EQ(cpu->read_word(cpu->get_sp()), initial_pc + 1)
         << "Original PC+1 should be pushed to stack";
-    EXPECT_FALSE(cpu.is_halted()) << "CPU should exit HALT state";
+    EXPECT_FALSE(cpu->is_halted()) << "CPU should exit HALT state";
 }

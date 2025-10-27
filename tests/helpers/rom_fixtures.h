@@ -14,13 +14,12 @@
 #include <memory>
 #include <vector>
 
-#include "boyboy/core/cartridge/mbc.h"
 #include "helpers/cpu_fixtures.h"
 
 // boyboy
 #include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/cartridge/cartridge_loader.h"
-#include "boyboy/core/io/io.h"
+#include "boyboy/core/cartridge/mbc.h"
 
 namespace boyboy::test::rom {
 
@@ -44,8 +43,11 @@ struct ROMTest : public cpu::CpuTest {
 protected:
     static constexpr int LoopThreshold = 10000; // Arbitrary large number to prevent infinite loops
 
+    std::shared_ptr<boyboy::core::ppu::Ppu> ppu;
+    std::shared_ptr<boyboy::core::io::Timer> timer;
+    std::shared_ptr<boyboy::core::io::Joypad> joypad;
+    std::shared_ptr<boyboy::core::io::Serial> serial;
     std::unique_ptr<boyboy::core::cartridge::Cartridge> cart;
-    boyboy::core::io::Io* io;
 
     SerialTestCapturer serial_capturer;
     std::string serial_output;
