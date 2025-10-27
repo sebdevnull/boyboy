@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Changed
+
+- Improve **core components composition** with dependency injection:
+  - Make `Emulator` responsible for components composition
+  - Add `Io` components registration and improve Io read/write operations
+  - Remove `Ppu` memory callbacks and add `Mmu` weak dependency
+  - Add `init` methods and improve init/reset logic in general
+
 ## [0.6.0] - 2025-10-24
 
 ### Added
