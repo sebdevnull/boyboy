@@ -12,8 +12,10 @@
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/cpu_constants.h"
+#include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/cpu/instructions.h"
 #include "boyboy/core/cpu/instructions_table.h"
+#include "boyboy/core/cpu/state.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 
 namespace boyboy::core::cpu {
@@ -32,9 +34,10 @@ void Cpu::init()
 
     // Reset flags and state
     ime_ = false;
-    ime_scheduled_ = false;
+    ime_scheduled_ = 0;
     halted_ = false;
     cycles_ = 0;
+    exec_state_.init();
 }
 void Cpu::reset()
 {
@@ -151,16 +154,27 @@ void Cpu::set_halted(bool halted)
     halted_ = halted;
 }
 
-uint8_t Cpu::step()
+TCycle Cpu::tick()
 {
     BB_PROFILE_SCOPE(profiling::FrameTimer::Cpu);
 
+    if (tick_mode_ == TickMode::Instruction) {
+        return step();
+    }
+
+    auto cycles = tickmode_to_cycles(tick_mode_);
+    tick_cycles(cycles);
+
+    return to_tcycles(cycles);
+}
+
+inline uint8_t Cpu::step()
+{
     uint8_t cycles = interrupt_handler_.service();
     cycles_ += cycles;
 
     if (halted_) {
-        // TODO: This should be 0 cycles, but until we have a clock, we use 4 cycles
-        // to keep other components ticking
+        // Add 4 cycles as if we were executing NOPs
         cycles_ += 4;
         return cycles + 4;
     }
@@ -180,13 +194,102 @@ uint8_t Cpu::step()
     cycles += execute(opcode, instr_type);
 
     // IME is enabled after the instruction following EI
-    if (ime_scheduled_ &&
+    if (is_ime_scheduled() &&
         (opcode != static_cast<uint8_t>(Opcode::EI) || instr_type != InstructionType::Unprefixed)) {
-        ime_scheduled_ = false;
+        ime_scheduled_ = 0;
         ime_ = true;
     }
 
     return cycles;
+}
+
+inline void Cpu::tick_cycles(Cycles cycles)
+{
+    // Number of T-cycles to tick
+    auto tcycles = to_tcycles(cycles);
+    cycles_ += tcycles;
+
+    // Handle interrupts
+    if (exec_state_.has_stage(Stage::InterruptService)) {
+        interrupt_handler_.tick(cycles);
+        if (!interrupt_handler_.is_servicing()) {
+            // It already finished servicing the interrupt
+            clear_flag(exec_state_.stage, Stage::InterruptService);
+        }
+        return;
+    }
+
+    // Enable IME if scheduled
+    if (is_ime_scheduled()) {
+        ime_scheduled_ -= tcycles;
+        if (ime_scheduled_ == 0) {
+            set_ime(true);
+        }
+    }
+
+    // If halted skip rest of the cycle as if executing NOPs
+    if (is_halted()) {
+        return;
+    }
+
+    exec_state_.cycles_left -= tcycles;
+
+    // Fetch/execute overlap: the fetch stage always overlaps with the last machine cycle of the
+    // execute stage of the previous instruction
+    if (exec_state_.stage == Stage::Execute && exec_state_.cycles_left <= FetchCycles) {
+        exec_state_.stage |= Stage::Fetch;
+    }
+
+    // Take actions on stage end
+    if (exec_state_.cycles_left == 0) {
+        if (exec_state_.has_stage(Stage::Execute)) {
+            execute_stage();
+
+            // If an interrupt service was scheduled skip fetch
+            if (exec_state_.has_stage(Stage::InterruptService)) {
+                return;
+            }
+        }
+        // We cascade from Execute to Fetch on purpose to allow fetch/execute overlap
+        if (exec_state_.has_stage(Stage::Fetch)) {
+            fetch_stage();
+        }
+    }
+}
+
+inline void Cpu::fetch_stage()
+{
+    // Fetch next byte
+    exec_state_.fetched = fetch();
+
+    if (exec_state_.fetched == CBInstructionPrefix &&
+        !exec_state_.has_stage(Stage::CBInstruction)) {
+        exec_state_.stage |= Stage::CBInstruction;
+        exec_state_.cycles_left = FetchCycles;
+    }
+    else {
+        InstructionType instr_type = exec_state_.has_stage(Stage::CBInstruction)
+                                         ? InstructionType::CBPrefixed
+                                         : InstructionType::Unprefixed;
+        exec_state_.instr = &InstructionTable::get_instruction(instr_type, exec_state_.fetched);
+        exec_state_.stage = Stage::Execute;
+        exec_state_.cycles_left = exec_state_.instr->cycles;
+    }
+}
+
+inline void Cpu::execute_stage()
+{
+    // Execute instruction handler
+    (this->*(exec_state_.instr->execute))();
+
+    clear_flag(exec_state_.stage, Stage::Execute);
+
+    // If an interrupt should be serviced, do it and reset to fetch
+    if (interrupt_handler_.should_service()) {
+        exec_state_.stage = Stage::Fetch | Stage::InterruptService;
+        exec_state_.cycles_left = FetchCycles;
+        return;
+    }
 }
 
 uint8_t Cpu::fetch()

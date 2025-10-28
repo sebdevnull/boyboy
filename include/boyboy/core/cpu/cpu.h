@@ -12,10 +12,12 @@
 #include <string_view>
 
 #include "boyboy/common/utils.h"
+#include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/cpu/instructions.h"
 #include "boyboy/core/cpu/interrupt_handler.h"
 #include "boyboy/core/cpu/opcodes.h"
 #include "boyboy/core/cpu/registers.h"
+#include "boyboy/core/cpu/state.h"
 #include "boyboy/core/mmu/mmu.h"
 
 namespace boyboy::core::cpu {
@@ -54,7 +56,8 @@ public:
     // State accessors
     [[nodiscard]] bool get_ime() const { return ime_; }
     void set_ime(bool ime) { ime_ = ime; }
-    void schedule_ime() { ime_scheduled_ = true; }
+    void schedule_ime() { ime_scheduled_ = to_tcycles(1); }
+    [[nodiscard]] bool is_ime_scheduled() const { return ime_scheduled_ > 0; }
     [[nodiscard]] bool is_halted() const { return halted_; }
     void set_halted(bool halted);
     [[nodiscard]] uint64_t get_cycles() const { return cycles_; }
@@ -62,8 +65,14 @@ public:
     void add_cycles(uint8_t cycles) { cycles_ += cycles; }
     void reset_cycles() { cycles_ = 0; }
 
+    [[nodiscard]] TickMode get_tick_mode() const { return tick_mode_; }
+    void set_tick_mode(TickMode mode) { tick_mode_ = mode; }
+
+    // Execution state accessors
+    [[nodiscard]] const ExecutionState& get_execution_state() const { return exec_state_; }
+
     // Execution functions
-    uint8_t step();
+    TCycle tick();
     uint8_t fetch();
     [[nodiscard]] uint8_t peek() const; // fetch without PC increment
     uint8_t execute(uint8_t opcode, InstructionType instr_type = InstructionType::Unprefixed);
@@ -90,8 +99,8 @@ public:
     {
         return interrupt_handler_;
     }
-    void request_interrupt(uint8_t interrupt) { interrupt_handler_.request(interrupt); }
-    void enable_interrupt(uint8_t interrupt) { interrupt_handler_.enable(interrupt); }
+    void request_interrupt(Interrupt interrupt) { interrupt_handler_.request(interrupt); }
+    void enable_interrupt(Interrupt interrupt) { interrupt_handler_.enable(interrupt); }
 
     // Helpers mainly for debugging and testing
     void trace() const;
@@ -102,11 +111,20 @@ private:
     Registers registers_;
     InterruptHandler interrupt_handler_;
 
+    TickMode tick_mode_{TickMode::MCycle};
     uint64_t cycles_{};
     bool ime_{false}; // Interrupt Master Enable flag
-    bool ime_scheduled_{false};
+    uint8_t ime_scheduled_{0};
     bool halted_{false};
     bool halt_bug_{false};
+
+    ExecutionState exec_state_;
+
+    uint8_t step();
+    void tick_cycles(Cycles cycles);
+
+    void fetch_stage();
+    void execute_stage();
 
     // Helper functions
     uint16_t fetch_n16()
