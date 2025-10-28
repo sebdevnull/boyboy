@@ -191,7 +191,7 @@ void Emulator::on_button_event(io::Button button, bool pressed)
 void Emulator::emulate_frame()
 {
     while (!ppu_->frame_ready()) {
-        auto cycles = cpu_->step();
+        auto cycles = cpu_->tick();
         instruction_count_++;
         cycle_count_ += cycles;
 
