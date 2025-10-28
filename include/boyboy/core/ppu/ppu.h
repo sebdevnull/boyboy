@@ -13,6 +13,7 @@
 
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/cpu_constants.h"
+#include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/iocomponent.h"
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/ppu/palettes.h"
@@ -211,7 +212,7 @@ private:
 
     // Interrupt handling
     void check_interrupts();
-    void request_interrupt(uint8_t interrupt);
+    void request_interrupt(cpu::Interrupt interrupt);
 
     // Helpers to check LCDC flags
     [[nodiscard]] bool bg_enabled() const

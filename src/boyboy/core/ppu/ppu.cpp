@@ -218,7 +218,7 @@ void Ppu::update_lyc()
     if (LY_ == LYC_) {
         STAT_ |= registers::STAT::LYCEqualsLY;
         if ((STAT_ & registers::STAT::LYCInt) != 0) {
-            request_interrupt(cpu::Interrupts::LCDStat);
+            request_interrupt(cpu::Interrupt::LCDStat);
         }
     }
     else {
@@ -507,23 +507,23 @@ void Ppu::check_interrupts()
     }
 
     if (vblank_request) {
-        request_interrupt(cpu::Interrupts::VBlank);
+        request_interrupt(cpu::Interrupt::VBlank);
     }
     if (stat_request) {
-        request_interrupt(cpu::Interrupts::LCDStat);
+        request_interrupt(cpu::Interrupt::LCDStat);
     }
 }
 
-void Ppu::request_interrupt(uint8_t interrupt)
+void Ppu::request_interrupt(cpu::Interrupt interrupt)
 {
     if (!request_interrupt_) {
-        log::warn("PPU interrupt {} requested but no callback set", interrupt);
+        log::warn("PPU interrupt {} requested but no callback set", to_string(interrupt));
         return;
     }
 
     log::trace(
         "PPU requested interrupt {}. Mode: {}->{}, LY: {}->{}",
-        interrupt,
+        to_string(interrupt),
         to_string(previous_mode_),
         to_string(mode_),
         previous_ly_,

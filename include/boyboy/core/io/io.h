@@ -11,8 +11,10 @@
 #include <cstdint>
 #include <memory>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
+#include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/iocomponent.h"
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/mmu/constants.h"
@@ -60,8 +62,8 @@ public:
             serial_ = comp;
         }
 
-        comp->set_interrupt_cb([this](uint8_t interrupt) {
-            this->write(IoReg::Interrupts::IF, interrupt);
+        comp->set_interrupt_cb([this](cpu::Interrupt interrupt) {
+            this->write(IoReg::Interrupts::IF, std::to_underlying(interrupt));
         });
 
         components_.push_back(comp);
