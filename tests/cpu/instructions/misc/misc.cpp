@@ -65,7 +65,7 @@ TEST_F(EiTest, Works)
 
     // Next instruction should set IME
     cpu->write_byte(cpu->get_pc(), static_cast<uint8_t>(Opcode::NOP));
-    cpu->step();
+    cpu->tick();
     EXPECT_TRUE(cpu->get_ime()) << "IME flag not set after EI";
 }
 

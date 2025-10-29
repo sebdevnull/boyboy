@@ -13,11 +13,13 @@
 #include <memory>
 #include <type_traits>
 #include <variant>
+#include <vector>
 
 // boyboy
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/cpu.h"
 #include "boyboy/core/cpu/cpu_constants.h"
+#include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/cpu/registers.h"
 #include "boyboy/core/io/io.h"
 #include "boyboy/core/mmu/constants.h"
@@ -48,6 +50,9 @@ struct CpuTest : public ::testing::Test {
 
         // Set PC to a writable area (WRAM) to avoid issues with read-only memory
         cpu->set_pc(boyboy::core::mmu::WRAM0Start);
+
+        // Set tick mode to Instruction
+        cpu->set_tick_mode(core::cpu::TickMode::Instruction);
     }
 
     void run(boyboy::core::cpu::Opcode opcode) const
@@ -74,6 +79,14 @@ struct CpuTest : public ::testing::Test {
         uint16_t pc = cpu->get_pc();
         cpu->write_byte(pc, boyboy::core::cpu::CBInstructionPrefix);
         cpu->write_byte(pc + 1, static_cast<uint8_t>(opcode));
+    }
+
+    void set_next_bytes(const std::vector<uint8_t>& instrs) const
+    {
+        auto pc = cpu->get_pc();
+        for (const auto& instr : instrs) {
+            cpu->write_byte(pc++, instr);
+        }
     }
 
     void set_flags(bool z, bool n, bool h, bool c) const

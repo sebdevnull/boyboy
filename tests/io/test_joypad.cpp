@@ -9,6 +9,7 @@
 
 #include <cstdint>
 
+#include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/buttons.h"
 #include "boyboy/core/io/joypad.h"
 #include "boyboy/core/io/registers.h"
@@ -262,7 +263,7 @@ TEST_F(IoJoypadTest, InvalidButtonHandling)
 TEST_F(IoJoypadTest, InterruptOnPress)
 {
     uint8_t irq_count = 0;
-    joypad_.set_interrupt_cb([&](uint8_t) { irq_count++; });
+    joypad_.set_interrupt_cb([&](boyboy::core::cpu::Interrupt) { irq_count++; });
 
     // Select action buttons
     write_p1(~ButtonMask::SelectAction);
@@ -300,7 +301,7 @@ TEST_F(IoJoypadTest, InterruptOnPress)
 TEST_F(IoJoypadTest, InterruptOnMultiplePresses)
 {
     uint8_t irq_count = 0;
-    joypad_.set_interrupt_cb([&](uint8_t) { irq_count++; });
+    joypad_.set_interrupt_cb([&](boyboy::core::cpu::Interrupt) { irq_count++; });
 
     // Select directional buttons
     write_p1(~ButtonMask::SelectDPad);
@@ -342,7 +343,7 @@ TEST_F(IoJoypadTest, InterruptOnMultiplePresses)
 TEST_F(IoJoypadTest, InterruptMixedSelect)
 {
     uint8_t irq_count = 0;
-    joypad_.set_interrupt_cb([&](uint8_t) { irq_count++; });
+    joypad_.set_interrupt_cb([&](boyboy::core::cpu::Interrupt) { irq_count++; });
 
     // Select action buttons
     write_p1(~ButtonMask::SelectAction);
