@@ -32,6 +32,7 @@ set(TEST_SOURCES
     io/test_joypad.cpp
     ppu/test_ppu.cpp
     cpu/test_cpu.cpp
+    cpu/test_state.cpp
     cpu/test_registers.cpp
     cpu/test_instruction_table.cpp
     cpu/test_instruction_stubs.cpp
