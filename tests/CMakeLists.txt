@@ -103,11 +103,21 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     target_link_options(${BOYBOY_TESTS} PRIVATE -fsanitize=address,undefined)
 endif()
 
-# --- Register the test with CTest ---
-add_test(NAME BoyBoyTests COMMAND ${BOYBOY_TESTS})
+# --- Register the tests for all CPU tick modes ---
+add_test(NAME BoyBoyTests_MCycle
+COMMAND ${BOYBOY_TESTS} --tick-mode=mcycle)
+add_test(NAME BoyBoyTests_TCycle
+COMMAND ${BOYBOY_TESTS} --tick-mode=tcycle)
+add_test(NAME BoyBoyTests_Instruction
+    COMMAND ${BOYBOY_TESTS} --tick-mode=instruction)
 
 # --- Set working directory for relative paths ---
-set_tests_properties(BoyBoyTests PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_tests_properties(
+    BoyBoyTests_MCycle
+    BoyBoyTests_TCycle
+    BoyBoyTests_Instruction
+    PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 # --- Enable testing with CTest ---
 enable_testing()
