@@ -154,6 +154,14 @@ void Cpu::set_halted(bool halted)
     halted_ = halted;
 }
 
+void Cpu::set_tick_mode(TickMode mode)
+{
+    if (mode != tick_mode_) {
+        log::debug("CPU ticking mode changed: {} -> {}", to_string(tick_mode_), to_string(mode));
+    }
+    tick_mode_ = mode;
+}
+
 TCycle Cpu::tick()
 {
     BB_PROFILE_SCOPE(profiling::FrameTimer::Cpu);

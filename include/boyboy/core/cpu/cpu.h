@@ -66,7 +66,7 @@ public:
     void reset_cycles() { cycles_ = 0; }
 
     [[nodiscard]] TickMode get_tick_mode() const { return tick_mode_; }
-    void set_tick_mode(TickMode mode) { tick_mode_ = mode; }
+    void set_tick_mode(TickMode mode);
 
     // Execution state accessors
     [[nodiscard]] const ExecutionState& get_execution_state() const { return exec_state_; }
