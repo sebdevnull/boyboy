@@ -86,4 +86,20 @@ constexpr Cycles tickmode_to_cycles(TickMode mode)
     return (mode == TickMode::MCycle) ? Cycles::MCycle : Cycles::TCycle;
 }
 
+// String conversions
+
+inline static const char* to_string(TickMode mode)
+{
+    switch (mode) {
+        case TickMode::TCycle:
+            return "T-Cycle";
+        case TickMode::MCycle:
+            return "M-Cycle";
+        case TickMode::Instruction:
+            return "Instruction";
+        default:
+            return "Unknown";
+    }
+}
+
 } // namespace boyboy::core::cpu
