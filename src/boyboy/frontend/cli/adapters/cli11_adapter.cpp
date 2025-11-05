@@ -140,6 +140,29 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
         ->option_text("<level>")
         ->check(CLI::IsMember(common::config::ConfigLimits::Debug::LogLevels));
 
+    auto tickmode_validator = CLI::Validator(
+        [](const std::string& input) {
+            for (auto opt : common::config::ConfigLimits::Emulator::TickModes) {
+                if (opt == input) {
+                    return std::string();
+                }
+            }
+            return std::format("Invalid tick mode option: {}", input);
+        },
+        "TICKMODE_VALIDATOR",
+        "Tickmode Validator"
+    );
+    cmd->add_option(
+           "--tick-mode",
+           options_.tick_mode,
+           std::format(
+               "CPU ticking mode: {}",
+               common::config::ConfigLimits::Emulator::TickModeOptions.option_list()
+           )
+    )
+        ->option_text("<mode>")
+        ->check(tickmode_validator);
+
     // Battery save options
     cmd->add_option("--save-file", options_.save_path, "Battery save file for this ROM")
         ->type_name("<file>");
@@ -157,6 +180,7 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
         command.set_save_path(options_.save_path);
         command.set_autosave(options_.autosave);
         command.set_save_interval_ms(options_.save_interval_ms);
+        command.set_tick_mode(options_.tick_mode);
         command.execute(*app_, context_);
     });
 }
