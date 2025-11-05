@@ -32,6 +32,7 @@ struct ConfigKeys {
     struct Emulator {
         static constexpr std::string_view Section = "emulator";
         static constexpr std::string_view Speed = "speed";
+        static constexpr std::string_view TickMode = "tick_mode";
     };
     struct Video {
         static constexpr std::string_view Section = "video";
@@ -51,6 +52,8 @@ struct ConfigKeys {
     // Full keys for easy access
     inline static const std::string EmulatorSpeed = std::string(Emulator::Section) + "." +
                                                     std::string(Emulator::Speed);
+    inline static const std::string EmulatorTickMode = std::string(Emulator::Section) + "." +
+                                                       std::string(Emulator::TickMode);
     inline static const std::string VideoScale = std::string(Video::Section) + "." +
                                                  std::string(Video::Scale);
     inline static const std::string VideoVSync = std::string(Video::Section) + "." +
@@ -64,6 +67,7 @@ struct ConfigKeys {
 
     inline static const std::vector<std::string> KeyList = {
         EmulatorSpeed,
+        EmulatorTickMode,
         VideoScale,
         VideoVSync,
         SavesAutoSave,
@@ -84,6 +88,7 @@ struct ConfigMeta {
 private:
     inline static const std::unordered_map<std::string, ConfigMeta::Type> ConfigMetadata = {
         {ConfigKeys::EmulatorSpeed, Type::Int},
+        {ConfigKeys::EmulatorTickMode, Type::String},
         {ConfigKeys::VideoScale, Type::Int},
         {ConfigKeys::VideoVSync, Type::Bool},
         {ConfigKeys::SavesAutoSave, Type::Bool},
@@ -96,6 +101,7 @@ struct Config {
 
     struct Emulator {
         int speed = ConfigLimits::Emulator::SpeedRange.default_value;
+        std::string tick_mode = std::string(ConfigLimits::Emulator::TickModeOptions.default_value);
     } emulator; // NOLINT
 
     struct Video {
@@ -200,6 +206,9 @@ private:
     std::unordered_map<std::string, ConfigAccessor> config_map_{
         {ConfigKeys::EmulatorSpeed, ConfigAccessor{[](Config& c) {
              return &c.emulator.speed;
+         }}},
+        {ConfigKeys::EmulatorTickMode, ConfigAccessor{[](Config& c) {
+             return &c.emulator.tick_mode;
          }}},
         {ConfigKeys::VideoScale, ConfigAccessor{[](Config& c) {
              return &c.video.scale;

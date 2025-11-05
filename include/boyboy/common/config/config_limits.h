@@ -11,6 +11,7 @@
 #include <concepts>
 #include <ranges>
 #include <span>
+#include <string_view>
 
 namespace boyboy::common::config {
 
@@ -43,6 +44,17 @@ struct ConfigLimits {
 
     struct Emulator {
         static constexpr Range<int> SpeedRange = {.min = 0, .max = 10, .default_value = 1};
+
+        // Tick modes
+        static constexpr std::string_view FastMode = "fast";
+        static constexpr std::string_view NormalMode = "normal";
+        static constexpr std::string_view PrecisionMode = "precision";
+        static constexpr std::array<std::string_view, 3> TickModes = {
+            FastMode, NormalMode, PrecisionMode
+        };
+        static constexpr Options<std::string_view> TickModeOptions = {
+            .options = TickModes, .default_value = NormalMode
+        };
     };
 
     struct Video {

@@ -12,11 +12,13 @@
 #include <thread>
 
 #include "boyboy/common/config/config.h"
+#include "boyboy/common/config/config_limits.h"
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/save/save_manager.h"
 #include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/cartridge/cartridge_loader.h"
 #include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/display/display.h"
 #include "boyboy/core/io/buttons.h"
 #include "boyboy/core/io/io.h"
@@ -163,6 +165,23 @@ void Emulator::apply_config(const common::config::Config& config)
     // Emulator settings
     speed_ = config.emulator.speed;
     frame_rate_limited_ = speed_ != 0;
+
+    auto tick_mode = cpu::TickMode::MCycle;
+    if (config.emulator.tick_mode == config::ConfigLimits::Emulator::FastMode) {
+        tick_mode = cpu::TickMode::Instruction;
+    }
+    else if (config.emulator.tick_mode == config::ConfigLimits::Emulator::NormalMode) {
+        tick_mode = cpu::TickMode::MCycle;
+    }
+    else if (config.emulator.tick_mode == config::ConfigLimits::Emulator::PrecisionMode) {
+        tick_mode = cpu::TickMode::TCycle;
+    }
+    else {
+        log::warn("Unknown emulator config tick mode: {}", config.emulator.tick_mode);
+    }
+
+    // Set tick mode
+    cpu_->set_tick_mode(tick_mode);
 
     // Video settings
     display_->set_scale(config.video.scale);

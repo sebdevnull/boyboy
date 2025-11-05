@@ -102,6 +102,12 @@ const toml::table& get_section(const toml::table& tbl, std::string_view section)
         ConfigKeys::Emulator::Speed,
         ConfigKeys::Emulator::Section
     );
+    load_field(
+        config.emulator.tick_mode,
+        emulator_tbl,
+        ConfigKeys::Emulator::TickMode,
+        ConfigKeys::Emulator::Section
+    );
 
     auto video_tbl = get_section(tbl, ConfigKeys::Video::Section);
     load_field(config.video.scale, video_tbl, ConfigKeys::Video::Scale, ConfigKeys::Video::Section);
@@ -135,6 +141,7 @@ void TomlConfigLoader::save(const Config& config, std::ostream& output) const
     // Load Config into TOML table(s)
     auto emulator_tbl = toml::table{
         {ConfigKeys::Emulator::Speed, config.emulator.speed},
+        {ConfigKeys::Emulator::TickMode, config.emulator.tick_mode},
     };
     auto video_tbl = toml::table{
         {ConfigKeys::Video::Scale, config.video.scale},
