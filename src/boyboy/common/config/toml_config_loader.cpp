@@ -30,6 +30,11 @@ inline static constexpr std::string_view ConfigHeader = R"(# BoyBoy Emulator Con
 #       0 = uncapped
 #       1..10 = speed multiplier
 #       default: 1
+#   tick_mode: fast | normal | precision
+#       fast = tick per instruction
+#       normal = tick every M-cycle
+#       precision = tick every T-cycle
+#       default: normal
 #
 # [saves] - save options
 #   autosave: true/false
