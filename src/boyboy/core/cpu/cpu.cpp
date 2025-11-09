@@ -217,6 +217,10 @@ inline void Cpu::tick_cycles(Cycles cycles)
     auto tcycles = to_tcycles(cycles);
     cycles_ += tcycles;
 
+    if (is_halted() && interrupt_handler_.should_service()) {
+        schedule_interrupt();
+    }
+
     // Handle interrupts
     if (exec_state_.has_stage(Stage::InterruptService)) {
         interrupt_handler_.tick(cycles);
@@ -294,10 +298,14 @@ inline void Cpu::execute_stage()
 
     // If an interrupt should be serviced, do it and reset to fetch
     if (interrupt_handler_.should_service()) {
-        exec_state_.stage = Stage::Fetch | Stage::InterruptService;
-        exec_state_.cycles_left = FetchCycles;
-        return;
+        schedule_interrupt();
     }
+}
+
+inline void Cpu::schedule_interrupt()
+{
+    exec_state_.stage = Stage::Fetch | Stage::InterruptService;
+    exec_state_.cycles_left = FetchCycles;
 }
 
 uint8_t Cpu::fetch()

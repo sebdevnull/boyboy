@@ -126,6 +126,8 @@ private:
     void fetch_stage();
     void execute_stage();
 
+    void schedule_interrupt();
+
     // Helper functions
     uint16_t fetch_n16()
     {
