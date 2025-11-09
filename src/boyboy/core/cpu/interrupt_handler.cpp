@@ -53,6 +53,7 @@ void InterruptHandler::tick(Cycles cycles)
             cpu_.set_ime(false);
             clear_interrupt(current_interrupt_);
             cpu_.set_halted(false);
+            break;
         }
     }
 }
