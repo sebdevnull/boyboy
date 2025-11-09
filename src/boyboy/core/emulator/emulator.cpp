@@ -194,6 +194,7 @@ void Emulator::apply_config(const common::config::Config& config)
     // Logging settings
     log::set_level(config.debug.log_level);
 
+    log::info("Running CPU with tick mode: {}", to_string(tick_mode));
     log::info("Configuration applied");
 }
 
