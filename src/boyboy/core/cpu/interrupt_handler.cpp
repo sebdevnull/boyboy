@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <utility>
 
+#include "boyboy/common/log/logging.h"
 #include "boyboy/core/cpu/cpu.h"
 #include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/cpu/interrupts.h"
@@ -49,6 +50,10 @@ void InterruptHandler::tick(Cycles cycles)
             cycles_left_ = service_cycles() - to_tcycles(cycles);
             current_interrupt_ = static_cast<Interrupt>(interrupt);
 
+            common::log::trace(
+                "[InterruptHandler] Servicing interrupt: {}", to_string(current_interrupt_)
+            );
+
             // Disable interrupts, clear IF and wake CPU if halted
             cpu_.set_ime(false);
             clear_interrupt(current_interrupt_);
@@ -74,17 +79,22 @@ TCycle InterruptHandler::service()
 
     const auto ServiceCycles = service_cycles();
 
-    // Disable interrupts and wake CPU if halted
-    cpu_.set_ime(false);
-    cpu_.set_halted(false);
-
     uint8_t cycles = 0;
     for (size_t i = 0; i < InterruptVectors::Vectors.size(); ++i) {
         uint8_t mask = (1 << i);
         if ((pending & mask) != 0) {
             // Clear IF flag
             ifr &= ~mask;
+
+            common::log::trace(
+                "[InterruptHandler] Servicing interrupt: {}", to_string(Interrupt(mask))
+            );
+
+            // Disable interrupts and wake CPU if halted
+            cpu_.set_ime(false);
             set_if(ifr);
+            cpu_.set_halted(false);
+
             service_interrupt(static_cast<Interrupt>(mask));
             cycles = ServiceCycles;
             break;
@@ -105,6 +115,7 @@ void InterruptHandler::request(Interrupt interrupt)
     uint8_t ifr = get_if();
     ifr |= std::to_underlying(interrupt);
     set_if(ifr);
+    common::log::trace("[InterruptHandler] Interrupt requested: {}", to_string(interrupt));
 }
 
 void InterruptHandler::enable(Interrupt interrupt)
@@ -112,6 +123,7 @@ void InterruptHandler::enable(Interrupt interrupt)
     uint8_t ie = get_ie();
     ie |= std::to_underlying(interrupt);
     set_ie(ie);
+    common::log::trace("[InterruptHandler] Interrupt enabled: {}", to_string(interrupt));
 }
 
 bool InterruptHandler::is_requested(Interrupt interrupt) const
