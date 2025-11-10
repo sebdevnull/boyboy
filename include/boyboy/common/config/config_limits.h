@@ -53,7 +53,7 @@ struct ConfigLimits {
             FastMode, NormalMode, PrecisionMode
         };
         static constexpr Options<std::string_view> TickModeOptions = {
-            .options = TickModes, .default_value = NormalMode
+            .options = TickModes, .default_value = FastMode
         };
     };
 
