@@ -180,8 +180,9 @@ void Emulator::apply_config(const common::config::Config& config)
         log::warn("Unknown emulator config tick mode: {}", config.emulator.tick_mode);
     }
 
-    // Set tick mode
+    // Set CPU settings
     cpu_->set_tick_mode(tick_mode);
+    cpu_->enable_fe_overlap(config.emulator.fe_overlap);
 
     // Video settings
     display_->set_scale(config.video.scale);

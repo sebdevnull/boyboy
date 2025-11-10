@@ -33,6 +33,7 @@ struct ConfigKeys {
         static constexpr std::string_view Section = "emulator";
         static constexpr std::string_view Speed = "speed";
         static constexpr std::string_view TickMode = "tick_mode";
+        static constexpr std::string_view FetchExecOverlap = "cpu_overlap";
     };
     struct Video {
         static constexpr std::string_view Section = "video";
@@ -54,6 +55,8 @@ struct ConfigKeys {
                                                     std::string(Emulator::Speed);
     inline static const std::string EmulatorTickMode = std::string(Emulator::Section) + "." +
                                                        std::string(Emulator::TickMode);
+    inline static const std::string EmulatorFEOverlap = std::string(Emulator::Section) + "." +
+                                                        std::string(Emulator::FetchExecOverlap);
     inline static const std::string VideoScale = std::string(Video::Section) + "." +
                                                  std::string(Video::Scale);
     inline static const std::string VideoVSync = std::string(Video::Section) + "." +
@@ -68,6 +71,7 @@ struct ConfigKeys {
     inline static const std::vector<std::string> KeyList = {
         EmulatorSpeed,
         EmulatorTickMode,
+        EmulatorFEOverlap,
         VideoScale,
         VideoVSync,
         SavesAutoSave,
@@ -89,6 +93,7 @@ private:
     inline static const std::unordered_map<std::string, ConfigMeta::Type> ConfigMetadata = {
         {ConfigKeys::EmulatorSpeed, Type::Int},
         {ConfigKeys::EmulatorTickMode, Type::String},
+        {ConfigKeys::EmulatorFEOverlap, Type::Bool},
         {ConfigKeys::VideoScale, Type::Int},
         {ConfigKeys::VideoVSync, Type::Bool},
         {ConfigKeys::SavesAutoSave, Type::Bool},
@@ -102,6 +107,7 @@ struct Config {
     struct Emulator {
         int speed = ConfigLimits::Emulator::SpeedRange.default_value;
         std::string tick_mode = std::string(ConfigLimits::Emulator::TickModeOptions.default_value);
+        bool fe_overlap = false;
     } emulator; // NOLINT
 
     struct Video {
@@ -209,6 +215,9 @@ private:
          }}},
         {ConfigKeys::EmulatorTickMode, ConfigAccessor{[](Config& c) {
              return &c.emulator.tick_mode;
+         }}},
+        {ConfigKeys::EmulatorFEOverlap, ConfigAccessor{[](Config& c) {
+             return &c.emulator.fe_overlap;
          }}},
         {ConfigKeys::VideoScale, ConfigAccessor{[](Config& c) {
              return &c.video.scale;

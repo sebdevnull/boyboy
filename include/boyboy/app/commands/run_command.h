@@ -36,6 +36,8 @@ public:
     void set_save_interval_ms(std::optional<int> interval_ms) { save_interval_ms_ = interval_ms; }
     [[nodiscard]] std::optional<std::string> get_tick_mode() const { return tick_mode_; }
     void set_tick_mode(std::optional<std::string> tick_mode) { tick_mode_ = std::move(tick_mode); }
+    void set_fe_overlap(std::optional<bool> overlap) { fe_overlap_ = overlap; }
+    [[nodiscard]] std::optional<int> get_fe_overlap() const { return fe_overlap_; }
 
 private:
     static constexpr std::string_view Name = "run";
@@ -48,6 +50,7 @@ private:
     std::optional<bool> autosave_;
     std::optional<int> save_interval_ms_;
     std::optional<std::string> tick_mode_;
+    std::optional<bool> fe_overlap_;
 };
 
 } // namespace boyboy::app::commands

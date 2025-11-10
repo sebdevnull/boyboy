@@ -163,6 +163,11 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
         ->option_text("<mode>")
         ->check(tickmode_validator);
 
+    cmd->add_option(
+           "--overlap", options_.cpu_overlap, "Enable or disable CPU fetch/execute overlap"
+    )
+        ->type_name("<bool>");
+
     // Battery save options
     cmd->add_option("--save-file", options_.save_path, "Battery save file for this ROM")
         ->type_name("<file>");
@@ -181,6 +186,7 @@ void CLI11Adapter::register_run(app::commands::RunCommand& command)
         command.set_autosave(options_.autosave);
         command.set_save_interval_ms(options_.save_interval_ms);
         command.set_tick_mode(options_.tick_mode);
+        command.set_fe_overlap(options_.cpu_overlap);
         command.execute(*app_, context_);
     });
 }
