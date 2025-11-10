@@ -68,6 +68,9 @@ public:
     [[nodiscard]] TickMode get_tick_mode() const { return tick_mode_; }
     void set_tick_mode(TickMode mode);
 
+    [[nodiscard]] bool is_fe_overlap_enabled() const { return fe_overlap_; }
+    void enable_fe_overlap(bool enable) { fe_overlap_ = enable; }
+
     // Execution state accessors
     [[nodiscard]] const ExecutionState& get_execution_state() const { return exec_state_; }
 
@@ -117,6 +120,7 @@ private:
     uint8_t ime_scheduled_{0};
     bool halted_{false};
     bool halt_bug_{false};
+    bool fe_overlap_{false};
 
     ExecutionState exec_state_;
 

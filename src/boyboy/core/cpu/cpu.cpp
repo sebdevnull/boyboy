@@ -248,7 +248,8 @@ inline void Cpu::tick_cycles(Cycles cycles)
 
     // Fetch/execute overlap: the fetch stage always overlaps with the last machine cycle of the
     // execute stage of the previous instruction
-    if (exec_state_.stage == Stage::Execute && exec_state_.cycles_left <= FetchCycles) {
+    if (fe_overlap_ && exec_state_.stage == Stage::Execute &&
+        exec_state_.cycles_left <= FetchCycles) {
         exec_state_.stage |= Stage::Fetch;
     }
 
@@ -259,6 +260,12 @@ inline void Cpu::tick_cycles(Cycles cycles)
 
             // If an interrupt service was scheduled skip fetch
             if (exec_state_.has_stage(Stage::InterruptService)) {
+                return;
+            }
+
+            if (!fe_overlap_) {
+                exec_state_.stage = Stage::Fetch;
+                exec_state_.cycles_left = FetchCycles;
                 return;
             }
         }
