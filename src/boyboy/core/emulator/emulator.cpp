@@ -196,6 +196,7 @@ void Emulator::apply_config(const common::config::Config& config)
     log::set_level(config.debug.log_level);
 
     log::info("Running CPU with tick mode: {}", to_string(tick_mode));
+    log::info("CPU fetch/execute overlap: {}", config.emulator.fe_overlap ? "enabled" : "disabled");
     log::info("Configuration applied");
 }
 
