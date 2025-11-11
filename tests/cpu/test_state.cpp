@@ -56,6 +56,7 @@ TEST_F(CpuExecutionState, InitialState)
 
 TEST_F(CpuExecutionState, UnprefixedFetch)
 {
+    cpu->enable_fe_overlap(true);
 
     const auto& nop_instr = InstructionTable::get_instruction(Opcode::NOP);
     const auto& inc_instr = InstructionTable::get_instruction(Opcode::INC_A);
@@ -98,6 +99,7 @@ TEST_F(CpuExecutionState, UnprefixedFetch)
 
 TEST_F(CpuExecutionState, CBPrefixedFetch)
 {
+    cpu->enable_fe_overlap(true);
 
     const auto& rlc_instr  = InstructionTable::get_instruction(CBOpcode::RLC_A);
     const auto& swap_instr = InstructionTable::get_instruction(CBOpcode::SWAP_A);
@@ -157,6 +159,8 @@ TEST_F(CpuExecutionState, CBPrefixedFetch)
 
 TEST_F(CpuExecutionState, InterruptService)
 {
+    cpu->enable_fe_overlap(true);
+
     // Set next instructions
     const auto& instr = InstructionTable::get_instruction(Opcode::INC_A);
     set_next_instruction(Opcode::INC_A);

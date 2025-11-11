@@ -308,7 +308,10 @@ TEST_F(CpuInterruptsTest, HaltThenInterrupt)
     EXPECT_EQ(cpu->get_sp(), initial_sp - 2) << "SP should be decremented by 2";
     // In "cycle" mode SP is PC+2 because of fetch/execute overlap
     auto expected_sp = initial_pc +
-                       ((cpu->get_tick_mode() == boyboy::core::cpu::TickMode::Instruction) ? 1 : 2);
+                       ((cpu->get_tick_mode() == boyboy::core::cpu::TickMode::Instruction ||
+                         !cpu->is_fe_overlap_enabled())
+                            ? 1
+                            : 2);
     EXPECT_EQ(cpu->read_word(cpu->get_sp()), expected_sp)
         << "Original PC+1 should be pushed to stack";
     EXPECT_FALSE(cpu->is_halted()) << "CPU should exit HALT state";
