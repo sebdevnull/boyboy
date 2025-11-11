@@ -135,7 +135,7 @@ private:
     Scheduler interrupt_scheduler_{
         .scheduled = false,
         .remaining = 0,
-        .execute = [this]() { request_interrupt_(cpu::Interrupts::Timer); },
+        .execute = [this]() { request_interrupt_(cpu::Interrupt::Timer); },
     };
     Scheduler tima_reload_scheduler_{
         .scheduled = false,

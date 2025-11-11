@@ -8,8 +8,10 @@
 #include "boyboy/core/io/io.h"
 
 #include "boyboy/common/log/logging.h"
+#include "boyboy/common/utils.h"
 #include "boyboy/core/io/iocomponent.h"
 #include "boyboy/core/io/joypad.h"
+#include "boyboy/core/io/registers.h"
 #include "boyboy/core/io/serial.h"
 #include "boyboy/core/io/timer.h"
 #include "boyboy/core/ppu/ppu.h"
@@ -75,6 +77,14 @@ void Io::write(uint16_t addr, uint8_t value)
     if (IoReg::Serial::contains(addr)) {
         component_write(serial_.get(), addr, value);
         return;
+    }
+
+    if (IoReg::Interrupts::contains(addr)) {
+        common::log::trace(
+            "[IO] Write to register {}: {}",
+            (addr == IoReg::Interrupts::IE) ? "IE" : "IF",
+            common::utils::PrettyHex(value).to_string()
+        );
     }
 
     // Default behavior: write the value to the register

@@ -28,7 +28,19 @@ ValidationResult ConfigValidator::validate(Config& config, bool normalize)
     );
 
     validate_field(
-        result, config.video.scale, ConfigLimits::Video::ScaleRange, "video.scale", normalize
+        result,
+        config.emulator.tick_mode,
+        ConfigLimits::Emulator::TickModeOptions,
+        ConfigKeys::EmulatorTickMode,
+        normalize
+    );
+
+    validate_field(
+        result,
+        config.video.scale,
+        ConfigLimits::Video::ScaleRange,
+        ConfigKeys::VideoScale,
+        normalize
     );
 
     validate_field(

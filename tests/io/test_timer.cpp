@@ -16,7 +16,7 @@
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/io/timer.h"
 
-using boyboy::core::cpu::Interrupts;
+using boyboy::core::cpu::Interrupt;
 using boyboy::core::io::Io;
 using boyboy::core::io::IoReg;
 using boyboy::core::io::Timer;
@@ -134,33 +134,33 @@ TEST_F(IoTimerTest, TimaOverflowsToTma)
     write_tima(0xFE);
     write_tma(Tma);
     EXPECT_EQ(read_tima(), 0xFE);
-    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
 
     // Increment TIMA to 0xFF
     timer_->tick(Timer::Frequency::Tima256M);
     EXPECT_EQ(read_tima(), 0xFF);
-    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
 
     // Overflow TIMA, no interrupt or reload yet
     timer_->tick(Timer::Frequency::Tima256M);
     EXPECT_EQ(read_tima(), 0);
-    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
 
     // Advance 4 cycles, interrupt should be requested; no reload yet
     timer_->tick(Timer::InterruptDelay);
     EXPECT_EQ(read_tima(), 0);
-    EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
 
     // Advance 4 more cycles, interrupt should be still be requested and TIMA reloaded with TMA
     timer_->tick(Timer::TimaReloadDelay);
     EXPECT_EQ(read_tima(), Tma);
-    EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & Interrupts::Timer);
+    EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
 }
 
 TEST_F(IoTimerTest, TimaMultipleOverflows)
 {
     int irq_count = 0;
-    timer_->set_interrupt_cb([&irq_count](uint8_t) { irq_count++; });
+    timer_->set_interrupt_cb([&irq_count](Interrupt) { irq_count++; });
 
     // Set TAC to enable timer with 4096 Hz (1024 cycles per increment)
     write_tac(Timer::Flags::TimerEnable | Timer::Flags::Clock256M);
@@ -180,7 +180,7 @@ TEST_F(IoTimerTest, TimaMultipleOverflows)
 TEST_F(IoTimerTest, TimaOverflowEdgeCases)
 {
     int irq_count = 0;
-    timer_->set_interrupt_cb([&irq_count](uint8_t) { irq_count++; });
+    timer_->set_interrupt_cb([&irq_count](Interrupt) { irq_count++; });
 
     // Initial timer conditions
     auto init_timer = [&]() {

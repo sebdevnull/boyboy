@@ -131,7 +131,6 @@ void ROMTest::run()
 
     uint16_t last_pc = 0;
     int repeat_count = 0;
-    uint8_t cycles   = 0;
 
     // Run until finished or potential infinite loop detected
     while (!finished) {
@@ -153,7 +152,7 @@ void ROMTest::run()
 
         last_pc = current_pc;
 
-        cycles = cpu->step();
+        auto cycles = cpu->tick();
         io->tick(cycles);
     }
 

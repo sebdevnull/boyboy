@@ -97,7 +97,7 @@ void Joypad::press(Button button)
     // Trigger interrupt if any button was not previously pressed and one or two groups are selected
     if (request_interrupt_ && !was_any_pressed &&
         (select_ & ButtonMask::SelectMask) != ButtonMask::SelectMask) {
-        request_interrupt_(cpu::Interrupts::Joypad);
+        request_interrupt_(cpu::Interrupt::Joypad);
         log::debug("Joypad interrupt requested: {} pressed", to_string(button));
     }
 }
