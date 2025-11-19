@@ -148,7 +148,7 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 | tim10.gb | | ✅ | ❌ | ❌ |
 | tim11_div_trigger.gb | | ✅ | ❌ | ❌ |
 | tim11.gb | | ✅ | ❌ | ❌ |
-| tima_reload.gb | | ❌ | ❌ | ❌ |
+| tima_reload.gb | | ✅ | ❌ | ❌ |
 | tima_write_reloading.gb | | ✅ | ❌ | ❌ |
 | tma_write_reloading.gb | | ✅ | ❌ | ❌ |
 
