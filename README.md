@@ -143,6 +143,7 @@ The following resources have been used in BoyBoy's development and may help you 
 ### Test ROMs
 
 - [**Blargg's Test ROMs**](https://github.com/retrio/gb-test-roms) – Widely used test ROMs for CPU, PPU, and other hardware verification.
+- [**Gekkio's Mooneye Test Suite**](https://github.com/Gekkio/mooneye-test-suite) – Very thorough test suite for emulation and hardware verification.
 - [**dmg-acid2**](https://github.com/mattcurrie/dmg-acid2) – Basic PPU rendering test ROM.
 
 ---

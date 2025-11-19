@@ -32,7 +32,7 @@ void Timer::init()
     tac_ = 0;
     div_counter_ = DivCounterStartValue;
     tima_counter_ = 0;
-    interrupt_scheduler_.reset();
+    tima_overflow_scheduler_.reset();
     tima_reload_scheduler_.reset();
     stopped_ = false;
 }
@@ -53,10 +53,10 @@ void Timer::tick(uint16_t cycles)
 
         auto cur_cycles = std::min(cycles, uint16_t{4});
 
-        if (interrupt_scheduler_.scheduled) {
-            interrupt_scheduler_.update(cur_cycles);
+        if (tima_overflow_scheduler_.scheduled) {
+            tima_overflow_scheduler_.update(cur_cycles);
         }
-        if (tima_reload_scheduler_.scheduled) {
+        else if (tima_reload_scheduler_.scheduled) {
             tima_reload_scheduler_.update(cur_cycles);
         }
 

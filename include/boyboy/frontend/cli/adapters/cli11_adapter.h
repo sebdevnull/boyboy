@@ -37,6 +37,8 @@ private:
         std::optional<std::string> save_path;
         std::optional<bool> autosave;
         std::optional<int> save_interval_ms;
+        std::optional<std::string> tick_mode;
+        std::optional<bool> cpu_overlap;
         // Config
         std::optional<std::string> cfg_key;
         std::optional<std::string> cfg_value;
