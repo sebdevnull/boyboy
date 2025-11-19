@@ -50,8 +50,7 @@ protected:
     std::shared_ptr<Io> io_;
     std::shared_ptr<Timer> timer_;
 
-    static constexpr uint8_t Tma                 = 0xAB;
-    static constexpr uint8_t OverflowDelayCycles = Timer::InterruptDelay + Timer::TimaReloadDelay;
+    static constexpr uint8_t Tma = 0xAB;
 };
 
 TEST_F(IoTimerTest, InitialState)
@@ -61,18 +60,6 @@ TEST_F(IoTimerTest, InitialState)
     EXPECT_EQ(read_tima(), 0);
     EXPECT_EQ(read_tma(), 0);
     EXPECT_EQ(read_tac(), 0);
-}
-
-TEST_F(IoTimerTest, DivResetsOnWrite)
-{
-    reset_div(); // Writing any value resets DIV
-    EXPECT_EQ(read_div(), 0);
-
-    timer_->tick(Timer::Frequency::DivIncrement);
-    EXPECT_EQ(read_div(), 1);
-
-    reset_div();
-    EXPECT_EQ(read_div(), 0);
 }
 
 TEST_F(IoTimerTest, DivIncrements)
@@ -93,12 +80,24 @@ TEST_F(IoTimerTest, DivIncrements)
     EXPECT_EQ(read_div(), 3);
 }
 
+TEST_F(IoTimerTest, DivResetsOnWrite)
+{
+    reset_div(); // Writing any value resets DIV
+    EXPECT_EQ(read_div(), 0);
+
+    timer_->tick(Timer::Frequency::DivIncrement);
+    EXPECT_EQ(read_div(), 1);
+
+    reset_div();
+    EXPECT_EQ(read_div(), 0);
+}
+
 TEST_F(IoTimerTest, TimaIncrementsWhenEnabled)
 {
     // Set TAC to enable timer with 4096 Hz (1024 cycles per increment)
     write_tac(Timer::Flags::TimerEnable | Timer::Flags::Clock256M);
     write_tima(0);
-    write_tma(0xAB);
+    write_tma(Tma);
     EXPECT_EQ(read_tima(), 0);
 
     // Tick until 1 left for increment
@@ -112,6 +111,41 @@ TEST_F(IoTimerTest, TimaIncrementsWhenEnabled)
     // Increase by 2
     timer_->tick(Timer::Frequency::Tima256M * 2);
     EXPECT_EQ(read_tima(), 3);
+}
+
+TEST_F(IoTimerTest, TimaFrequency)
+{
+    // 256M clock
+    write_tac(Timer::Flags::TimerEnable | Timer::Flags::Clock256M);
+    write_tima(0);
+    EXPECT_EQ(read_tima(), 0);
+
+    timer_->tick(Timer::Frequency::Tima256M);
+    EXPECT_EQ(read_tima(), 1);
+
+    // 4M clock
+    write_tac(Timer::Flags::TimerEnable | Timer::Flags::Clock4M);
+    write_tima(0);
+    EXPECT_EQ(read_tima(), 0);
+
+    timer_->tick(Timer::Frequency::Tima4M);
+    EXPECT_EQ(read_tima(), 1);
+
+    // 16M clock
+    write_tac(Timer::Flags::TimerEnable | Timer::Flags::Clock16M);
+    write_tima(0);
+    EXPECT_EQ(read_tima(), 0);
+
+    timer_->tick(Timer::Frequency::Tima16M);
+    EXPECT_EQ(read_tima(), 1);
+
+    // 64M clock
+    write_tac(Timer::Flags::TimerEnable | Timer::Flags::Clock64M);
+    write_tima(0);
+    EXPECT_EQ(read_tima(), 0);
+
+    timer_->tick(Timer::Frequency::Tima64M);
+    EXPECT_EQ(read_tima(), 1);
 }
 
 TEST_F(IoTimerTest, TimaDoesNotIncrementWhenDisabled)
@@ -146,15 +180,35 @@ TEST_F(IoTimerTest, TimaOverflowsToTma)
     EXPECT_EQ(read_tima(), 0);
     EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
 
-    // Advance 4 cycles, interrupt should be requested; no reload yet
-    timer_->tick(Timer::InterruptDelay);
-    EXPECT_EQ(read_tima(), 0);
-    EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
-
-    // Advance 4 more cycles, interrupt should be still be requested and TIMA reloaded with TMA
-    timer_->tick(Timer::TimaReloadDelay);
+    // Advance 4 cycles, interrupt should be requested and TIMA reloaded with TMA
+    timer_->tick(Timer::TimaDelayCycles);
     EXPECT_EQ(read_tima(), Tma);
     EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
+}
+
+// Test that the delay cycles are still being processed by the internal counter
+TEST_F(IoTimerTest, TimaOverflowDelayStillCounts)
+{
+    // Set TAC to enable timer with 262144 Hz (16 cycles per increment)
+    write_tac(Timer::Flags::TimerEnable | Timer::Flags::Clock4M);
+    write_tima(0xFF);
+    write_tma(Tma);
+    EXPECT_EQ(read_tima(), 0xFF);
+    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
+
+    // Overflow TIMA, no interrupt or reload yet
+    timer_->tick(Timer::Frequency::Tima4M);
+    EXPECT_EQ(read_tima(), 0);
+    EXPECT_FALSE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
+
+    // Advance 4 cycles, interrupt should be requested and TIMA reloaded with TMA
+    timer_->tick(Timer::TimaDelayCycles);
+    EXPECT_EQ(read_tima(), Tma);
+    EXPECT_TRUE(io_->read(IoReg::Interrupts::IF) & std::to_underlying(Interrupt::Timer));
+
+    // Tick remaining cycles to complete a TIMA increment
+    timer_->tick(Timer::Frequency::Tima4M - Timer::TimaDelayCycles);
+    EXPECT_EQ(read_tima(), Tma + 1);
 }
 
 TEST_F(IoTimerTest, TimaMultipleOverflows)
@@ -167,9 +221,12 @@ TEST_F(IoTimerTest, TimaMultipleOverflows)
     write_tima(0xFF);
     write_tma(Tma);
     EXPECT_EQ(read_tima(), 0xFF);
+    EXPECT_EQ(irq_count, 0);
 
     // Tick enough cycles to cause multiple overflows
-    timer_->tick(Timer::Frequency::Tima256M + OverflowDelayCycles); // 1 increment, should overflow
+    timer_->tick(Timer::Frequency::Tima256M + (2 * Timer::TimaDelayCycles));
+    EXPECT_EQ(read_tima(), Tma);
+    EXPECT_EQ(irq_count, 1);
     write_tima(0xFF); // Set TIMA to 0xFF to cause overflow on next increment
     timer_->tick(Timer::Frequency::Tima256M * 5); // 5 increments, should overflow once
     EXPECT_EQ(read_tima(), 0xAB + 4);             // Should overflow to TMA and increment
@@ -183,16 +240,17 @@ TEST_F(IoTimerTest, TimaOverflowEdgeCases)
     timer_->set_interrupt_cb([&irq_count](Interrupt) { irq_count++; });
 
     // Initial timer conditions
-    auto init_timer = [&]() {
+    static const uint8_t InitialTima = 0xFF;
+    auto init_timer                  = [&]() {
         timer_->reset();
         irq_count = 0;
         reset_div();
         write_tac(Timer::Flags::TimerEnable | Timer::Flags::Clock4M);
-        write_tima(0xFF);
+        write_tima(InitialTima);
         write_tma(Tma);
     };
 
-    // Writing TIMA during the first 4 delay cycles should cancel interrupt and reload
+    // Writing TIMA during the first 4 delay cycles should cancel both interrupt and reload
     {
         init_timer();
 
@@ -202,13 +260,13 @@ TEST_F(IoTimerTest, TimaOverflowEdgeCases)
         EXPECT_EQ(irq_count, 0);
 
         // Write TIMA during delay
-        write_tima(0xFF);
-        EXPECT_EQ(read_tima(), 0xFF);
+        write_tima(0xAB);
+        EXPECT_EQ(read_tima(), 0xAB);
         EXPECT_EQ(irq_count, 0);
 
         // Advance delay period, nothing should happen
-        timer_->tick(OverflowDelayCycles);
-        EXPECT_EQ(read_tima(), 0xFF);
+        timer_->tick(Timer::TimaDelayCycles);
+        EXPECT_EQ(read_tima(), 0xAB);
         EXPECT_EQ(irq_count, 0);
     }
 
@@ -221,19 +279,20 @@ TEST_F(IoTimerTest, TimaOverflowEdgeCases)
         EXPECT_EQ(read_tima(), 0);
         EXPECT_EQ(irq_count, 0);
 
-        // Tick first delay cycle, interrupt should be triggered
-        timer_->tick(Timer::InterruptDelay);
-        EXPECT_EQ(read_tima(), 0);
-        EXPECT_EQ(irq_count, 1);
-
-        // Write TIMA during second delay, nothing should happen
-        write_tima(0xFF);
-        EXPECT_EQ(read_tima(), 0);
-        EXPECT_EQ(irq_count, 1);
-
-        // Advance second delay period, TIMA should reload with TMA
-        timer_->tick(Timer::TimaReloadDelay);
+        // Tick first delay cycle, interrupt should be triggered and TIMA reloaded
+        timer_->tick(Timer::TimaDelayCycles);
         EXPECT_EQ(read_tima(), Tma);
+        EXPECT_EQ(irq_count, 1);
+
+        // Write TIMA during second delay, it should be ignored
+        write_tima(0xFF);
+        EXPECT_EQ(read_tima(), Tma);
+        EXPECT_EQ(irq_count, 1);
+
+        // Advance second delay period, TIMA should be writable again
+        timer_->tick(Timer::TimaDelayCycles);
+        write_tima(0xFF);
+        EXPECT_EQ(read_tima(), 0xFF);
         EXPECT_EQ(irq_count, 1);
     }
 
@@ -249,17 +308,12 @@ TEST_F(IoTimerTest, TimaOverflowEdgeCases)
         EXPECT_EQ(irq_count, 0);
 
         // Tick first delay cycle, interrupt should be triggered
-        timer_->tick(Timer::InterruptDelay);
-        EXPECT_EQ(read_tima(), 0);
+        timer_->tick(Timer::TimaDelayCycles);
+        EXPECT_EQ(read_tima(), Tma);
         EXPECT_EQ(irq_count, 1);
 
-        // Write new TMA during second delay
+        // Write new TMA during second cycle, TIMA should reload with the new TMA
         write_tma(NewTma);
-        EXPECT_EQ(read_tima(), 0);
-        EXPECT_EQ(irq_count, 1);
-
-        // Advance second delay period, TIMA should reload with the new TMA
-        timer_->tick(Timer::TimaReloadDelay);
         EXPECT_EQ(read_tima(), NewTma);
         EXPECT_EQ(irq_count, 1);
     }
