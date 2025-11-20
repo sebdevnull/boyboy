@@ -52,9 +52,9 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 
 ### Blargg's Test ROMs
 
-#### CPU Test ROMs
-
 > Source: [Blargg's Test ROMs](/README.md#test-roms)
+
+#### CPU Instrs
 
 | ROM Name | Description | Notes | Instr | M-cycle | T-cycle |
 |----------|-------------|-------|:-----:|:-------:|:-------:|
@@ -71,6 +71,51 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 | 11-op a,(hl).gb | Tests accumulator and (HL) instructions | Passes all tests | ✅ | ✅ | ✅ |
 | cpu_instrs.gb | Comprehensive CPU instruction test | Fails on test 2 (interrupts) | ❌ | ❌ | ❌ |
 
+#### DMG Sound
+
+Not implemented yet.
+
+#### Instr Timing
+
+| ROM Name |  Notes | Instr | M-cycle | T-cycle |
+|----------|--------|:-----:|:-------:|:-------:|
+| instr_timing.gb | | ❌ | ❌ | ❌ |
+
+#### Interrupt Time
+
+| ROM Name |  Notes | Instr | M-cycle | T-cycle |
+|----------|--------|:-----:|:-------:|:-------:|
+| interrupt_time.gb | | ❌ | ❌ | ❌ |
+
+#### Mem Timing
+
+| ROM Name |  Notes | Instr | M-cycle | T-cycle |
+|----------|--------|:-----:|:-------:|:-------:|
+| 01-read_timing.gb | | ❌ | ❌ | ❌ |
+| 02-write_timing.gb | | ❌ | ❌ | ❌ |
+| 03-modify_timing.gb | | ❌ | ❌ | ❌ |
+
+#### Mem Timing 2
+
+| ROM Name |  Notes | Instr | M-cycle | T-cycle |
+|----------|--------|:-----:|:-------:|:-------:|
+| 01-read_timing.gb | | ❌ | ❌ | ❌ |
+| 02-write_timing.gb | | ❌ | ❌ | ❌ |
+| 03-modify_timing.gb | | ❌ | ❌ | ❌ |
+
+#### OAM Bug
+
+| ROM Name |  Notes | Instr | M-cycle | T-cycle |
+|----------|--------|:-----:|:-------:|:-------:|
+| 1-lcd_sync.gb | | ❌ | ❌ | ❌ |
+| 2-causes.gb | | ❌ | ❌ | ❌ |
+| 3-non_causes.gb | Pass | ✅ | ✅ | ✅ |
+| 4-scanline_timing.gb |   | ❌ | ❌ | ❌ |
+| 5-timing_bug.gb | | ❌ | ❌ | ❌ |
+| 6-timing_no_bug.gb | Pass | ✅ | ✅ | ✅ |
+| 7-timing_effect.gb | | ❌ | ❌ | ❌ |
+| 8-instr_effect.gb | | ❌ | ❌ | ❌ |
+
 ### Mooneye Test Suite
 
 > Source: [Gekkio's Mooneye Test Suite](/README.md#test-roms)
@@ -81,6 +126,12 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
 |----------|-------|:-----:|:-------:|:-------:|
+| add_sp_e_timing.gb | | ❌ | ❌ | ❌ |
+| call_cc_timing.gb | | ❌ | ❌ | ❌ |
+| call_cc_timing2.gb | | ❌ | ❌ | ❌ |
+| call_timing.gb | | ❌ | ❌ | ❌ |
+| call_timing2.gb | | ❌ | ❌ | ❌ |
+| di_timing-GS.gb | | ❌ | ❌ | ❌ |
 | div_timing.gb | | ✅ | ❌ | ❌ |
 | ei_sequence.gb | | ❌ | ✅ | ✅ |
 | ei_timing.gb | Pass | ✅ | ✅ | ✅ |
@@ -89,12 +140,20 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 | halt_ime1_timing.gb | Pass | ✅ | ✅ | ✅ |
 | if_ie_registers.gb |  | ❌ | ❌ | ❌ |
 | intr_timing.gb | | ✅ | ❌ | ❌ |
+| jp_cc_timing.gb | | ❌ | ❌ | ❌ |
+| jp_timing.gb | | ❌ | ❌ | ❌ |
+| ld_hl_sp_e_timing.gb | | ❌ | ❌ | ❌ |
 | oam_dma_restart.gb | | ❌ | ❌ | ❌ |
 | oam_dma_start.gb | | ❌ | ❌ | ❌ |
 | oam_dma_timing.gb | | ❌ | ❌ | ❌ |
+| pop_timing.gb | | ❌ | ❌ | ❌ |
+| push_timing.gb | | ❌ | ❌ | ❌ |
 | rapid_di_ei.gb | | ❌ | ✅ | ✅ |
+| ret_cc_timing.gb | | ❌ | ❌ | ❌ |
 | reti_intr_timing.gb | Pass | ✅ | ✅ | ✅ |
-| reti_timing.gb |  | ❌ | ❌ | ❌ |
+| reti_timing.gb | | ❌ | ❌ | ❌ |
+| ret_timing.gb | | ❌ | ❌ | ❌ |
+| rst_timing.gb | | ❌ | ❌ | ❌ |
 
 #### Bits
 
@@ -102,6 +161,7 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 |----------|-------|:-----:|:-------:|:-------:|
 | mem_oam.gb | Pass | ✅ | ✅ | ✅ |
 | reg_f.gb | Pass | ✅ | ✅ | ✅ |
+| unused_hwio-GS.gb | | ❌ | ❌ | ❌ |
 
 #### Instr
 
@@ -121,18 +181,24 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 |----------|-------|:-----:|:-------:|:-------:|
 | basic.gb | Pass | ✅ | ✅ | ✅ |
 | reg_read.gb | Fail: r1 | ❌ | ❌ | ❌ |
+| sources-GS.gb | Need MBC5 to run | ❌ | ❌ | ❌ |
 
 #### PPU
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
 |----------|-------|:-----:|:-------:|:-------:|
+| hblank_ly_scx_timing-GS.gb | | ❌ | ❌ | ❌ |
+| intr_1_2_timing-GS.gb | | ❌ | ❌ | ❌ |
 | intr_2_0_timing.gb | | ❌ | ❌ | ❌ |
 | intr_2_mode0_timing.gb | | ✅ | ❌ | ❌ |
 | intr_2_mode0_timing_sprites.gb | | ❌ | ❌ | ❌ |
 | intr_2_mode3_timing.gb | | ✅ | ❌ | ❌ |
 | intr_2_oam_ok_timing.gb | | ✅ | ❌ | ❌ |
+| lcdon_timing-GS.gb | | ❌ | ❌ | ❌ |
+| lcdon_write_timing-GS.gb | | ❌ | ❌ | ❌ |
 | stat_irq_blocking.gb | | ❌ | ❌ | ❌ |
 | stat_lyc_onoff.gb | | ❌ | ❌ | ❌ |
+| vblank_stat_intr-GS.gb | | ❌ | ❌ | ❌ |
 
 #### Timer
 
@@ -151,6 +217,34 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 | tima_reload.gb | | ✅ | ❌ | ❌ |
 | tima_write_reloading.gb | | ✅ | ❌ | ❌ |
 | tma_write_reloading.gb | | ✅ | ❌ | ❌ |
+
+#### Emulator Only
+
+#### MBC1
+
+| ROM Name | Notes | Instr | M-cycle | T-cycle |
+|----------|-------|:-----:|:-------:|:-------:|
+| bits_bank1.gb | Pass | ✅ | ✅ | ✅ |
+| bits_bank2.gb | Pass | ✅ | ✅ | ✅ |
+| bits_mode.gb | Pass | ✅ | ✅ | ✅ |
+| bits_ramg.gb | Pass | ✅ | ✅ | ✅ |
+| multicart_rom_8Mb.gb | | ❌ | ❌ | ❌ |
+| ram_256kb.gb | Fail: Round 2 | ❌ | ❌ | ❌ |
+| ram_64kb.gb | Fail: Round 2 | ❌ | ❌ | ❌ |
+| rom_16Mb.gb | Seg Fault: Div by 0 | ❌ | ❌ | ❌ |
+| rom_1Mb.gb | | ❌ | ❌ | ❌ |
+| rom_2Mb.gb | | ❌ | ❌ | ❌ |
+| rom_512kb.gb | | ❌ | ❌ | ❌ |
+| rom_4Mb.gb | Seg Fault: Div by 0 | ❌ | ❌ | ❌ |
+| rom_8Mb.gb | Seg Fault: Div by 0 | ❌ | ❌ | ❌ |
+
+#### MBC2
+
+Not implemented yet.
+
+#### MBC5
+
+Not implemented yet.
 
 ## Other Test ROMs
 
