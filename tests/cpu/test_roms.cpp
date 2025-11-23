@@ -10,7 +10,7 @@
  * Run with: ctest --preset debug -R CpuROMTest -V
  *
  * 01-special.gb: ~1.05s
- * 02-interrupts.gb: X (not run, see comment below)
+ * 02-interrupts.gb: X
  * 03-op sp,hl.gb: ~1.15s
  * 04-op r,imm.gb: ~1.35s
  * 05-op rp.gb: ~1.85s
@@ -43,16 +43,11 @@ TEST_F(CpuROMTest, Special01)
     run();
 }
 
-// Validated until step 5 where it halts and waits for a timer interrupt, where it gets stuck
-// indefinitely. Looking at the code of the test (02-interrupts.s), the timer interrupt vector
-// (0x50) returns with RET instead of RETI, which means that IME is never re-enabled and the CPU
-// remains halted forever. At some point we could modify and recompile the test ROM to use RETI, but
-// for now we will just skip this test.
-// TEST_F(CpuROMTest, Interrupts02)
-// {
-//     load(CpuTest02Rom);
-//     run();
-// }
+TEST_F(CpuROMTest, Interrupts02)
+{
+    load(CpuTest02Rom);
+    run();
+}
 
 TEST_F(CpuROMTest, OpSpHl03)
 {

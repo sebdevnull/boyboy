@@ -316,3 +316,29 @@ TEST_F(CpuInterruptsTest, HaltThenInterrupt)
         << "Original PC+1 should be pushed to stack";
     EXPECT_FALSE(cpu->is_halted()) << "CPU should exit HALT state";
 }
+
+// If an interrupt is triggered, CPU wakes up regardless of IME state (if IME == 1, the interrupt
+// should be serviced)
+TEST_F(CpuInterruptsTest, WakeUpIMEOff)
+{
+    cpu->set_ime(false);
+    cpu->set_halted(true);
+    cpu->enable_interrupt(Interrupt::VBlank);
+    cpu->request_interrupt(Interrupt::VBlank);
+
+    EXPECT_FALSE(cpu->get_ime());
+    EXPECT_TRUE(cpu->is_halted());
+
+    auto& interrupt_handler = cpu->get_interrupt_handler();
+    EXPECT_TRUE(interrupt_handler.is_enabled(Interrupt::VBlank));
+    EXPECT_TRUE(interrupt_handler.is_requested(Interrupt::VBlank));
+
+    // Tick the CPU, it should wake up but not service the interrupt
+    set_next_instruction(boyboy::core::cpu::Opcode::NOP);
+    step();
+
+    EXPECT_FALSE(cpu->get_ime());
+    EXPECT_FALSE(cpu->is_halted());
+    EXPECT_TRUE(interrupt_handler.is_enabled(Interrupt::VBlank));
+    EXPECT_TRUE(interrupt_handler.is_requested(Interrupt::VBlank));
+}
