@@ -28,7 +28,7 @@ The emulator currently supports ROM-Only and MBC1 cartridges. Battery-backed RAM
 | James Bond 007 | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | Jungle Strike | MBC1 | Fully playable | ✅ |
 | Kirby's Dream Land | MBC1 | Fully playable | ✅ |
-| Kirby's Dream Land 2 | MBC1+RAM+BATTERY | Game starts with blank screen | ❌ |
+| Kirby's Dream Land 2 | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | Mario's Picross | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | Mega Man V | MBC1 | Fully playable | ✅ |
 | Metroid II | MBC1+RAM+BATTERY | Fully playable | ✅ |
@@ -59,7 +59,7 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 | ROM Name | Description | Notes | Instr | M-cycle | T-cycle |
 |----------|-------------|-------|:-----:|:-------:|:-------:|
 | 01-special.gb | Tests special CPU instructions | Passes all tests | ✅ | ✅ | ✅ |
-| 02-interrupts.gb | Tests interrupt handling | Hangs on "HALT bug" test | ❌ | ❌ | ❌ |
+| 02-interrupts.gb | Tests interrupt handling | Passes all tests | ✅ | ✅ | ✅ |
 | 03-op sp,hl.gb | Tests stack pointer and HL instructions | Passes all tests | ✅ | ✅ | ✅ |
 | 04-op r,imm.gb | Tests immediate load instructions | Passes all tests | ✅ | ✅ | ✅ |
 | 05-op rp.gb | Tests register pair instructions | Passes all tests | ✅ | ✅ | ✅ |
@@ -69,7 +69,7 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 | 09-op r,r.gb | Tests register to register arithmetic and logic instructions | Passes all tests | ✅ | ✅ | ✅ |
 | 10-bit ops.gb | Tests bit manipulation instructions | Passes all tests | ✅ | ✅ | ✅ |
 | 11-op a,(hl).gb | Tests accumulator and (HL) instructions | Passes all tests | ✅ | ✅ | ✅ |
-| cpu_instrs.gb | Comprehensive CPU instruction test | Fails on test 2 (interrupts) | ❌ | ❌ | ❌ |
+| cpu_instrs.gb | Comprehensive CPU instruction test | Fails on test 3 (STOP instruction) | ❌ | ❌ | ❌ |
 
 #### DMG Sound
 
@@ -136,7 +136,7 @@ Not implemented yet.
 | ei_sequence.gb | | ❌ | ✅ | ✅ |
 | ei_timing.gb | Pass | ✅ | ✅ | ✅ |
 | halt_ime0_ei.gb | Pass | ✅ | ✅ | ✅ |
-| halt_ime0_nointr_timing.gb |  | ❌ | ❌ | ❌ |
+| halt_ime0_nointr_timing.gb |  | ✅ | ❌ | ❌ |
 | halt_ime1_timing.gb | Pass | ✅ | ✅ | ✅ |
 | if_ie_registers.gb |  | ❌ | ❌ | ❌ |
 | intr_timing.gb | | ✅ | ❌ | ❌ |
