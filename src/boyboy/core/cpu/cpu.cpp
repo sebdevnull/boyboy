@@ -217,7 +217,7 @@ inline void Cpu::tick_cycles(Cycles cycles)
     auto tcycles = to_tcycles(cycles);
     cycles_ += tcycles;
 
-    if (is_halted() && interrupt_handler_.should_service()) {
+    if (is_halted() && interrupt_handler_.should_wake_up()) {
         schedule_interrupt();
     }
 

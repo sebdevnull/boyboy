@@ -34,13 +34,18 @@ void InterruptHandler::tick(Cycles cycles)
         service_interrupt(current_interrupt_);
     }
 
-    // Don't do anything if interrupts are disabled
-    if (!cpu_.get_ime()) {
-        return;
-    }
-
     // If not servicing check if there's any interrupt pending and schedule
     if (auto pend = pending(); pend != 0) {
+
+        if (!cpu_.get_ime()) {
+            // If an interrupt is triggered (IE & IF != 0), CPU wakes up after 4 cycles
+            // TODO: check that 4 cycles elapsed before waking up
+            if (cpu_.is_halted()) {
+                cpu_.set_halted(false);
+            }
+            return;
+        }
+
         for (size_t i = 0; i < InterruptVectors::Vectors.size(); ++i) {
             auto interrupt = 1 << i;
             if ((pend & interrupt) == 0) {
@@ -65,16 +70,23 @@ void InterruptHandler::tick(Cycles cycles)
 
 TCycle InterruptHandler::service()
 {
-    if (!cpu_.get_ime()) {
-        return 0;
-    }
-
     uint8_t ier = get_ie();
     uint8_t ifr = get_if();
     uint8_t pending = ier & ifr;
 
     if (pending == 0) {
         return 0;
+    }
+
+    if (!cpu_.get_ime()) {
+        TCycle cycles = 0;
+
+        // If an interrupt is triggered (IE & IF != 0), CPU wakes up after 4 cycles
+        if (cpu_.is_halted()) {
+            cpu_.set_halted(false);
+            cycles = 4;
+        }
+        return cycles;
     }
 
     const auto ServiceCycles = service_cycles();
@@ -148,6 +160,11 @@ uint8_t InterruptHandler::pending() const
 bool InterruptHandler::should_service() const
 {
     return cpu_.get_ime() && (pending() != 0);
+}
+
+bool InterruptHandler::should_wake_up() const
+{
+    return pending() != 0;
 }
 
 inline void InterruptHandler::clear_interrupt(Interrupt interrupt)

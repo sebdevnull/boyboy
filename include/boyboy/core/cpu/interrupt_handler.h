@@ -42,6 +42,7 @@ public:
     [[nodiscard]] uint8_t pending() const;
     [[nodiscard]] bool is_servicing() const { return cycles_left_ > 0; }
     [[nodiscard]] bool should_service() const;
+    [[nodiscard]] bool should_wake_up() const;
 
     [[nodiscard]] uint8_t get_ie() const;
     [[nodiscard]] uint8_t get_if() const;
