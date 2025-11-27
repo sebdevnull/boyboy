@@ -37,6 +37,7 @@ void Cpu::init()
     ime_scheduled_ = 0;
     halted_ = false;
     cycles_ = 0;
+    branch_taken_ = false;
     exec_state_.init();
 }
 void Cpu::reset()
@@ -255,8 +256,15 @@ inline void Cpu::tick_cycles(Cycles cycles)
 
     // Take actions on stage end
     if (exec_state_.cycles_left == 0) {
-        if (exec_state_.has_stage(Stage::Execute)) {
+        if (exec_state_.has_stage(Stage::Fetch)) {
+            fetch_stage();
+        }
+        if (exec_state_.has_stage(Stage::Execute) && exec_state_.cycles_left == 0) {
             execute_stage();
+
+            if (exec_state_.branching) {
+                return;
+            }
 
             // If an interrupt service was scheduled skip fetch
             if (exec_state_.has_stage(Stage::InterruptService)) {
@@ -269,10 +277,11 @@ inline void Cpu::tick_cycles(Cycles cycles)
                 return;
             }
         }
+        // TODO: temporarily removed f/e overlap
         // We cascade from Execute to Fetch on purpose to allow fetch/execute overlap
-        if (exec_state_.has_stage(Stage::Fetch)) {
-            fetch_stage();
-        }
+        // if (exec_state_.has_stage(Stage::Fetch)) {
+        //     fetch_stage();
+        // }
     }
 }
 
@@ -290,16 +299,36 @@ inline void Cpu::fetch_stage()
         InstructionType instr_type = exec_state_.has_stage(Stage::CBInstruction)
                                          ? InstructionType::CBPrefixed
                                          : InstructionType::Unprefixed;
-        exec_state_.instr = &InstructionTable::get_instruction(instr_type, exec_state_.fetched);
+        const auto* instr = &InstructionTable::get_instruction(instr_type, exec_state_.fetched);
+        exec_state_.instr = instr;
         exec_state_.stage = Stage::Execute;
-        exec_state_.cycles_left = exec_state_.instr->cycles;
+
+        // If it's a branching instruction, execute non-branch cycles
+        auto cycles = (instr->cycles_no_branch != 0) ? instr->cycles_no_branch : instr->cycles;
+        // Don't count fetch cycles (already consumed)
+        cycles -= FetchCycles * ((instr_type == InstructionType::CBPrefixed) ? 2 : 1);
+        exec_state_.cycles_left = cycles;
     }
 }
 
 inline void Cpu::execute_stage()
 {
-    // Execute instruction handler
-    (this->*(exec_state_.instr->execute))();
+    // Only execute if not branching from a conditional instruction
+    if (!exec_state_.branching) {
+        // Execute instruction handler
+        (this->*(exec_state_.instr->execute))();
+
+        // If a conditional branch has been taken flag it and add remaining execution cycles
+        if (branch_taken_) {
+            exec_state_.branching = true;
+            branch_taken_ = false;
+            exec_state_.cycles_left = exec_state_.instr->cycles -
+                                      exec_state_.instr->cycles_no_branch;
+            return;
+        }
+    }
+
+    exec_state_.branching = false;
 
     clear_flag(exec_state_.stage, Stage::Execute);
 
@@ -343,9 +372,15 @@ uint8_t Cpu::execute(uint8_t opcode, InstructionType instr_type)
     BB_PROFILE_START(profiling::HotSection::CpuExecute);
     const auto& instr = InstructionTable::get_instruction(instr_type, opcode);
     (this->*instr.execute)();
-    cycles_ += instr.cycles;
+    auto cycles = instr.cycles;
+    // Set the right cycles for branching instructions
+    if (instr.cycles_no_branch != 0 && !branch_taken_) {
+        cycles = instr.cycles_no_branch;
+    }
+    cycles_ += cycles;
+    branch_taken_ = false;
     BB_PROFILE_STOP(profiling::HotSection::CpuExecute);
-    return instr.cycles;
+    return cycles;
 }
 
 void Cpu::trace() const
