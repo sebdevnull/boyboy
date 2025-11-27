@@ -59,6 +59,7 @@ struct ExecutionState {
     uint8_t fetched{0};
     TCycle cycles_left{FetchCycles};
     const Instruction* instr = nullptr;
+    bool branching{false};
 
     void init()
     {
@@ -66,6 +67,7 @@ struct ExecutionState {
         cycles_left = FetchCycles;
         fetched = 0;
         instr = nullptr;
+        branching = false;
     }
 
     void reset() { init(); }

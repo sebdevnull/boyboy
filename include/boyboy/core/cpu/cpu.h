@@ -121,6 +121,7 @@ private:
     bool halted_{false};
     bool halt_bug_{false};
     bool fe_overlap_{false};
+    bool branch_taken_{false}; // Whether a condition branch has been taken
 
     ExecutionState exec_state_;
 
