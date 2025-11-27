@@ -79,7 +79,7 @@ Not implemented yet.
 
 | ROM Name |  Notes | Instr | M-cycle | T-cycle |
 |----------|--------|:-----:|:-------:|:-------:|
-| instr_timing.gb | | ❌ | ❌ | ❌ |
+| instr_timing.gb | Pass | ✅ | ✅ | ✅ |
 
 #### Interrupt Time
 
@@ -91,16 +91,16 @@ Not implemented yet.
 
 | ROM Name |  Notes | Instr | M-cycle | T-cycle |
 |----------|--------|:-----:|:-------:|:-------:|
-| 01-read_timing.gb | | ❌ | ❌ | ❌ |
-| 02-write_timing.gb | | ❌ | ❌ | ❌ |
+| 01-read_timing.gb | | ❌ | ✅ | ✅ |
+| 02-write_timing.gb | | ❌ | ✅ | ✅ |
 | 03-modify_timing.gb | | ❌ | ❌ | ❌ |
 
 #### Mem Timing 2
 
 | ROM Name |  Notes | Instr | M-cycle | T-cycle |
 |----------|--------|:-----:|:-------:|:-------:|
-| 01-read_timing.gb | | ❌ | ❌ | ❌ |
-| 02-write_timing.gb | | ❌ | ❌ | ❌ |
+| 01-read_timing.gb | | ❌ | ✅ | ✅ |
+| 02-write_timing.gb | | ❌ | ✅ | ✅ |
 | 03-modify_timing.gb | | ❌ | ❌ | ❌ |
 
 #### OAM Bug
@@ -131,15 +131,15 @@ Not implemented yet.
 | call_cc_timing2.gb | | ❌ | ❌ | ❌ |
 | call_timing.gb | | ❌ | ❌ | ❌ |
 | call_timing2.gb | | ❌ | ❌ | ❌ |
-| di_timing-GS.gb | | ❌ | ❌ | ❌ |
-| div_timing.gb | | ✅ | ❌ | ❌ |
+| di_timing-GS.gb | | ❌ | ✅ | ✅ |
+| div_timing.gb | Pass | ✅ | ✅ | ✅ |
 | ei_sequence.gb | | ❌ | ✅ | ✅ |
 | ei_timing.gb | Pass | ✅ | ✅ | ✅ |
 | halt_ime0_ei.gb | Pass | ✅ | ✅ | ✅ |
-| halt_ime0_nointr_timing.gb |  | ✅ | ❌ | ❌ |
+| halt_ime0_nointr_timing.gb |  | ✅ | ✅ | ❌ |
 | halt_ime1_timing.gb | Pass | ✅ | ✅ | ✅ |
 | if_ie_registers.gb |  | ❌ | ❌ | ❌ |
-| intr_timing.gb | | ✅ | ❌ | ❌ |
+| intr_timing.gb | Pass | ✅ | ✅ | ✅ |
 | jp_cc_timing.gb | | ❌ | ❌ | ❌ |
 | jp_timing.gb | | ❌ | ❌ | ❌ |
 | ld_hl_sp_e_timing.gb | | ❌ | ❌ | ❌ |
@@ -188,8 +188,8 @@ Not implemented yet.
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
 |----------|-------|:-----:|:-------:|:-------:|
 | hblank_ly_scx_timing-GS.gb | | ❌ | ❌ | ❌ |
-| intr_1_2_timing-GS.gb | | ❌ | ❌ | ❌ |
-| intr_2_0_timing.gb | | ❌ | ❌ | ❌ |
+| intr_1_2_timing-GS.gb | | ❌ | ✅ | ✅ |
+| intr_2_0_timing.gb | | ❌ | ✅ | ✅ |
 | intr_2_mode0_timing.gb | | ✅ | ❌ | ❌ |
 | intr_2_mode0_timing_sprites.gb | | ❌ | ❌ | ❌ |
 | intr_2_mode3_timing.gb | | ✅ | ❌ | ❌ |
@@ -206,17 +206,17 @@ Not implemented yet.
 |----------|-------|:-----:|:-------:|:-------:|
 | div_write.gb | Pass | ✅ | ✅ | ✅ |
 | rapid_toggle.gb | | ✅ | ❌ | ❌ |
-| tim00_div_trigger.gb | | ✅ | ❌ | ❌ |
-| tim00.gb | | ✅ | ❌ | ❌ |
-| tim01_div_trigger.gb | | ✅ | ❌ | ❌ |
-| tim01.gb | | ✅ | ❌ | ❌ |
-| tim10_div_trigger.gb | | ✅ | ❌ | ❌ |
-| tim10.gb | | ✅ | ❌ | ❌ |
-| tim11_div_trigger.gb | | ✅ | ❌ | ❌ |
-| tim11.gb | | ✅ | ❌ | ❌ |
-| tima_reload.gb | | ✅ | ❌ | ❌ |
-| tima_write_reloading.gb | | ✅ | ❌ | ❌ |
-| tma_write_reloading.gb | | ✅ | ❌ | ❌ |
+| tim00_div_trigger.gb | Pass | ✅ | ✅ | ✅ |
+| tim00.gb | Pass | ✅ | ✅ | ✅ |
+| tim01_div_trigger.gb | Pass | ✅ | ✅ | ✅ |
+| tim01.gb | Pass | ✅ | ✅ | ✅ |
+| tim10_div_trigger.gb | Pass | ✅ | ✅ | ✅ |
+| tim10.gb | Pass | ✅ | ✅ | ✅ |
+| tim11_div_trigger.gb | Pass | ✅ | ✅ | ✅ |
+| tim11.gb | Pass | ✅ | ✅ | ✅ |
+| tima_reload.gb | Pass | ✅ | ✅ | ✅ |
+| tima_write_reloading.gb | Pass | ✅ | ✅ | ✅ |
+| tma_write_reloading.gb | Pass | ✅ | ✅ | ✅ |
 
 #### Emulator Only
 
