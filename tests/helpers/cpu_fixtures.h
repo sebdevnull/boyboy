@@ -75,6 +75,8 @@ struct CpuTest : public ::testing::Test {
 
         // Tick until we transition out of Execute stage
         while (!done) {
+            auto cycles_left = state.cycles_left;
+            auto fetch_stage = state.has_stage(core::cpu::Stage::Fetch);
             if (state.has_stage(core::cpu::Stage::Execute)) {
                 executing = true;
 
@@ -90,6 +92,15 @@ struct CpuTest : public ::testing::Test {
             }
 
             cpu->tick();
+
+            // If we go from fetch to fetch, it means that we executed a 4 cycle instruction so we
+            // must return
+            if (((cycles_left == core::cpu::FetchCycles && cycles_left == state.cycles_left) ||
+                 (cycles_left == 1 && state.cycles_left == core::cpu::FetchCycles)) &&
+                fetch_stage && state.has_stage(core::cpu::Stage::Fetch) &&
+                !state.has_stage(core::cpu::Stage::CBInstruction)) {
+                break;
+            }
         }
     }
 
