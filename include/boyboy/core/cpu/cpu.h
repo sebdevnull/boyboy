@@ -133,6 +133,9 @@ private:
 
     void schedule_interrupt();
 
+    [[nodiscard]] bool handle_interrupts(Cycles cycles);
+    void handle_ime(TCycle tcycles);
+
     // Helper functions
     uint16_t fetch_n16()
     {

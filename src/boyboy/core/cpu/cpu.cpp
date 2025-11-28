@@ -218,27 +218,14 @@ inline void Cpu::tick_cycles(Cycles cycles)
     auto tcycles = to_tcycles(cycles);
     cycles_ += tcycles;
 
-    if (is_halted() && interrupt_handler_.should_wake_up()) {
-        schedule_interrupt();
-    }
-
-    // Handle interrupts
-    if (exec_state_.has_stage(Stage::InterruptService)) {
-        interrupt_handler_.tick(cycles);
-        if (!interrupt_handler_.is_servicing()) {
-            // It already finished servicing the interrupt
-            clear_flag(exec_state_.stage, Stage::InterruptService);
-        }
+    // Handle interrupts before anything else
+    if (handle_interrupts(cycles)) {
+        // We are servicing an interrupt, return until finished
         return;
     }
 
-    // Enable IME if scheduled
-    if (is_ime_scheduled()) {
-        ime_scheduled_ -= tcycles;
-        if (ime_scheduled_ == 0) {
-            set_ime(true);
-        }
-    }
+    // Handle IME status change (IE schedule)
+    handle_ime(tcycles);
 
     // If halted skip rest of the cycle as if executing NOPs
     if (is_halted()) {
@@ -256,7 +243,7 @@ inline void Cpu::tick_cycles(Cycles cycles)
 
     // Take actions on stage end
     if (exec_state_.cycles_left == 0) {
-        if (exec_state_.has_stage(Stage::Fetch)) {
+        if (!fe_overlap_ && exec_state_.has_stage(Stage::Fetch)) {
             fetch_stage();
         }
         if (exec_state_.has_stage(Stage::Execute) && exec_state_.cycles_left == 0) {
@@ -277,11 +264,10 @@ inline void Cpu::tick_cycles(Cycles cycles)
                 return;
             }
         }
-        // TODO: temporarily removed f/e overlap
         // We cascade from Execute to Fetch on purpose to allow fetch/execute overlap
-        // if (exec_state_.has_stage(Stage::Fetch)) {
-        //     fetch_stage();
-        // }
+        if (fe_overlap_ && exec_state_.has_stage(Stage::Fetch)) {
+            fetch_stage();
+        }
     }
 }
 
@@ -305,8 +291,12 @@ inline void Cpu::fetch_stage()
 
         // If it's a branching instruction, execute non-branch cycles
         auto cycles = (instr->cycles_no_branch != 0) ? instr->cycles_no_branch : instr->cycles;
-        // Don't count fetch cycles (already consumed)
-        cycles -= FetchCycles * ((instr_type == InstructionType::CBPrefixed) ? 2 : 1);
+
+        if (!fe_overlap_) {
+            // Don't count fetch cycles in non-overlapping mode (already consumed)
+            cycles -= FetchCycles * ((instr_type == InstructionType::CBPrefixed) ? 2 : 1);
+        }
+
         exec_state_.cycles_left = cycles;
     }
 }
@@ -342,6 +332,37 @@ inline void Cpu::schedule_interrupt()
 {
     exec_state_.stage = Stage::Fetch | Stage::InterruptService;
     exec_state_.cycles_left = FetchCycles;
+}
+
+[[nodiscard]] inline bool Cpu::handle_interrupts(Cycles cycles)
+{
+    bool servicing = false;
+
+    if (is_halted() && interrupt_handler_.should_wake_up()) {
+        schedule_interrupt();
+    }
+
+    // Handle interrupts
+    if (exec_state_.has_stage(Stage::InterruptService)) {
+        interrupt_handler_.tick(cycles);
+        if (!interrupt_handler_.is_servicing()) {
+            // It already finished servicing the interrupt
+            clear_flag(exec_state_.stage, Stage::InterruptService);
+        }
+        servicing = true;
+    }
+
+    return servicing;
+}
+inline void Cpu::handle_ime(TCycle tcycles)
+{
+    // Enable IME if scheduled
+    if (is_ime_scheduled()) {
+        ime_scheduled_ -= tcycles;
+        if (ime_scheduled_ == 0) {
+            set_ime(true);
+        }
+    }
 }
 
 uint8_t Cpu::fetch()
