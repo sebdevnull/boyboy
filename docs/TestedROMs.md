@@ -127,6 +127,12 @@ Not implemented yet.
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
 |----------|-------|:-----:|:-------:|:-------:|
 | add_sp_e_timing.gb | | ❌ | ❌ | ❌ |
+| boot_div-dmg0.gb | | ❌ | ❌ | ❌ |
+| boot_div-dmgABCmgb.gb | | ❌ | ✅ | ✅ |
+| boot_hwio-dmg0.gb | | ❌ | ❌ | ❌ |
+| boot_hwio-dmgABCmgb.gb | | ❌ | ❌ | ❌ |
+| boot_regs-dmg0.gb | | ❌ | ❌ | ❌ |
+| boot_regs-dmgABC.gb | Pass | ✅ | ✅ | ✅ |
 | call_cc_timing.gb | | ❌ | ❌ | ❌ |
 | call_cc_timing2.gb | | ❌ | ❌ | ❌ |
 | call_timing.gb | | ❌ | ❌ | ❌ |
@@ -138,6 +144,7 @@ Not implemented yet.
 | halt_ime0_ei.gb | Pass | ✅ | ✅ | ✅ |
 | halt_ime0_nointr_timing.gb |  | ✅ | ✅ | ❌ |
 | halt_ime1_timing.gb | Pass | ✅ | ✅ | ✅ |
+| halt_ime1_timing2-GS.gb | | ❌ | ✅ | ✅ |
 | if_ie_registers.gb |  | ❌ | ❌ | ❌ |
 | intr_timing.gb | Pass | ✅ | ✅ | ✅ |
 | jp_cc_timing.gb | | ❌ | ❌ | ❌ |
@@ -247,6 +254,14 @@ Not implemented yet.
 Not implemented yet.
 
 ## Other Test ROMs
+
+### Double-halt-cancel
+
+> Source: [little-things-gb GitHub repository](https://github.com/nitro2k01/little-things-gb)
+
+| ROM Name | Notes | Instr | M-cycle | T-cycle |
+|----------|-------|:-----:|:-------:|:-------:|
+| double_halt_cancel.gb | One extra div count in cycle modes | ✅ | ❌ | ❌ |
 
 ### dmg-acid2
 
