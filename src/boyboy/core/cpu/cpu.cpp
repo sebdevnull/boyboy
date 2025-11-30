@@ -24,13 +24,13 @@ using namespace boyboy::common;
 
 void Cpu::init()
 {
-    // Registers
-    registers_.af = AFStartValue;
-    registers_.bc = BCStartValue;
-    registers_.de = DEStartValue;
-    registers_.hl = HLStartValue;
-    registers_.sp = SPStartValue;
-    registers_.pc = PCStartValue;
+    // Registers (init by default in DMG0 mode)
+    registers_.af = RegInitValues::Dmg0::AF;
+    registers_.bc = RegInitValues::Dmg0::BC;
+    registers_.de = RegInitValues::Dmg0::DE;
+    registers_.hl = RegInitValues::Dmg0::HL;
+    registers_.sp = RegInitValues::Dmg0::SP;
+    registers_.pc = RegInitValues::Dmg0::PC;
 
     // Reset flags and state
     ime_ = false;
