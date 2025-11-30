@@ -76,10 +76,6 @@ public:
         static constexpr std::array<uint16_t, 4> ClockFrequencies = {1024, 16, 64, 256};
     };
 
-    // Initial DIV values for DMG
-    static constexpr uint16_t DivCounterStartValue = 0xABCC;
-    static constexpr uint8_t DivStartValue = DivCounterStartValue >> 8;
-
     // Internal system counter bit lookup table for the falling edge detector
     static constexpr std::array<uint8_t, 4> DivBitLookup{9, 3, 5, 7};
 
@@ -95,7 +91,7 @@ private:
     uint8_t tac_{0};  // Timer Control
 
     // Internal counters
-    uint16_t div_counter_{DivCounterStartValue}; // Internal system counter
+    uint16_t div_counter_{0}; // Internal system counter
     uint16_t tima_counter_{0};
 
     // Timer stopped flag
