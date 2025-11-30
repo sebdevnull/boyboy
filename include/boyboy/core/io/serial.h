@@ -29,6 +29,8 @@ public:
     void set_output_stream(std::ostream& out) { serial_out_ = &out; }
 
 private:
+    uint8_t sb_{0};
+    uint8_t sc_{0};
     std::ostream* serial_out_;
     cpu::InterruptRequestCallback request_interrupt_;
 };
