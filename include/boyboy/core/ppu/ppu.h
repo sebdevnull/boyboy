@@ -189,6 +189,7 @@ private:
     uint8_t& SCX_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::SCX));
     uint8_t& LY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LY));
     uint8_t& LYC_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LYC));
+    uint8_t& DMA_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::DMA));
     uint8_t& OBP0_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::OBP0));
     uint8_t& OBP1_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::OBP1));
     uint8_t& BGP_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::BGP));
@@ -198,6 +199,11 @@ private:
     cpu::InterruptRequestCallback request_interrupt_;
 
     void set_mode(Mode new_mode);
+
+    [[nodiscard]] Mode get_mode() const
+    {
+        return static_cast<Mode>(STAT_ & registers::STAT::PPUModeMask);
+    }
 
     // Rendering
     void render_scanline();

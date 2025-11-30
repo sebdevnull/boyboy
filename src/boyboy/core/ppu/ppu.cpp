@@ -13,6 +13,7 @@
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/mmu/constants.h"
 #include "boyboy/core/mmu/mmu.h"
@@ -26,14 +27,30 @@ using io::IoReg;
 
 void Ppu::init()
 {
+    using PpuInitVal = io::RegInitValues::Dmg0::Ppu;
+
+    // Registers (assume DMG0)
     registers_.fill(0);
+    LCDC_ = PpuInitVal::LCDC;
+    STAT_ = PpuInitVal::STAT;
+    SCY_ = PpuInitVal::SCY;
+    SCX_ = PpuInitVal::SCX;
+    LY_ = PpuInitVal::LY;
+    LYC_ = PpuInitVal::LYC;
+    DMA_ = PpuInitVal::DMA;
+    BGP_ = PpuInitVal::BGP;
+    OBP0_ = PpuInitVal::OBP0;
+    OBP1_ = PpuInitVal::OBP1;
+    WY_ = PpuInitVal::WY;
+    WX_ = PpuInitVal::WX;
+
     framebuffer_.fill(0);
     cycles_ = 0;
     cycles_in_mode_ = 0;
     frame_ready_ = false;
     frame_count_ = 0;
     window_line_counter_ = 0;
-    mode_ = Mode::HBlank;
+    mode_ = get_mode(); // should be mode 0 (HBlank)
     previous_mode_ = mode_;
     previous_ly_ = LY_;
 }
