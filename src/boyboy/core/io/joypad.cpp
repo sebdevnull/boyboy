@@ -12,6 +12,7 @@
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/io/buttons.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/registers.h"
 
 namespace boyboy::core::io {
@@ -20,8 +21,9 @@ using namespace boyboy::common;
 
 void Joypad::init()
 {
-    select_ = ButtonMask::SelectMask; // Neither group selected
-    buttons_ = 0xFF;                  // All buttons released (1)
+    const auto P1InitVal = RegInitValues::Dmg0::Joypad::P1;
+    select_ = P1InitVal & ButtonMask::SelectMask;              // Neither group selected
+    buttons_ = (P1InitVal & 0x0F) | ((P1InitVal << 4) & 0xF0); // All buttons released (1)
 }
 
 void Joypad::reset()
