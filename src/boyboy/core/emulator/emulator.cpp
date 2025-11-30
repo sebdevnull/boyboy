@@ -20,6 +20,7 @@
 #include "boyboy/core/cpu/cpu.h"
 #include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/display/display.h"
+#include "boyboy/core/io/apu.h"
 #include "boyboy/core/io/buttons.h"
 #include "boyboy/core/io/io.h"
 #include "boyboy/core/io/joypad.h"
@@ -41,6 +42,7 @@ Emulator::Emulator()
       timer_(std::make_shared<io::Timer>()),
       joypad_(std::make_shared<io::Joypad>()),
       serial_(std::make_shared<io::Serial>()),
+      apu_(std::make_shared<io::Apu>()),
       display_(std::make_shared<display::Display>()),
       cartridge_(std::make_unique<cartridge::Cartridge>())
 {
@@ -55,6 +57,7 @@ void Emulator::init()
     io_->register_component(timer_);
     io_->register_component(joypad_);
     io_->register_component(serial_);
+    io_->register_component(apu_);
 
     mmu_->init();
     io_->init();
