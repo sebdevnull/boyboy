@@ -127,12 +127,9 @@ Not implemented yet.
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
 |----------|-------|:-----:|:-------:|:-------:|
 | add_sp_e_timing.gb | | ❌ | ❌ | ❌ |
-| boot_div-dmg0.gb | | ❌ | ❌ | ❌ |
-| boot_div-dmgABCmgb.gb | | ❌ | ✅ | ✅ |
-| boot_hwio-dmg0.gb | | ❌ | ❌ | ❌ |
-| boot_hwio-dmgABCmgb.gb | | ❌ | ❌ | ❌ |
-| boot_regs-dmg0.gb | | ❌ | ❌ | ❌ |
-| boot_regs-dmgABC.gb | Pass | ✅ | ✅ | ✅ |
+| boot_div-dmg0.gb | DIV counter is off on start | ❌ | ✅ | ✅ |
+| boot_hwio-dmg0.gb | Fails on PPU.STAT | ❌ | ❌ | ❌ |
+| boot_regs-dmg0.gb | Pass | ✅ | ✅ | ✅ |
 | call_cc_timing.gb | | ❌ | ❌ | ❌ |
 | call_cc_timing2.gb | | ❌ | ❌ | ❌ |
 | call_timing.gb | | ❌ | ❌ | ❌ |
