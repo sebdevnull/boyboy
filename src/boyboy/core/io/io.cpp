@@ -9,6 +9,8 @@
 
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
+#include "boyboy/core/io/apu.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/iocomponent.h"
 #include "boyboy/core/io/joypad.h"
 #include "boyboy/core/io/registers.h"
@@ -20,7 +22,11 @@ namespace boyboy::core::io {
 
 void Io::init()
 {
-    registers_.fill(0);
+    // Initialize registers (assume DMG0)
+    registers_.fill(0xFF);
+    registers_.at(io_addr(IoReg::Interrupts::IF)) = RegInitValues::Dmg0::Interrupts::IF;
+
+    // Initialize components
     for (auto& component : components_) {
         component->init();
     }
@@ -28,7 +34,11 @@ void Io::init()
 
 void Io::reset()
 {
-    registers_.fill(0);
+    // Reset registers (assume DMG0)
+    registers_.fill(0xFF);
+    registers_.at(io_addr(IoReg::Interrupts::IF)) = RegInitValues::Dmg0::Interrupts::IF;
+
+    // Reset components
     for (auto& component : components_) {
         component->reset();
     }
@@ -55,6 +65,9 @@ void Io::tick(uint16_t cycles)
     if (IoReg::Serial::contains(addr)) {
         return component_read(serial_.get(), addr);
     }
+    if (IoReg::Apu::contains(addr)) {
+        return component_read(apu_.get(), addr);
+    }
 
     // Default behavior: return the value in the register
     return registers_.at(io_addr(addr));
@@ -76,6 +89,10 @@ void Io::write(uint16_t addr, uint8_t value)
     }
     if (IoReg::Serial::contains(addr)) {
         component_write(serial_.get(), addr, value);
+        return;
+    }
+    if (IoReg::Apu::contains(addr)) {
+        component_write(apu_.get(), addr, value);
         return;
     }
 
@@ -122,6 +139,14 @@ void Io::write(uint16_t addr, uint8_t value)
 [[nodiscard]] std::shared_ptr<Serial> Io::serial()
 {
     return serial_;
+}
+[[nodiscard]] const std::shared_ptr<Apu>& Io::apu() const
+{
+    return apu_;
+}
+[[nodiscard]] std::shared_ptr<Apu> Io::apu()
+{
+    return apu_;
 }
 
 [[nodiscard]] inline uint8_t Io::component_read(const IoComponent* comp, uint16_t addr) const

@@ -29,6 +29,7 @@ class IoComponent;
 class Timer;
 class Joypad;
 class Serial;
+class Apu;
 
 class Io {
 public:
@@ -61,6 +62,9 @@ public:
         else if constexpr (std::is_same_v<T, Serial>) {
             serial_ = comp;
         }
+        else if constexpr (std::is_same_v<T, Apu>) {
+            apu_ = comp;
+        }
 
         comp->set_interrupt_cb([this](cpu::Interrupt interrupt) {
             this->write(IoReg::Interrupts::IF, std::to_underlying(interrupt));
@@ -83,12 +87,15 @@ public:
     [[nodiscard]] std::shared_ptr<Joypad> joypad();
     [[nodiscard]] const std::shared_ptr<Serial>& serial() const;
     [[nodiscard]] std::shared_ptr<Serial> serial();
+    [[nodiscard]] const std::shared_ptr<Apu>& apu() const;
+    [[nodiscard]] std::shared_ptr<Apu> apu();
 
 private:
     std::shared_ptr<ppu::Ppu> ppu_;
     std::shared_ptr<Timer> timer_;
     std::shared_ptr<Joypad> joypad_;
     std::shared_ptr<Serial> serial_;
+    std::shared_ptr<Apu> apu_;
 
     // Components registry
     std::vector<std::shared_ptr<IoComponent>> components_;
