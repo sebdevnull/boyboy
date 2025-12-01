@@ -140,7 +140,7 @@ public:
 
     // Accessors for convenience and testing
     [[nodiscard]] Mode mode() const { return mode_; }
-    [[nodiscard]] bool lcd_off() const { return (LCDC_ & registers::LCDC::LCDAndPPUEnable) == 0; }
+    [[nodiscard]] bool is_lcd_on() const { return (LCDC_ & registers::LCDC::LCDAndPPUEnable) != 0; }
     [[nodiscard]] uint8_t ly() const { return LY_; }
     void set_ly(uint8_t ly);
     void inc_ly();

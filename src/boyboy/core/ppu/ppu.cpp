@@ -64,7 +64,7 @@ void Ppu::tick(uint16_t cycles)
 {
     BB_PROFILE_SCOPE(profiling::FrameTimer::Ppu);
 
-    if (lcd_off()) {
+    if (!is_lcd_on()) {
         return;
     }
 
@@ -165,7 +165,7 @@ void Ppu::write(uint16_t addr, uint8_t value)
     if (addr == IoReg::Ppu::LCDC) {
         // Check if LCD is being disabled
         bool lcd_enabled = (value & registers::LCDC::LCDAndPPUEnable) != 0;
-        if (!lcd_off() && !lcd_enabled) {
+        if (is_lcd_on() && !lcd_enabled) {
             log::info("LCD disabled");
             log::debug("PPU state before LCD OFF: mode={}, LY={}", to_string(mode_), LY_);
             set_ly(0);
@@ -174,7 +174,7 @@ void Ppu::write(uint16_t addr, uint8_t value)
             set_mode(Mode::HBlank);
             log::debug("PPU state after LCD OFF: mode={}, LY={}", to_string(mode_), LY_);
         }
-        else if (lcd_off() && lcd_enabled) {
+        else if (!is_lcd_on() && lcd_enabled) {
             log::info("LCD enabled");
             log::debug("PPU state before LCD ON: mode={}, LY={}", to_string(mode_), LY_);
             set_ly(0);
@@ -490,7 +490,7 @@ std::array<Sprite, 40> Ppu::read_oam() const
 
 void Ppu::check_interrupts()
 {
-    if (lcd_off()) {
+    if (!is_lcd_on()) {
         return;
     }
 
