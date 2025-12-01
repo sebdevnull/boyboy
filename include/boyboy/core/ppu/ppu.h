@@ -176,7 +176,8 @@ private:
 
     // Frame management
     uint64_t frame_count_ = 0;
-    bool frame_ready_ = false;
+    bool frame_ready_ = false; // Frame ready to be rendered
+    bool frame_skip_ = true;   // Skip next frame
     FrameBuffer framebuffer_{};
 
     // I/O registers

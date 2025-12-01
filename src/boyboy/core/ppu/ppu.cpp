@@ -49,6 +49,7 @@ void Ppu::init()
     cycles_in_mode_ = 0;
     frame_ready_ = false;
     frame_count_ = 0;
+    frame_skip_ = true;
     window_line_counter_ = 0;
     mode_ = get_mode(); // should be mode 0 (HBlank)
     previous_mode_ = mode_;
@@ -119,6 +120,12 @@ void Ppu::tick(uint16_t cycles)
                     frame_ready_ = true;
                     frame_count_++;
                     window_line_counter_ = 0;
+
+                    if (frame_skip_) {
+                        framebuffer_.fill(0);
+                        frame_skip_ = false;
+                        log::debug("[Ppu] Frame skipped");
+                    }
                 }
                 else {
                     // Continue to next line in OAMScan mode
@@ -180,6 +187,7 @@ void Ppu::write(uint16_t addr, uint8_t value)
             set_ly(0);
             cycles_in_mode_ = 0;
             window_line_counter_ = 0;
+            frame_skip_ = true; // Skip next frame when LCD is turned on
             set_mode(Mode::OAMScan);
             log::debug("PPU state after LCD ON: mode={}, LY={}", to_string(mode_), LY_);
         }
@@ -269,6 +277,10 @@ void Ppu::set_mode(Mode new_mode)
 
 void Ppu::render_scanline()
 {
+    if (frame_skip_) {
+        return;
+    }
+
     render_background();
     render_window();
     render_sprites();
