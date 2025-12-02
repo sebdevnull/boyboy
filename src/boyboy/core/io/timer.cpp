@@ -21,18 +21,21 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/registers.h"
 
 namespace boyboy::core::io {
 
 void Timer::init()
 {
-    tima_ = 0;
-    tma_ = 0;
-    tac_ = 0;
-    div_counter_ = DivCounterStartValue;
+    // Assume DMG0
+    tima_ = RegInitValues::Dmg0::Timer::TIMA;
+    tma_ = RegInitValues::Dmg0::Timer::TMA;
+    tac_ = RegInitValues::Dmg0::Timer::TAC;
+    // TODO: DIV counter is off by 0x23 cycles on start, investigate
+    div_counter_ = RegInitValues::Dmg0::Timer::DIVCounter + 0x23;
     tima_counter_ = 0;
-    interrupt_scheduler_.reset();
+    tima_overflow_scheduler_.reset();
     tima_reload_scheduler_.reset();
     stopped_ = false;
 }
@@ -53,10 +56,10 @@ void Timer::tick(uint16_t cycles)
 
         auto cur_cycles = std::min(cycles, uint16_t{4});
 
-        if (interrupt_scheduler_.scheduled) {
-            interrupt_scheduler_.update(cur_cycles);
+        if (tima_overflow_scheduler_.scheduled) {
+            tima_overflow_scheduler_.update(cur_cycles);
         }
-        if (tima_reload_scheduler_.scheduled) {
+        else if (tima_reload_scheduler_.scheduled) {
             tima_reload_scheduler_.update(cur_cycles);
         }
 

@@ -1,23 +1,19 @@
 /**
- * @file serial.h
- * @brief Serial I/O operations for BoyBoy emulator.
+ * @file apu.h
+ * @brief APU (Audio Processing Unit) for the BoyBoy emulator.
  *
  * @license GPLv3 (see LICENSE file)
  */
 
 #pragma once
 
-#include <iostream>
-#include <ostream>
-
 #include "boyboy/core/io/iocomponent.h"
+#include "boyboy/core/io/registers.h"
 
 namespace boyboy::core::io {
 
-class Serial : public IoComponent {
+class Apu : public IoComponent {
 public:
-    Serial(std::ostream& out = std::cout) : serial_out_(&out) {}
-
     // IoComponent interface
     void init() override;
     void reset() override;
@@ -26,13 +22,9 @@ public:
     void write(uint16_t addr, uint8_t value) override;
     void set_interrupt_cb(cpu::InterruptRequestCallback callback) override;
 
-    void set_output_stream(std::ostream& out) { serial_out_ = &out; }
-
 private:
-    uint8_t sb_{0};
-    uint8_t sc_{0};
-    std::ostream* serial_out_;
     cpu::InterruptRequestCallback request_interrupt_;
+    std::array<uint8_t, io::IoReg::Apu::Size> registers_{};
 };
 
 } // namespace boyboy::core::io

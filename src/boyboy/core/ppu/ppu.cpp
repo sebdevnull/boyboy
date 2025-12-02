@@ -13,6 +13,7 @@
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/mmu/constants.h"
 #include "boyboy/core/mmu/mmu.h"
@@ -26,14 +27,31 @@ using io::IoReg;
 
 void Ppu::init()
 {
+    using PpuInitVal = io::RegInitValues::Dmg0::Ppu;
+
+    // Registers (assume DMG0)
     registers_.fill(0);
+    LCDC_ = PpuInitVal::LCDC;
+    STAT_ = PpuInitVal::STAT;
+    SCY_ = PpuInitVal::SCY;
+    SCX_ = PpuInitVal::SCX;
+    LY_ = PpuInitVal::LY;
+    LYC_ = PpuInitVal::LYC;
+    DMA_ = PpuInitVal::DMA;
+    BGP_ = PpuInitVal::BGP;
+    OBP0_ = PpuInitVal::OBP0;
+    OBP1_ = PpuInitVal::OBP1;
+    WY_ = PpuInitVal::WY;
+    WX_ = PpuInitVal::WX;
+
     framebuffer_.fill(0);
     cycles_ = 0;
     cycles_in_mode_ = 0;
     frame_ready_ = false;
     frame_count_ = 0;
+    frame_skip_ = true;
     window_line_counter_ = 0;
-    mode_ = Mode::HBlank;
+    mode_ = get_mode(); // should be mode 0 (HBlank)
     previous_mode_ = mode_;
     previous_ly_ = LY_;
 }
@@ -47,7 +65,7 @@ void Ppu::tick(uint16_t cycles)
 {
     BB_PROFILE_SCOPE(profiling::FrameTimer::Ppu);
 
-    if (lcd_off()) {
+    if (!is_lcd_on()) {
         return;
     }
 
@@ -102,6 +120,12 @@ void Ppu::tick(uint16_t cycles)
                     frame_ready_ = true;
                     frame_count_++;
                     window_line_counter_ = 0;
+
+                    if (frame_skip_) {
+                        framebuffer_.fill(0);
+                        frame_skip_ = false;
+                        log::debug("[Ppu] Frame skipped");
+                    }
                 }
                 else {
                     // Continue to next line in OAMScan mode
@@ -148,7 +172,7 @@ void Ppu::write(uint16_t addr, uint8_t value)
     if (addr == IoReg::Ppu::LCDC) {
         // Check if LCD is being disabled
         bool lcd_enabled = (value & registers::LCDC::LCDAndPPUEnable) != 0;
-        if (!lcd_off() && !lcd_enabled) {
+        if (is_lcd_on() && !lcd_enabled) {
             log::info("LCD disabled");
             log::debug("PPU state before LCD OFF: mode={}, LY={}", to_string(mode_), LY_);
             set_ly(0);
@@ -157,12 +181,13 @@ void Ppu::write(uint16_t addr, uint8_t value)
             set_mode(Mode::HBlank);
             log::debug("PPU state after LCD OFF: mode={}, LY={}", to_string(mode_), LY_);
         }
-        else if (lcd_off() && lcd_enabled) {
+        else if (!is_lcd_on() && lcd_enabled) {
             log::info("LCD enabled");
             log::debug("PPU state before LCD ON: mode={}, LY={}", to_string(mode_), LY_);
             set_ly(0);
             cycles_in_mode_ = 0;
             window_line_counter_ = 0;
+            frame_skip_ = true; // Skip next frame when LCD is turned on
             set_mode(Mode::OAMScan);
             log::debug("PPU state after LCD ON: mode={}, LY={}", to_string(mode_), LY_);
         }
@@ -218,7 +243,7 @@ void Ppu::update_lyc()
     if (LY_ == LYC_) {
         STAT_ |= registers::STAT::LYCEqualsLY;
         if ((STAT_ & registers::STAT::LYCInt) != 0) {
-            request_interrupt(cpu::Interrupts::LCDStat);
+            request_interrupt(cpu::Interrupt::LCDStat);
         }
     }
     else {
@@ -252,6 +277,10 @@ void Ppu::set_mode(Mode new_mode)
 
 void Ppu::render_scanline()
 {
+    if (frame_skip_) {
+        return;
+    }
+
     render_background();
     render_window();
     render_sprites();
@@ -473,7 +502,7 @@ std::array<Sprite, 40> Ppu::read_oam() const
 
 void Ppu::check_interrupts()
 {
-    if (lcd_off()) {
+    if (!is_lcd_on()) {
         return;
     }
 
@@ -507,23 +536,23 @@ void Ppu::check_interrupts()
     }
 
     if (vblank_request) {
-        request_interrupt(cpu::Interrupts::VBlank);
+        request_interrupt(cpu::Interrupt::VBlank);
     }
     if (stat_request) {
-        request_interrupt(cpu::Interrupts::LCDStat);
+        request_interrupt(cpu::Interrupt::LCDStat);
     }
 }
 
-void Ppu::request_interrupt(uint8_t interrupt)
+void Ppu::request_interrupt(cpu::Interrupt interrupt)
 {
     if (!request_interrupt_) {
-        log::warn("PPU interrupt {} requested but no callback set", interrupt);
+        log::warn("PPU interrupt {} requested but no callback set", to_string(interrupt));
         return;
     }
 
     log::trace(
         "PPU requested interrupt {}. Mode: {}->{}, LY: {}->{}",
-        interrupt,
+        to_string(interrupt),
         to_string(previous_mode_),
         to_string(mode_),
         previous_ly_,

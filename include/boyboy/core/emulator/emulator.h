@@ -26,6 +26,7 @@ class Io;
 class Timer;
 class Joypad;
 class Serial;
+class Apu;
 enum class Button : uint8_t;
 } // namespace io
 namespace display {
@@ -81,6 +82,7 @@ private:
     std::shared_ptr<io::Timer> timer_;
     std::shared_ptr<io::Joypad> joypad_;
     std::shared_ptr<io::Serial> serial_;
+    std::shared_ptr<io::Apu> apu_;
     std::shared_ptr<display::Display> display_;
     std::unique_ptr<cartridge::Cartridge> cartridge_;
 

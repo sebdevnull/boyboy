@@ -13,6 +13,7 @@
 
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/cpu_constants.h"
+#include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/iocomponent.h"
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/ppu/palettes.h"
@@ -139,7 +140,7 @@ public:
 
     // Accessors for convenience and testing
     [[nodiscard]] Mode mode() const { return mode_; }
-    [[nodiscard]] bool lcd_off() const { return (LCDC_ & registers::LCDC::LCDAndPPUEnable) == 0; }
+    [[nodiscard]] bool is_lcd_on() const { return (LCDC_ & registers::LCDC::LCDAndPPUEnable) != 0; }
     [[nodiscard]] uint8_t ly() const { return LY_; }
     void set_ly(uint8_t ly);
     void inc_ly();
@@ -175,7 +176,8 @@ private:
 
     // Frame management
     uint64_t frame_count_ = 0;
-    bool frame_ready_ = false;
+    bool frame_ready_ = false; // Frame ready to be rendered
+    bool frame_skip_ = true;   // Skip next frame
     FrameBuffer framebuffer_{};
 
     // I/O registers
@@ -188,6 +190,7 @@ private:
     uint8_t& SCX_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::SCX));
     uint8_t& LY_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LY));
     uint8_t& LYC_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::LYC));
+    uint8_t& DMA_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::DMA));
     uint8_t& OBP0_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::OBP0));
     uint8_t& OBP1_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::OBP1));
     uint8_t& BGP_ = registers_.at(io::IoReg::Ppu::local_addr(io::IoReg::Ppu::BGP));
@@ -197,6 +200,11 @@ private:
     cpu::InterruptRequestCallback request_interrupt_;
 
     void set_mode(Mode new_mode);
+
+    [[nodiscard]] Mode get_mode() const
+    {
+        return static_cast<Mode>(STAT_ & registers::STAT::PPUModeMask);
+    }
 
     // Rendering
     void render_scanline();
@@ -211,7 +219,7 @@ private:
 
     // Interrupt handling
     void check_interrupts();
-    void request_interrupt(uint8_t interrupt);
+    void request_interrupt(cpu::Interrupt interrupt);
 
     // Helpers to check LCDC flags
     [[nodiscard]] bool bg_enabled() const

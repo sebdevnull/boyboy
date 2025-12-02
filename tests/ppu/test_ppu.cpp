@@ -9,14 +9,18 @@
 
 #include <memory>
 
+#include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/io.h"
 #include "boyboy/core/mmu/mmu.h"
 #include "boyboy/core/ppu/ppu.h"
 #include "boyboy/core/ppu/registers.h"
 
 using namespace boyboy::core::ppu;
+using boyboy::core::cpu::Interrupt;
 using boyboy::core::io::Io;
 using boyboy::core::io::IoReg;
+using boyboy::core::io::RegInitValues;
 using boyboy::core::mmu::Mmu;
 
 class PpuTest : public ::testing::Test {
@@ -36,6 +40,17 @@ protected:
     std::shared_ptr<Mmu> mmu_;
     std::shared_ptr<Ppu> ppu_;
 
+    void skip_frame()
+    {
+        while (!ppu_->frame_ready()) {
+            ppu_->tick(4);
+        }
+        ppu_->consume_frame();
+        while (ppu_->mode() != Mode::OAMScan) {
+            ppu_->tick(4);
+        }
+    }
+
     // Helper to fill a tile in VRAM for background rendering tests
     void fill_bg_tile(uint16_t tile_addr, uint8_t pattern_lo, uint8_t pattern_hi)
     {
@@ -48,16 +63,25 @@ protected:
 
 TEST_F(PpuTest, InitialState)
 {
-    EXPECT_TRUE(ppu_->lcd_off());
-    EXPECT_EQ(ppu_->mode(), Mode::HBlank);
-    EXPECT_EQ(ppu_->ly(), 0);
-    EXPECT_FALSE(ppu_->frame_ready());
+    // Assume DMG0
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::LCDC), RegInitValues::Dmg0::Ppu::LCDC);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::STAT), RegInitValues::Dmg0::Ppu::STAT);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::SCY), RegInitValues::Dmg0::Ppu::SCY);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::SCX), RegInitValues::Dmg0::Ppu::SCX);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::LY), RegInitValues::Dmg0::Ppu::LY);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::LYC), RegInitValues::Dmg0::Ppu::LYC);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::DMA), RegInitValues::Dmg0::Ppu::DMA);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::BGP), RegInitValues::Dmg0::Ppu::BGP);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::OBP0), RegInitValues::Dmg0::Ppu::OBP0);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::OBP1), RegInitValues::Dmg0::Ppu::OBP1);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::WY), RegInitValues::Dmg0::Ppu::WY);
+    EXPECT_EQ(ppu_->read(IoReg::Ppu::WX), RegInitValues::Dmg0::Ppu::WX);
 }
 
 TEST_F(PpuTest, ModeTransitions)
 {
-    // Enable LCD
-    ppu_->write(IoReg::Ppu::LCDC, registers::LCDC::LCDAndPPUEnable);
+    ppu_->enable_lcd(false);
+    ppu_->enable_lcd(true);
 
     // Simulate enough cycles to transition through all modes for one frame
     uint32_t total_cycles = 0;
@@ -115,14 +139,14 @@ TEST_F(PpuTest, VBlankInterrupt)
 {
     bool vblank_irq_triggered = false;
 
-    ppu_->set_interrupt_cb([&](uint8_t interrupt) {
-        if (interrupt == boyboy::core::cpu::Interrupts::VBlank) {
+    ppu_->set_interrupt_cb([&](Interrupt interrupt) {
+        if (interrupt == Interrupt::VBlank) {
             vblank_irq_triggered = true;
         }
     });
 
-    // Enable LCD
-    ppu_->write(IoReg::Ppu::LCDC, registers::LCDC::LCDAndPPUEnable);
+    ppu_->enable_lcd(false);
+    ppu_->enable_lcd(true);
 
     // Simulate enough cycles to reach VBlank
     for (int line = 0; line < VisibleScanlines; ++line) {
@@ -141,17 +165,17 @@ TEST_F(PpuTest, StatInterrupts)
     uint8_t vblank_irq_count = 0;
     uint16_t stat_irq_count  = 0;
 
-    ppu_->set_interrupt_cb([&](uint8_t interrupt) {
-        if (interrupt == boyboy::core::cpu::Interrupts::VBlank) {
+    ppu_->set_interrupt_cb([&](Interrupt interrupt) {
+        if (interrupt == Interrupt::VBlank) {
             vblank_irq_count++;
         }
-        else if (interrupt == boyboy::core::cpu::Interrupts::LCDStat) {
+        else if (interrupt == Interrupt::LCDStat) {
             stat_irq_count++;
         }
     });
 
-    // Enable LCD
-    ppu_->write(IoReg::Ppu::LCDC, registers::LCDC::LCDAndPPUEnable);
+    ppu_->enable_lcd(false);
+    ppu_->enable_lcd(true);
 
     // Enable all STAT interrupts for testing
     uint8_t stat = registers::STAT::LYCInt | registers::STAT::Mode2OAMInt |
@@ -222,6 +246,9 @@ TEST_F(PpuTest, BG4x4Tilemap)
     ppu_->write(IoReg::Ppu::SCX, 0);   // No horizontal scroll
     ppu_->write(IoReg::Ppu::SCY, 0);   // No vertical scroll
     ppu_->write(IoReg::Ppu::BGP, bgp); // Arbitrary palette
+
+    // Skip first frame
+    skip_frame();
 
     // Render visible scanlines
     for (int line = 0; line < VisibleScanlines; ++line) {
@@ -295,6 +322,7 @@ TEST_F(PpuTest, BG4x4TilemapScroll)
     }
 
     // PPU registers
+    ppu_->enable_lcd(false);
     uint8_t lcdc = registers::LCDC::LCDAndPPUEnable | registers::LCDC::BGAndWindowEnable |
                    registers::LCDC::BGAndWindowTileData;
     uint8_t bgp = 0xE4;
@@ -304,6 +332,9 @@ TEST_F(PpuTest, BG4x4TilemapScroll)
     ppu_->write(IoReg::Ppu::SCX, scx);
     ppu_->write(IoReg::Ppu::SCY, scy);
     ppu_->write(IoReg::Ppu::BGP, bgp);
+
+    // Skip first frame
+    skip_frame();
 
     // Render first visible scanline (after vertical scroll)
     ppu_->tick(Cycles::OAMScan);
@@ -337,15 +368,16 @@ TEST_F(PpuTest, BG4x4TilemapScroll)
 
 TEST_F(PpuTest, PpuModeMemLock)
 {
+    ppu_->enable_lcd(false);
     // Ppu starts with LCD off, both should be unlocked
-    EXPECT_TRUE(ppu_->lcd_off());
+    EXPECT_FALSE(ppu_->is_lcd_on());
     EXPECT_EQ(ppu_->mode(), Mode::HBlank);
     EXPECT_FALSE(mmu_->is_vram_locked());
     EXPECT_FALSE(mmu_->is_oam_locked());
 
     // When LCD ON, Ppu starts in mode 2 (OAMScan), OAM should be locked
     ppu_->enable_lcd(true);
-    EXPECT_FALSE(ppu_->lcd_off());
+    EXPECT_TRUE(ppu_->is_lcd_on());
     EXPECT_EQ(ppu_->mode(), Mode::OAMScan);
     EXPECT_FALSE(mmu_->is_vram_locked());
     EXPECT_TRUE(mmu_->is_oam_locked());

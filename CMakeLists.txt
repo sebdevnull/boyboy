@@ -117,6 +117,7 @@ target_sources(${BOYBOY_LIB} PRIVATE
     src/boyboy/core/io/serial.cpp
     src/boyboy/core/io/timer.cpp
     src/boyboy/core/io/joypad.cpp
+    src/boyboy/core/io/apu.cpp
     src/boyboy/core/ppu/ppu.cpp
     src/boyboy/core/cartridge/cartridge.cpp
     src/boyboy/core/cartridge/cartridge_loader.cpp

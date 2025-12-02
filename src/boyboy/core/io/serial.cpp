@@ -11,21 +11,37 @@
 
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/registers.h"
 
 namespace boyboy::core::io {
 
 using namespace boyboy::common;
 
-void Serial::init() {}
+void Serial::init()
+{
+    // Assume DMG0
+    sb_ = RegInitValues::Dmg0::Serial::SB;
+    sc_ = RegInitValues::Dmg0::Serial::SC;
+}
 
-void Serial::reset() {}
+void Serial::reset()
+{
+    init();
+}
 
 void Serial::tick([[maybe_unused]] uint16_t cycles) {}
 
 [[nodiscard]] uint8_t Serial::read([[maybe_unused]] uint16_t addr) const
 {
-    return 0xFF;
+    switch (addr) {
+        case IoReg::Serial::SB:
+            return sb_;
+        case IoReg::Serial::SC:
+            return sc_;
+        default:
+            return 0xFF;
+    }
 }
 
 void Serial::write(uint16_t addr, uint8_t value)

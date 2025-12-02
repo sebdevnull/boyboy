@@ -12,12 +12,15 @@
 #include <thread>
 
 #include "boyboy/common/config/config.h"
+#include "boyboy/common/config/config_limits.h"
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/save/save_manager.h"
 #include "boyboy/core/cartridge/cartridge.h"
 #include "boyboy/core/cartridge/cartridge_loader.h"
 #include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/display/display.h"
+#include "boyboy/core/io/apu.h"
 #include "boyboy/core/io/buttons.h"
 #include "boyboy/core/io/io.h"
 #include "boyboy/core/io/joypad.h"
@@ -39,6 +42,7 @@ Emulator::Emulator()
       timer_(std::make_shared<io::Timer>()),
       joypad_(std::make_shared<io::Joypad>()),
       serial_(std::make_shared<io::Serial>()),
+      apu_(std::make_shared<io::Apu>()),
       display_(std::make_shared<display::Display>()),
       cartridge_(std::make_unique<cartridge::Cartridge>())
 {
@@ -53,6 +57,7 @@ void Emulator::init()
     io_->register_component(timer_);
     io_->register_component(joypad_);
     io_->register_component(serial_);
+    io_->register_component(apu_);
 
     mmu_->init();
     io_->init();
@@ -97,10 +102,6 @@ void Emulator::start()
 
     cartridge_->load_ram();
     display_->init();
-
-    // Enable LCD: it seems that some games expect it to be on at start, probably because the boot
-    // ROM does it so we will enable it until we implement the boot ROM (if we ever do)
-    ppu_->enable_lcd(true);
 
     started_ = true;
 }
@@ -164,6 +165,24 @@ void Emulator::apply_config(const common::config::Config& config)
     speed_ = config.emulator.speed;
     frame_rate_limited_ = speed_ != 0;
 
+    auto tick_mode = cpu::TickMode::MCycle;
+    if (config.emulator.tick_mode == config::ConfigLimits::Emulator::FastMode) {
+        tick_mode = cpu::TickMode::Instruction;
+    }
+    else if (config.emulator.tick_mode == config::ConfigLimits::Emulator::NormalMode) {
+        tick_mode = cpu::TickMode::MCycle;
+    }
+    else if (config.emulator.tick_mode == config::ConfigLimits::Emulator::PrecisionMode) {
+        tick_mode = cpu::TickMode::TCycle;
+    }
+    else {
+        log::warn("Unknown emulator config tick mode: {}", config.emulator.tick_mode);
+    }
+
+    // Set CPU settings
+    cpu_->set_tick_mode(tick_mode);
+    cpu_->enable_fe_overlap(config.emulator.fe_overlap);
+
     // Video settings
     display_->set_scale(config.video.scale);
     display_->set_vsync(config.video.vsync);
@@ -175,6 +194,8 @@ void Emulator::apply_config(const common::config::Config& config)
     // Logging settings
     log::set_level(config.debug.log_level);
 
+    log::info("Running CPU with tick mode: {}", to_string(tick_mode));
+    log::info("CPU fetch/execute overlap: {}", config.emulator.fe_overlap ? "enabled" : "disabled");
     log::info("Configuration applied");
 }
 
@@ -191,7 +212,7 @@ void Emulator::on_button_event(io::Button button, bool pressed)
 void Emulator::emulate_frame()
 {
     while (!ppu_->frame_ready()) {
-        auto cycles = cpu_->step();
+        auto cycles = cpu_->tick();
         instruction_count_++;
         cycle_count_ += cycles;
 

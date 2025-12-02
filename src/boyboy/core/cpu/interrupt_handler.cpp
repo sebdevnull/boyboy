@@ -8,8 +8,11 @@
 #include "boyboy/core/cpu/interrupt_handler.h"
 
 #include <cstdint>
+#include <utility>
 
+#include "boyboy/common/log/logging.h"
 #include "boyboy/core/cpu/cpu.h"
+#include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/registers.h"
 
@@ -18,12 +21,55 @@ namespace boyboy::core::cpu {
 constexpr auto IF = boyboy::core::io::IoReg::Interrupts::IF;
 constexpr auto IE = boyboy::core::io::IoReg::Interrupts::IE;
 
-uint8_t InterruptHandler::service()
+void InterruptHandler::tick(Cycles cycles)
 {
-    if (!cpu_.get_ime()) {
-        return 0;
+    // Tick until we can service the interrupt.
+    // It could be done in multiple cycles stages (push PC, jump), but since the CPU is locked
+    // servicing the interrupt it doesn't (or shouldn't) matter.
+    if (is_servicing()) {
+        cycles_left_ -= to_tcycles(cycles);
+        if (cycles_left_ > 0) {
+            return;
+        }
+        service_interrupt(current_interrupt_);
     }
 
+    // If not servicing check if there's any interrupt pending and schedule
+    if (auto pend = pending(); pend != 0) {
+
+        if (!cpu_.get_ime()) {
+            // If an interrupt is triggered (IE & IF != 0), CPU wakes up after 4 cycles
+            // TODO: check that 4 cycles elapsed before waking up
+            if (cpu_.is_halted()) {
+                cpu_.set_halted(false);
+            }
+            return;
+        }
+
+        for (size_t i = 0; i < InterruptVectors::Vectors.size(); ++i) {
+            auto interrupt = 1 << i;
+            if ((pend & interrupt) == 0) {
+                continue;
+            }
+
+            cycles_left_ = service_cycles() - to_tcycles(cycles);
+            current_interrupt_ = static_cast<Interrupt>(interrupt);
+
+            common::log::trace(
+                "[InterruptHandler] Servicing interrupt: {}", to_string(current_interrupt_)
+            );
+
+            // Disable interrupts, clear IF and wake CPU if halted
+            cpu_.set_ime(false);
+            clear_interrupt(current_interrupt_);
+            cpu_.set_halted(false);
+            break;
+        }
+    }
+}
+
+TCycle InterruptHandler::service()
+{
     uint8_t ier = get_ie();
     uint8_t ifr = get_if();
     uint8_t pending = ier & ifr;
@@ -32,9 +78,18 @@ uint8_t InterruptHandler::service()
         return 0;
     }
 
-    // Disable interrupts and wake CPU if halted
-    cpu_.set_ime(false);
-    cpu_.set_halted(false);
+    if (!cpu_.get_ime()) {
+        TCycle cycles = 0;
+
+        // If an interrupt is triggered (IE & IF != 0), CPU wakes up after 4 cycles
+        if (cpu_.is_halted()) {
+            cpu_.set_halted(false);
+            cycles = 4;
+        }
+        return cycles;
+    }
+
+    const auto ServiceCycles = service_cycles();
 
     uint8_t cycles = 0;
     for (size_t i = 0; i < InterruptVectors::Vectors.size(); ++i) {
@@ -42,13 +97,18 @@ uint8_t InterruptHandler::service()
         if ((pending & mask) != 0) {
             // Clear IF flag
             ifr &= ~mask;
+
+            common::log::trace(
+                "[InterruptHandler] Servicing interrupt: {}", to_string(Interrupt(mask))
+            );
+
+            // Disable interrupts and wake CPU if halted
+            cpu_.set_ime(false);
             set_if(ifr);
-            // Push PC to stack
-            cpu_.push_pc();
-            // Jump to interrupt vector
-            cpu_.set_pc(InterruptVectors::Vectors.at(i));
-            // Interrupt handling takes 5 machine cycles (20 T-cycles)
-            cycles = 20;
+            cpu_.set_halted(false);
+
+            service_interrupt(static_cast<Interrupt>(mask));
+            cycles = ServiceCycles;
             break;
         }
     }
@@ -56,30 +116,38 @@ uint8_t InterruptHandler::service()
     return cycles;
 }
 
-void InterruptHandler::request(uint8_t interrupt)
+inline void InterruptHandler::service_interrupt(Interrupt interrupt)
+{
+    cpu_.push_pc();
+    cpu_.set_pc(std::to_underlying(InterruptVectors::get_vector(interrupt)));
+}
+
+void InterruptHandler::request(Interrupt interrupt)
 {
     uint8_t ifr = get_if();
-    ifr |= interrupt;
+    ifr |= std::to_underlying(interrupt);
     set_if(ifr);
+    common::log::trace("[InterruptHandler] Interrupt requested: {}", to_string(interrupt));
 }
 
-void InterruptHandler::enable(uint8_t interrupt)
+void InterruptHandler::enable(Interrupt interrupt)
 {
     uint8_t ie = get_ie();
-    ie |= interrupt;
+    ie |= std::to_underlying(interrupt);
     set_ie(ie);
+    common::log::trace("[InterruptHandler] Interrupt enabled: {}", to_string(interrupt));
 }
 
-bool InterruptHandler::is_requested(uint8_t interrupt) const
+bool InterruptHandler::is_requested(Interrupt interrupt) const
 {
     uint8_t ifr = get_if();
-    return (ifr & interrupt) != 0;
+    return (ifr & std::to_underlying(interrupt)) != 0;
 }
 
-bool InterruptHandler::is_enabled(uint8_t interrupt) const
+bool InterruptHandler::is_enabled(Interrupt interrupt) const
 {
     uint8_t ie = get_ie();
-    return (ie & interrupt) != 0;
+    return (ie & std::to_underlying(interrupt)) != 0;
 }
 
 uint8_t InterruptHandler::pending() const
@@ -89,10 +157,20 @@ uint8_t InterruptHandler::pending() const
     return ie & ifr;
 }
 
-void InterruptHandler::clear_interrupt(uint8_t interrupt)
+bool InterruptHandler::should_service() const
+{
+    return cpu_.get_ime() && (pending() != 0);
+}
+
+bool InterruptHandler::should_wake_up() const
+{
+    return pending() != 0;
+}
+
+inline void InterruptHandler::clear_interrupt(Interrupt interrupt)
 {
     uint8_t ifr = get_if();
-    ifr &= ~interrupt;
+    ifr &= ~std::to_underlying(interrupt);
     set_if(ifr);
 }
 
@@ -101,19 +179,36 @@ uint8_t InterruptHandler::get_ie() const
     return cpu_.read_byte(IE);
 }
 
-void InterruptHandler::set_ie(uint8_t value)
-{
-    cpu_.write_byte(IE, value);
-}
-
 uint8_t InterruptHandler::get_if() const
 {
     return cpu_.read_byte(IF);
 }
 
-void InterruptHandler::set_if(uint8_t value)
+inline void InterruptHandler::set_ie(uint8_t value)
+{
+    cpu_.write_byte(IE, value);
+}
+
+inline void InterruptHandler::set_if(uint8_t value)
 {
     cpu_.write_byte(IF, value);
+}
+
+/**
+ * @brief Calculate the number of cycles needed to service an interrupt.
+ *
+ * It takes 20 T-cycles to handle an interrupt and another extra 4 T-cycles if the CPU is halted.
+ *
+ * @return TCycle Number of T-cycles required to service the interrupt.
+ */
+inline TCycle InterruptHandler::service_cycles() const
+{
+    auto cycles = InterruptServiceCycles;
+    if (cpu_.is_halted()) {
+        cycles += 4;
+    }
+
+    return cycles;
 }
 
 } // namespace boyboy::core::cpu

@@ -18,8 +18,12 @@ PUBLIC_OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 def get_cycles(cycle_list):
-    """Return the first cycle count or 0 if empty."""
-    return cycle_list[0] if cycle_list else 0
+    """Return a tuple with the number of cycles count or 0 if empty."""
+    return (
+        (cycle_list[0], 0 if len(cycle_list) < 2 else cycle_list[1])
+        if cycle_list
+        else (0, 0)
+    )
 
 
 def get_operands(ops_list):
@@ -79,7 +83,7 @@ def print_opcode(opcode, info):
     code = int(opcode, 16)
     mnemonic = info["mnemonic"]
     length = info["bytes"]
-    cycles = get_cycles(info.get("cycles", []))
+    (cycles, cycles_no_branch) = get_cycles(info.get("cycles", []))
     operands = get_operands(info["operands"])
     func_name = get_func_name(mnemonic, info["operands"])
     full_mnemonic = get_mnemonic(info["mnemonic"], info["operands"])
@@ -89,6 +93,7 @@ def print_opcode(opcode, info):
     print(f"  Full Mnemonic: {full_mnemonic}")
     print(f"  Length: {length}")
     print(f"  Cycles: {cycles}")
+    print(f"  Cycles (branch non taken): {cycles_no_branch}")
     print(f"  Operands: {operands}")
     print(f"  Function Name: {func_name}")
     print()
@@ -112,15 +117,14 @@ def write_table(opcodes, path, description="Opcode Table"):
     )
 
     # Generate file with the following format:
-    # table[0x00] = {.mnemonic = "NOP", .length = 1, .cycles = 4, .execute = &Cpu::nop};
+    # table[0x00] = {.mnemonic = "NOP", .length = 1, .cycles = 4, .cycles_no_branch = 0, .execute = &Cpu::nop};
     with open(path, "w") as f:
         write_file_header(f, description, JSON_FILE.name)
         for code_str, info in sorted(opcodes.items(), key=lambda x: int(x[0], 16)):
             code = int(code_str, 16)
             mnemonic = info["mnemonic"]
             length = info["bytes"]
-            # cycles = get_cycles(info.get('cycles', []))
-            cycles = info["cycles"][0]
+            (cycles, cycles_no_branch) = get_cycles(info.get("cycles", []))
             operands = get_operands(info["operands"])
             func_name = get_func_name(mnemonic, info["operands"])
             full_mnemonic = get_mnemonic(info["mnemonic"], info["operands"])
@@ -132,6 +136,7 @@ def write_table(opcodes, path, description="Opcode Table"):
                 f'.mnemonic = "{full_mnemonic}",{padding}'
                 f".length = {length}, "
                 f'.cycles = {cycles},{" " * (2 - len(str(cycles)) + 1)}'
+                f'.cycles_no_branch = {cycles_no_branch},{" " * (2 - len(str(cycles_no_branch)) + 1)}'
                 f".execute = &Cpu::{func_name}}};\n"
             )
     print(f"[INFO] Wrote opcode table to {path}")

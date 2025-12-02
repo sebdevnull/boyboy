@@ -30,6 +30,13 @@ inline static constexpr std::string_view ConfigHeader = R"(# BoyBoy Emulator Con
 #       0 = uncapped
 #       1..10 = speed multiplier
 #       default: 1
+#   tick_mode: fast | normal | precision
+#       fast = tick per instruction
+#       normal = tick every M-cycle
+#       precision = tick every T-cycle
+#       default: fast
+#   cpu_overlap: true/false
+#       default: false
 #
 # [saves] - save options
 #   autosave: true/false
@@ -102,6 +109,18 @@ const toml::table& get_section(const toml::table& tbl, std::string_view section)
         ConfigKeys::Emulator::Speed,
         ConfigKeys::Emulator::Section
     );
+    load_field(
+        config.emulator.tick_mode,
+        emulator_tbl,
+        ConfigKeys::Emulator::TickMode,
+        ConfigKeys::Emulator::Section
+    );
+    load_field(
+        config.emulator.fe_overlap,
+        emulator_tbl,
+        ConfigKeys::Emulator::FetchExecOverlap,
+        ConfigKeys::Emulator::Section
+    );
 
     auto video_tbl = get_section(tbl, ConfigKeys::Video::Section);
     load_field(config.video.scale, video_tbl, ConfigKeys::Video::Scale, ConfigKeys::Video::Section);
@@ -135,6 +154,8 @@ void TomlConfigLoader::save(const Config& config, std::ostream& output) const
     // Load Config into TOML table(s)
     auto emulator_tbl = toml::table{
         {ConfigKeys::Emulator::Speed, config.emulator.speed},
+        {ConfigKeys::Emulator::TickMode, config.emulator.tick_mode},
+        {ConfigKeys::Emulator::FetchExecOverlap, config.emulator.fe_overlap},
     };
     auto video_tbl = toml::table{
         {ConfigKeys::Video::Scale, config.video.scale},
