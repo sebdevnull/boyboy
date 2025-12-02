@@ -12,6 +12,7 @@
 
 // boyboy
 #include "boyboy/core/cpu/interrupts.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/io.h"
 #include "boyboy/core/io/registers.h"
 #include "boyboy/core/io/timer.h"
@@ -55,11 +56,14 @@ protected:
 
 TEST_F(IoTimerTest, InitialState)
 {
+    // Assume DMG0
+    using TimerInitValues = boyboy::core::io::RegInitValues::Dmg0::Timer;
+
     timer_->reset();
-    EXPECT_EQ(read_div(), Timer::DivStartValue);
-    EXPECT_EQ(read_tima(), 0);
-    EXPECT_EQ(read_tma(), 0);
-    EXPECT_EQ(read_tac(), 0);
+    EXPECT_EQ(read_div(), TimerInitValues::DIVCounter >> 8);
+    EXPECT_EQ(read_tima(), TimerInitValues::TIMA);
+    EXPECT_EQ(read_tma(), TimerInitValues::TMA);
+    EXPECT_EQ(read_tac(), TimerInitValues::TAC);
 }
 
 TEST_F(IoTimerTest, DivIncrements)
