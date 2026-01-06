@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
+### Added
+
+- Tick modes for different levels of granularity and speed:
+  - `Instruction` (current tick mode).
+  - `M-cycle` (1 machine cycle = 1 T-cycle).
+  - `T-cycle` (1 clock cycle).
+- CPU:
+  - Execution state.
+  - Conditional branching instructions state and cycles.
+  - Interrupt scheduling.
+- PPU:
+  - Frame skipping.
+- CLI and config options:
+  - Fetch/execute overlap.
+  - Tick mode.
+- Dummy APU module and Serial SB/SC registers.
+
 ### Changed
 
 - Improve **core components composition** with dependency injection:
@@ -16,6 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org).
   - Add `Io` components registration and improve Io read/write operations
   - Remove `Ppu` memory callbacks and add `Mmu` weak dependency
   - Add `init` methods and improve init/reset logic in general
+- Adapt codebase to accept different tick modes.
+- Proper initial values for DMG0 registers.
+
+### Fixed
+
+- Timer TIMA overflow and reload cycles.
+- Service one interrupt at a time.
 
 ## [0.6.0] - 2025-10-24
 
