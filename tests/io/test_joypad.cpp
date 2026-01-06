@@ -11,16 +11,16 @@
 
 #include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/buttons.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/joypad.h"
 #include "boyboy/core/io/registers.h"
-#include "boyboy/core/io/constants.h"
 
 using boyboy::core::io::Button;
 using boyboy::core::io::ButtonMask;
 using boyboy::core::io::IoReg;
 using boyboy::core::io::Joypad;
-using boyboy::core::io::to_string;
 using boyboy::core::io::RegInitValues;
+using boyboy::core::io::to_string;
 
 class IoJoypadTest : public ::testing::Test {
 protected:
@@ -60,7 +60,7 @@ TEST_F(IoJoypadTest, InitialState)
 {
     // Initial state: no buttons pressed, no selection
     // Assume DMG0
-    EXPECT_EQ(read_p1(),RegInitValues::Dmg0::Joypad::P1);
+    EXPECT_EQ(read_p1(), RegInitValues::Dmg0::Joypad::P1);
 }
 
 TEST_F(IoJoypadTest, ResetState)
