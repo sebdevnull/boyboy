@@ -11,7 +11,7 @@ It includes both commercial games and well-known test ROMs used in the emulator 
 The emulator currently supports ROM-Only and MBC1 cartridges. Battery-backed RAM is not yet implemented, so games relying on save functionality might be playable but without saving progress.
 
 | Game Title | Cartridge Type | Notes | Status |
-|------------|----------------|--------|:-------:|
+| ---------- | -------------- | ----- | :----: |
 | Alleyway | ROM ONLY | Game starts but controllers do not respond | ❌ |
 | Dr. Mario | ROM ONLY | Fully playable | ✅ |
 | Tetris | ROM ONLY | Fully playable | ✅ |
@@ -38,7 +38,7 @@ The emulator currently supports ROM-Only and MBC1 cartridges. Battery-backed RAM
 | Pacman | MBC1 | Fully playable | ✅ |
 | Paperboy | MBC1 | Fully playable | ✅ |
 | Super Mario Land | MBC1 | Fully playable | ✅ |
-| Super Mario Land 2: 6 Golden Coins  | MBC1+RAM+BATTERY | Fully playable | ✅ |
+| Super Mario Land 2: 6 Golden Coins | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | Super Mario Land 3: Wario Land | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | The Legend of Zelda: Link's Awakening | MBC1+RAM+BATTERY | Fully playable | ✅ |
 | Tumble Pop | MBC1 | Game starts, screen goes blank after intro | ❌ |
@@ -57,7 +57,7 @@ No copyrighted commercial Nintendo ROMs are distributed with this project.
 #### CPU Instrs
 
 | ROM Name | Description | Notes | Instr | M-cycle | T-cycle |
-|----------|-------------|-------|:-----:|:-------:|:-------:|
+| -------- | ----------- | ----- | :---: | :-----: | :-----: |
 | 01-special.gb | Tests special CPU instructions | Passes all tests | ✅ | ✅ | ✅ |
 | 02-interrupts.gb | Tests interrupt handling | Passes all tests | ✅ | ✅ | ✅ |
 | 03-op sp,hl.gb | Tests stack pointer and HL instructions | Passes all tests | ✅ | ✅ | ✅ |
@@ -77,40 +77,40 @@ Not implemented yet.
 
 #### Instr Timing
 
-| ROM Name |  Notes | Instr | M-cycle | T-cycle |
-|----------|--------|:-----:|:-------:|:-------:|
+| ROM Name | Notes | Instr | M-cycle | T-cycle |
+| -------- | ----- | :---: | :-----: | :-----: |
 | instr_timing.gb | Pass | ✅ | ✅ | ✅ |
 
 #### Interrupt Time
 
-| ROM Name |  Notes | Instr | M-cycle | T-cycle |
-|----------|--------|:-----:|:-------:|:-------:|
+| ROM Name | Notes | Instr | M-cycle | T-cycle |
+| -------- | ----- | :---: | :-----: | :-----: |
 | interrupt_time.gb | | ❌ | ❌ | ❌ |
 
 #### Mem Timing
 
-| ROM Name |  Notes | Instr | M-cycle | T-cycle |
-|----------|--------|:-----:|:-------:|:-------:|
+| ROM Name | Notes | Instr | M-cycle | T-cycle |
+| -------- | ----- | :---: | :-----: | :-----: |
 | 01-read_timing.gb | | ❌ | ✅ | ✅ |
 | 02-write_timing.gb | | ❌ | ✅ | ✅ |
 | 03-modify_timing.gb | | ❌ | ❌ | ❌ |
 
 #### Mem Timing 2
 
-| ROM Name |  Notes | Instr | M-cycle | T-cycle |
-|----------|--------|:-----:|:-------:|:-------:|
+| ROM Name | Notes | Instr | M-cycle | T-cycle |
+| -------- | ----- | :---: | :-----: | :-----: |
 | 01-read_timing.gb | | ❌ | ✅ | ✅ |
 | 02-write_timing.gb | | ❌ | ✅ | ✅ |
 | 03-modify_timing.gb | | ❌ | ❌ | ❌ |
 
 #### OAM Bug
 
-| ROM Name |  Notes | Instr | M-cycle | T-cycle |
-|----------|--------|:-----:|:-------:|:-------:|
+| ROM Name | Notes | Instr | M-cycle | T-cycle |
+| -------- | ----- | :---: | :-----: | :-----: |
 | 1-lcd_sync.gb | | ❌ | ❌ | ❌ |
 | 2-causes.gb | | ❌ | ❌ | ❌ |
 | 3-non_causes.gb | Pass | ✅ | ✅ | ✅ |
-| 4-scanline_timing.gb |   | ❌ | ❌ | ❌ |
+| 4-scanline_timing.gb | | ❌ | ❌ | ❌ |
 | 5-timing_bug.gb | | ❌ | ❌ | ❌ |
 | 6-timing_no_bug.gb | Pass | ✅ | ✅ | ✅ |
 | 7-timing_effect.gb | | ❌ | ❌ | ❌ |
@@ -125,7 +125,7 @@ Not implemented yet.
 #### General
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | add_sp_e_timing.gb | | ❌ | ❌ | ❌ |
 | boot_div-dmg0.gb | DIV counter is off on start | ❌ | ✅ | ✅ |
 | boot_hwio-dmg0.gb | Fails on PPU.STAT | ❌ | ❌ | ❌ |
@@ -139,10 +139,10 @@ Not implemented yet.
 | ei_sequence.gb | | ❌ | ✅ | ✅ |
 | ei_timing.gb | Pass | ✅ | ✅ | ✅ |
 | halt_ime0_ei.gb | Pass | ✅ | ✅ | ✅ |
-| halt_ime0_nointr_timing.gb |  | ✅ | ✅ | ❌ |
+| halt_ime0_nointr_timing.gb | | ✅ | ✅ | ❌ |
 | halt_ime1_timing.gb | Pass | ✅ | ✅ | ✅ |
 | halt_ime1_timing2-GS.gb | | ❌ | ✅ | ✅ |
-| if_ie_registers.gb |  | ❌ | ❌ | ❌ |
+| if_ie_registers.gb | | ❌ | ❌ | ❌ |
 | intr_timing.gb | Pass | ✅ | ✅ | ✅ |
 | jp_cc_timing.gb | | ❌ | ❌ | ❌ |
 | jp_timing.gb | | ❌ | ❌ | ❌ |
@@ -162,7 +162,7 @@ Not implemented yet.
 #### Bits
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | mem_oam.gb | Pass | ✅ | ✅ | ✅ |
 | reg_f.gb | Pass | ✅ | ✅ | ✅ |
 | unused_hwio-GS.gb | | ❌ | ❌ | ❌ |
@@ -170,19 +170,19 @@ Not implemented yet.
 #### Instr
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | daa.gb | Pass | ✅ | ✅ | ✅ |
 
 #### Interrupts
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | ie_push.gb | R1: not cancelled | ❌ | ❌ | ❌ |
 
 #### OAM DMA
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | basic.gb | Pass | ✅ | ✅ | ✅ |
 | reg_read.gb | Fail: r1 | ❌ | ❌ | ❌ |
 | sources-GS.gb | Need MBC5 to run | ❌ | ❌ | ❌ |
@@ -190,7 +190,7 @@ Not implemented yet.
 #### PPU
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | hblank_ly_scx_timing-GS.gb | | ❌ | ❌ | ❌ |
 | intr_1_2_timing-GS.gb | | ❌ | ✅ | ✅ |
 | intr_2_0_timing.gb | | ❌ | ✅ | ✅ |
@@ -207,7 +207,7 @@ Not implemented yet.
 #### Timer
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | div_write.gb | Pass | ✅ | ✅ | ✅ |
 | rapid_toggle.gb | | ✅ | ❌ | ❌ |
 | tim00_div_trigger.gb | Pass | ✅ | ✅ | ✅ |
@@ -227,7 +227,7 @@ Not implemented yet.
 #### MBC1
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | bits_bank1.gb | Pass | ✅ | ✅ | ✅ |
 | bits_bank2.gb | Pass | ✅ | ✅ | ✅ |
 | bits_mode.gb | Pass | ✅ | ✅ | ✅ |
@@ -257,7 +257,7 @@ Not implemented yet.
 > Source: [little-things-gb GitHub repository](https://github.com/nitro2k01/little-things-gb)
 
 | ROM Name | Notes | Instr | M-cycle | T-cycle |
-|----------|-------|:-----:|:-------:|:-------:|
+| -------- | ----- | :---: | :-----: | :-----: |
 | double_halt_cancel.gb | One extra div count in cycle modes | ✅ | ❌ | ❌ |
 
 ### dmg-acid2
