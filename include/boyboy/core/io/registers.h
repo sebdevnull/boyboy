@@ -35,7 +35,7 @@ struct IoReg {
         static bool contains(uint16_t addr) { return addr >= DIV && addr <= TAC; }
     };
 
-    struct Sound {
+    struct Apu {
         static constexpr uint16_t NR10 = 0xFF10; // Channel 1 Sweep register
         static constexpr uint16_t NR11 = 0xFF11; // Channel 1 Sound length/Wave pattern duty
         static constexpr uint16_t NR12 = 0xFF12; // Channel 1 Volume Envelope
@@ -59,6 +59,8 @@ struct IoReg {
         static constexpr uint16_t NR52 = 0xFF26; // Sound on/off
 
         static bool contains(uint16_t addr) { return addr >= NR10 && addr <= NR52; }
+        static constexpr uint16_t Size = NR52 - NR10 + 1;
+        static uint16_t local_addr(uint16_t addr) { return addr - io::IoReg::Apu::NR10; }
     };
 
     struct Ppu {

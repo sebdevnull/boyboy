@@ -12,8 +12,10 @@
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/cpu_constants.h"
+#include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/cpu/instructions.h"
 #include "boyboy/core/cpu/instructions_table.h"
+#include "boyboy/core/cpu/state.h"
 #include "boyboy/core/profiling/profiler_utils.h"
 
 namespace boyboy::core::cpu {
@@ -22,19 +24,21 @@ using namespace boyboy::common;
 
 void Cpu::init()
 {
-    // Registers
-    registers_.af = AFStartValue;
-    registers_.bc = BCStartValue;
-    registers_.de = DEStartValue;
-    registers_.hl = HLStartValue;
-    registers_.sp = SPStartValue;
-    registers_.pc = PCStartValue;
+    // Registers (init by default in DMG0 mode)
+    registers_.af = RegInitValues::Dmg0::AF;
+    registers_.bc = RegInitValues::Dmg0::BC;
+    registers_.de = RegInitValues::Dmg0::DE;
+    registers_.hl = RegInitValues::Dmg0::HL;
+    registers_.sp = RegInitValues::Dmg0::SP;
+    registers_.pc = RegInitValues::Dmg0::PC;
 
     // Reset flags and state
     ime_ = false;
-    ime_scheduled_ = false;
+    ime_scheduled_ = 0;
     halted_ = false;
     cycles_ = 0;
+    branch_taken_ = false;
+    exec_state_.init();
 }
 void Cpu::reset()
 {
@@ -151,16 +155,35 @@ void Cpu::set_halted(bool halted)
     halted_ = halted;
 }
 
-uint8_t Cpu::step()
+void Cpu::set_tick_mode(TickMode mode)
+{
+    if (mode != tick_mode_) {
+        log::debug("CPU ticking mode changed: {} -> {}", to_string(tick_mode_), to_string(mode));
+    }
+    tick_mode_ = mode;
+}
+
+TCycle Cpu::tick()
 {
     BB_PROFILE_SCOPE(profiling::FrameTimer::Cpu);
 
+    if (tick_mode_ == TickMode::Instruction) {
+        return step();
+    }
+
+    auto cycles = tickmode_to_cycles(tick_mode_);
+    tick_cycles(cycles);
+
+    return to_tcycles(cycles);
+}
+
+inline uint8_t Cpu::step()
+{
     uint8_t cycles = interrupt_handler_.service();
     cycles_ += cycles;
 
     if (halted_) {
-        // TODO: This should be 0 cycles, but until we have a clock, we use 4 cycles
-        // to keep other components ticking
+        // Add 4 cycles as if we were executing NOPs
         cycles_ += 4;
         return cycles + 4;
     }
@@ -180,13 +203,166 @@ uint8_t Cpu::step()
     cycles += execute(opcode, instr_type);
 
     // IME is enabled after the instruction following EI
-    if (ime_scheduled_ &&
+    if (is_ime_scheduled() &&
         (opcode != static_cast<uint8_t>(Opcode::EI) || instr_type != InstructionType::Unprefixed)) {
-        ime_scheduled_ = false;
+        ime_scheduled_ = 0;
         ime_ = true;
     }
 
     return cycles;
+}
+
+inline void Cpu::tick_cycles(Cycles cycles)
+{
+    // Number of T-cycles to tick
+    auto tcycles = to_tcycles(cycles);
+    cycles_ += tcycles;
+
+    // Handle interrupts before anything else
+    if (handle_interrupts(cycles)) {
+        // We are servicing an interrupt, return until finished
+        return;
+    }
+
+    // Handle IME status change (IE schedule)
+    handle_ime(tcycles);
+
+    // If halted skip rest of the cycle as if executing NOPs
+    if (is_halted()) {
+        return;
+    }
+
+    exec_state_.cycles_left -= tcycles;
+
+    // Fetch/execute overlap: the fetch stage always overlaps with the last machine cycle of the
+    // execute stage of the previous instruction
+    if (fe_overlap_ && exec_state_.stage == Stage::Execute &&
+        exec_state_.cycles_left <= FetchCycles) {
+        exec_state_.stage |= Stage::Fetch;
+    }
+
+    // Take actions on stage end
+    if (exec_state_.cycles_left == 0) {
+        if (!fe_overlap_ && exec_state_.has_stage(Stage::Fetch)) {
+            fetch_stage();
+        }
+        if (exec_state_.has_stage(Stage::Execute) && exec_state_.cycles_left == 0) {
+            execute_stage();
+
+            if (exec_state_.branching) {
+                return;
+            }
+
+            // If an interrupt service was scheduled skip fetch
+            if (exec_state_.has_stage(Stage::InterruptService)) {
+                return;
+            }
+
+            if (!fe_overlap_) {
+                exec_state_.stage = Stage::Fetch;
+                exec_state_.cycles_left = FetchCycles;
+                return;
+            }
+        }
+        // We cascade from Execute to Fetch on purpose to allow fetch/execute overlap
+        if (fe_overlap_ && exec_state_.has_stage(Stage::Fetch)) {
+            fetch_stage();
+        }
+    }
+}
+
+inline void Cpu::fetch_stage()
+{
+    // Fetch next byte
+    exec_state_.fetched = fetch();
+
+    if (exec_state_.fetched == CBInstructionPrefix &&
+        !exec_state_.has_stage(Stage::CBInstruction)) {
+        exec_state_.stage |= Stage::CBInstruction;
+        exec_state_.cycles_left = FetchCycles;
+    }
+    else {
+        InstructionType instr_type = exec_state_.has_stage(Stage::CBInstruction)
+                                         ? InstructionType::CBPrefixed
+                                         : InstructionType::Unprefixed;
+        const auto* instr = &InstructionTable::get_instruction(instr_type, exec_state_.fetched);
+        exec_state_.instr = instr;
+        exec_state_.stage = Stage::Execute;
+
+        // If it's a branching instruction, execute non-branch cycles
+        auto cycles = (instr->cycles_no_branch != 0) ? instr->cycles_no_branch : instr->cycles;
+
+        if (!fe_overlap_) {
+            // Don't count fetch cycles in non-overlapping mode (already consumed)
+            cycles -= FetchCycles * ((instr_type == InstructionType::CBPrefixed) ? 2 : 1);
+        }
+
+        exec_state_.cycles_left = cycles;
+    }
+}
+
+inline void Cpu::execute_stage()
+{
+    // Only execute if not branching from a conditional instruction
+    if (!exec_state_.branching) {
+        // Execute instruction handler
+        (this->*(exec_state_.instr->execute))();
+
+        // If a conditional branch has been taken flag it and add remaining execution cycles
+        if (branch_taken_) {
+            exec_state_.branching = true;
+            branch_taken_ = false;
+            exec_state_.cycles_left = exec_state_.instr->cycles -
+                                      exec_state_.instr->cycles_no_branch;
+            return;
+        }
+    }
+
+    exec_state_.branching = false;
+
+    clear_flag(exec_state_.stage, Stage::Execute);
+
+    // If an interrupt should be serviced, do it and reset to fetch
+    if (interrupt_handler_.should_service()) {
+        schedule_interrupt();
+    }
+}
+
+inline void Cpu::schedule_interrupt()
+{
+    exec_state_.stage = Stage::Fetch | Stage::InterruptService;
+    exec_state_.cycles_left = FetchCycles;
+}
+
+[[nodiscard]] inline bool Cpu::handle_interrupts(Cycles cycles)
+{
+    bool servicing = false;
+
+    if (is_halted() && interrupt_handler_.should_wake_up()) {
+        schedule_interrupt();
+    }
+
+    // Handle interrupts
+    if (exec_state_.has_stage(Stage::InterruptService)) {
+        interrupt_handler_.tick(cycles);
+        if (!interrupt_handler_.is_servicing()) {
+            // It already finished servicing the interrupt
+            clear_flag(exec_state_.stage, Stage::InterruptService);
+        }
+        servicing = true;
+    }
+
+    return servicing;
+}
+inline void Cpu::handle_ime(TCycle tcycles)
+{
+    // Enable IME if scheduled
+    if (is_ime_scheduled()) {
+        ime_scheduled_ -= tcycles;
+        if (ime_scheduled_ == 0) {
+            set_ime(true);
+        }
+    }
 }
 
 uint8_t Cpu::fetch()
@@ -217,9 +393,15 @@ uint8_t Cpu::execute(uint8_t opcode, InstructionType instr_type)
     BB_PROFILE_START(profiling::HotSection::CpuExecute);
     const auto& instr = InstructionTable::get_instruction(instr_type, opcode);
     (this->*instr.execute)();
-    cycles_ += instr.cycles;
+    auto cycles = instr.cycles;
+    // Set the right cycles for branching instructions
+    if (instr.cycles_no_branch != 0 && !branch_taken_) {
+        cycles = instr.cycles_no_branch;
+    }
+    cycles_ += cycles;
+    branch_taken_ = false;
     BB_PROFILE_STOP(profiling::HotSection::CpuExecute);
-    return instr.cycles;
+    return cycles;
 }
 
 void Cpu::trace() const

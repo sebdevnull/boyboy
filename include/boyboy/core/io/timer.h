@@ -76,16 +76,11 @@ public:
         static constexpr std::array<uint16_t, 4> ClockFrequencies = {1024, 16, 64, 256};
     };
 
-    // Initial DIV values for DMG
-    static constexpr uint16_t DivCounterStartValue = 0xABCC;
-    static constexpr uint8_t DivStartValue = DivCounterStartValue >> 8;
-
     // Internal system counter bit lookup table for the falling edge detector
     static constexpr std::array<uint8_t, 4> DivBitLookup{9, 3, 5, 7};
 
-    // Delay in T-cycles for scheduled operations
-    static constexpr uint8_t InterruptDelay = 4;
-    static constexpr uint8_t TimaReloadDelay = 4;
+    // Delay in T-cycles for scheduled overflow and reload
+    static constexpr uint8_t TimaDelayCycles = 4;
 
 private:
     cpu::InterruptRequestCallback request_interrupt_;
@@ -96,16 +91,17 @@ private:
     uint8_t tac_{0};  // Timer Control
 
     // Internal counters
-    uint16_t div_counter_{DivCounterStartValue}; // Internal system counter
+    uint16_t div_counter_{0}; // Internal system counter
     uint16_t tima_counter_{0};
 
     // Timer stopped flag
     bool stopped_{false};
 
-    // TIMA overflow status
+    // TIMA status
     bool tima_overflow_{false};
+    bool tima_reload_{false};
 
-    // Schedulers for interrupt request and TIMA reload
+    // Schedulers for TIMA overflow and reload delays
     struct Scheduler {
         bool scheduled;
         uint8_t remaining;
@@ -132,21 +128,30 @@ private:
             remaining = 0;
         }
     };
-    Scheduler interrupt_scheduler_{
-        .scheduled = false,
-        .remaining = 0,
-        .execute = [this]() { request_interrupt_(cpu::Interrupts::Timer); },
-    };
+
     Scheduler tima_reload_scheduler_{
         .scheduled = false,
         .remaining = 0,
-        .execute = [this]() { tima_ = tma_; },
+        .execute = [this]() { tima_reload_ = false; },
+    };
+
+    Scheduler tima_overflow_scheduler_{
+        .scheduled = false,
+        .remaining = 0,
+        .execute =
+            [this]() {
+                tima_ = tma_;
+                request_interrupt_(cpu::Interrupt::Timer);
+
+                // Start reload
+                tima_reload_ = true;
+                tima_reload_scheduler_.schedule(TimaDelayCycles);
+            },
     };
 
     void schedule_overflow()
     {
-        interrupt_scheduler_.schedule(InterruptDelay);
-        tima_reload_scheduler_.schedule(InterruptDelay + TimaReloadDelay);
+        tima_overflow_scheduler_.schedule(TimaDelayCycles);
         tima_overflow_ = false;
     }
 
@@ -173,32 +178,44 @@ private:
 
     // Registers setters to allow falling edge detection
     void increment_div_counter(uint16_t inc) { set_div_counter(div_counter_ + inc); }
+
     void set_div_counter(uint16_t div_counter)
     {
         handle_falling_edge(div_counter_, div_counter, tac_, tac_);
         div_counter_ = div_counter;
     }
+
     void set_tac(uint8_t tac)
     {
         tac &= Flags::TacMask;
         handle_falling_edge(div_counter_, div_counter_, tac_, tac);
         tac_ = tac;
     }
+
     void set_tima(uint8_t tima)
     {
-        // If writing to TIMA while reload is scheduled but interrupt is already dispatched, write
-        // is ignored
-        if (tima_reload_scheduler_.scheduled && !interrupt_scheduler_.scheduled) {
+        // If writing to TIMA on the same cycle it's being reloaded, write is ignored
+        if (tima_reload_) {
             return;
         }
-        // If writing to TIMA while the interrupt is scheduled, it is canceled
-        if (interrupt_scheduler_.scheduled) {
-            interrupt_scheduler_.scheduled = false;
-            tima_reload_scheduler_.scheduled = false;
+
+        // If writing to TIMA on the cycle after overflowing, it is canceled
+        if (tima_overflow_scheduler_.scheduled) {
+            tima_overflow_scheduler_.scheduled = false;
         }
+
         tima_ = tima;
     }
-    void set_tma(uint8_t tma) { tma_ = tma; }
+
+    void set_tma(uint8_t tma)
+    {
+        tma_ = tma;
+
+        // If writing TMA during TIMA reload, new TMA value is loaded
+        if (tima_reload_) {
+            tima_ = tma;
+        }
+    }
 };
 
 } // namespace boyboy::core::io

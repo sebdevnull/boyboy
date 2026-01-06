@@ -13,12 +13,15 @@
 #include <memory>
 #include <type_traits>
 #include <variant>
+#include <vector>
 
 // boyboy
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cpu/cpu.h"
 #include "boyboy/core/cpu/cpu_constants.h"
+#include "boyboy/core/cpu/cycles.h"
 #include "boyboy/core/cpu/registers.h"
+#include "boyboy/core/cpu/state.h"
 #include "boyboy/core/io/io.h"
 #include "boyboy/core/mmu/constants.h"
 #include "boyboy/core/mmu/mmu.h"
@@ -26,6 +29,7 @@
 // Helpers
 #include "helpers/cpu_asserts.h"
 #include "helpers/cpu_params.h"
+#include "helpers/global_tick_mode.h"
 
 namespace boyboy::test::cpu {
 
@@ -48,14 +52,91 @@ struct CpuTest : public ::testing::Test {
 
         // Set PC to a writable area (WRAM) to avoid issues with read-only memory
         cpu->set_pc(boyboy::core::mmu::WRAM0Start);
+
+        // Set tick mode
+        cpu->set_tick_mode(tests::g_tick_mode);
     }
 
+    /**
+     * @brief Step the CPU to fetch and execute next instruction independently of the current
+     * ticking mode.
+     *
+     */
+    void step() const
+    {
+        if (cpu->get_tick_mode() == core::cpu::TickMode::Instruction) {
+            cpu->tick();
+            return;
+        }
+
+        const auto& state = cpu->get_execution_state();
+        bool done         = false;
+        bool executing    = false;
+
+        // Tick until we transition out of Execute stage
+        while (!done) {
+            auto cycles_left = state.cycles_left;
+            auto fetch_stage = state.has_stage(core::cpu::Stage::Fetch);
+            if (state.has_stage(core::cpu::Stage::Execute)) {
+                executing = true;
+
+                // If in MCycle mode and 4 executing TCycles left, break out of the loop
+                // (fetch/execute overlap)
+                done = ((cpu->get_tick_mode() == core::cpu::TickMode::MCycle) &&
+                        (state.cycles_left == core::cpu::to_tcycles(1))) ||
+                       ((cpu->get_tick_mode() == core::cpu::TickMode::TCycle) &&
+                        (state.cycles_left == 1));
+            }
+            else if (executing) {
+                done = true;
+            }
+
+            cpu->tick();
+
+            // If we go from fetch to fetch, it means that we executed a 4 cycle instruction so we
+            // must return
+            if (((cycles_left == core::cpu::FetchCycles && cycles_left == state.cycles_left) ||
+                 (cycles_left == 1 && state.cycles_left == core::cpu::FetchCycles)) &&
+                fetch_stage && state.has_stage(core::cpu::Stage::Fetch) &&
+                !state.has_stage(core::cpu::Stage::CBInstruction)) {
+                break;
+            }
+        }
+    }
+
+    void service_interrupts() const
+    {
+        if (cpu->get_tick_mode() == boyboy::core::cpu::TickMode::Instruction) {
+            cpu->get_interrupt_handler().service();
+            return;
+        }
+
+        const auto& state = cpu->get_execution_state();
+        while (!state.has_stage(core::cpu::Stage::InterruptService)) {
+            cpu->tick();
+        }
+
+        while (state.has_stage(core::cpu::Stage::InterruptService)) {
+            cpu->tick();
+        }
+    }
+
+    /**
+     * @brief Perform opcode execution.
+     *
+     * @param opcode Opcode to execute.
+     */
     void run(boyboy::core::cpu::Opcode opcode) const
     {
         cpu->fetch(); // simulate opcode fetch
         cpu->execute(opcode);
     }
 
+    /**
+     * @brief Perform cb-prefixed opcode execution.
+     *
+     * @param opcode Cb-prefixed opcode to execute.
+     */
     void run(boyboy::core::cpu::CBOpcode opcode) const
     {
         cpu->fetch(); // simulate 0xCB prefix fetch
@@ -63,17 +144,40 @@ struct CpuTest : public ::testing::Test {
         cpu->execute(opcode);
     }
 
+    /**
+     * @brief Set the next unprefixed instruction to be executed.
+     *
+     * @param opcode Opcode of the instruction to execute.
+     */
     void set_next_instruction(boyboy::core::cpu::Opcode opcode) const
     {
         uint16_t pc = cpu->get_pc();
         cpu->write_byte(pc, static_cast<uint8_t>(opcode));
     }
 
+    /**
+     * @brief Set the next cb-prefixed instruction to be executed.
+     *
+     * @param opcode Cb-prefixed opcode of the instruction to execute.
+     */
     void set_next_instruction(boyboy::core::cpu::CBOpcode opcode) const
     {
         uint16_t pc = cpu->get_pc();
         cpu->write_byte(pc, boyboy::core::cpu::CBInstructionPrefix);
         cpu->write_byte(pc + 1, static_cast<uint8_t>(opcode));
+    }
+
+    /**
+     * @brief Set bytes sequentially starting from PC.
+     *
+     * @param bytes Bytes to set at PC.
+     */
+    void set_next_bytes(const std::vector<uint8_t>& bytes) const
+    {
+        auto pc = cpu->get_pc();
+        for (const auto& instr : bytes) {
+            cpu->write_byte(pc++, instr);
+        }
     }
 
     void set_flags(bool z, bool n, bool h, bool c) const

@@ -9,7 +9,9 @@
 
 #include <cstdint>
 
+#include "boyboy/core/cpu/interrupts.h"
 #include "boyboy/core/io/buttons.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/joypad.h"
 #include "boyboy/core/io/registers.h"
 
@@ -17,6 +19,7 @@ using boyboy::core::io::Button;
 using boyboy::core::io::ButtonMask;
 using boyboy::core::io::IoReg;
 using boyboy::core::io::Joypad;
+using boyboy::core::io::RegInitValues;
 using boyboy::core::io::to_string;
 
 class IoJoypadTest : public ::testing::Test {
@@ -55,9 +58,9 @@ protected:
 
 TEST_F(IoJoypadTest, InitialState)
 {
-    // Initial state: no buttons pressed, select action buttons
-    // Bits 4-5 set (no group selected), bits 0-3 high (not pressed)
-    EXPECT_EQ(joypad_.read(0xFF00), 0xFF);
+    // Initial state: no buttons pressed, no selection
+    // Assume DMG0
+    EXPECT_EQ(read_p1(), RegInitValues::Dmg0::Joypad::P1);
 }
 
 TEST_F(IoJoypadTest, ResetState)
@@ -87,7 +90,7 @@ TEST_F(IoJoypadTest, ResetState)
     assert_button(Button::Down, false, false);
 
     // P1 register should be back to initial state
-    EXPECT_EQ(read_p1(), 0xFF);
+    EXPECT_EQ(read_p1(), RegInitValues::Dmg0::Joypad::P1);
 }
 
 TEST_F(IoJoypadTest, SelectActionButtons)
@@ -262,7 +265,7 @@ TEST_F(IoJoypadTest, InvalidButtonHandling)
 TEST_F(IoJoypadTest, InterruptOnPress)
 {
     uint8_t irq_count = 0;
-    joypad_.set_interrupt_cb([&](uint8_t) { irq_count++; });
+    joypad_.set_interrupt_cb([&](boyboy::core::cpu::Interrupt) { irq_count++; });
 
     // Select action buttons
     write_p1(~ButtonMask::SelectAction);
@@ -300,7 +303,7 @@ TEST_F(IoJoypadTest, InterruptOnPress)
 TEST_F(IoJoypadTest, InterruptOnMultiplePresses)
 {
     uint8_t irq_count = 0;
-    joypad_.set_interrupt_cb([&](uint8_t) { irq_count++; });
+    joypad_.set_interrupt_cb([&](boyboy::core::cpu::Interrupt) { irq_count++; });
 
     // Select directional buttons
     write_p1(~ButtonMask::SelectDPad);
@@ -342,7 +345,7 @@ TEST_F(IoJoypadTest, InterruptOnMultiplePresses)
 TEST_F(IoJoypadTest, InterruptMixedSelect)
 {
     uint8_t irq_count = 0;
-    joypad_.set_interrupt_cb([&](uint8_t) { irq_count++; });
+    joypad_.set_interrupt_cb([&](boyboy::core::cpu::Interrupt) { irq_count++; });
 
     // Select action buttons
     write_p1(~ButtonMask::SelectAction);

@@ -20,6 +20,7 @@ struct Instruction {
     std::string_view mnemonic;
     uint8_t length;
     uint8_t cycles;
+    uint8_t cycles_no_branch;
     OpcodeHandler execute;
 };
 

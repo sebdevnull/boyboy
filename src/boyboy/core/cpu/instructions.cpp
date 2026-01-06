@@ -138,24 +138,28 @@ inline void Cpu::jp_z(uint16_t addr)
 {
     if (get_flag(Flag::Zero)) {
         jp(addr);
+        branch_taken_ = true;
     }
 }
 inline void Cpu::jp_nz(uint16_t addr)
 {
     if (!get_flag(Flag::Zero)) {
         jp(addr);
+        branch_taken_ = true;
     }
 }
 inline void Cpu::jp_c(uint16_t addr)
 {
     if (get_flag(Flag::Carry)) {
         jp(addr);
+        branch_taken_ = true;
     }
 }
 inline void Cpu::jp_nc(uint16_t addr)
 {
     if (!get_flag(Flag::Carry)) {
         jp(addr);
+        branch_taken_ = true;
     }
 }
 
@@ -940,6 +944,7 @@ void Cpu::call_z_a16()
 {
     if (get_flag(Flag::Zero)) {
         call_a16();
+        branch_taken_ = true;
     }
     else {
         // If not taken, need to discard the fetched address
@@ -951,6 +956,7 @@ void Cpu::call_nz_a16()
 {
     if (!get_flag(Flag::Zero)) {
         call_a16();
+        branch_taken_ = true;
     }
     else {
         // If not taken, need to discard the fetched address
@@ -962,6 +968,7 @@ void Cpu::call_c_a16()
 {
     if (get_flag(Flag::Carry)) {
         call_a16();
+        branch_taken_ = true;
     }
     else {
         // If not taken, need to discard the fetched address
@@ -973,6 +980,7 @@ void Cpu::call_nc_a16()
 {
     if (!get_flag(Flag::Carry)) {
         call_a16();
+        branch_taken_ = true;
     }
     else {
         // If not taken, need to discard the fetched address
@@ -994,6 +1002,7 @@ void Cpu::ret_z()
 {
     if (get_flag(Flag::Zero)) {
         ret();
+        branch_taken_ = true;
     }
 }
 // RET NZ
@@ -1001,6 +1010,7 @@ void Cpu::ret_nz()
 {
     if (!get_flag(Flag::Zero)) {
         ret();
+        branch_taken_ = true;
     }
 }
 // RET C
@@ -1008,6 +1018,7 @@ void Cpu::ret_c()
 {
     if (get_flag(Flag::Carry)) {
         ret();
+        branch_taken_ = true;
     }
 }
 // RET NC
@@ -1015,6 +1026,7 @@ void Cpu::ret_nc()
 {
     if (!get_flag(Flag::Carry)) {
         ret();
+        branch_taken_ = true;
     }
 }
 // RETI

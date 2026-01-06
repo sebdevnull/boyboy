@@ -23,6 +23,7 @@
 #include "boyboy/common/log/logging.h"
 #include "boyboy/common/utils.h"
 #include "boyboy/core/cartridge/cartridge.h"
+#include "boyboy/core/io/constants.h"
 #include "boyboy/core/io/io.h"
 #include "boyboy/core/mmu/constants.h"
 #include "boyboy/core/profiling/profiler_utils.h"
@@ -35,6 +36,10 @@ Mmu::Mmu(std::shared_ptr<io::Io> io) : io_(std::move(io)) {}
 
 void Mmu::init()
 {
+    // IE register (assume DMG0)
+    // TODO: move to IO?
+    ier_ = io::RegInitValues::Dmg0::Interrupts::IE;
+
     // Init memory regions
     vram_.fill(0);
     wram_.fill(0);
